@@ -1,0 +1,142 @@
+.sidebar {
+  grid-column: 1;
+  grid-row: 2;
+  background: var(--bg-surface);
+  border-right: 1px solid var(--border-subtle);
+  display: flex;
+  flex-direction: column;
+  padding: 16px 0;
+  overflow-y: auto;
+  z-index: 50;
+}
+
+.section {
+  padding: 0 12px;
+  margin-bottom: 24px;
+}
+
+.sectionLabel {
+  display: block;
+  font-size: 10px;
+  font-family: var(--font-mono);
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  margin-bottom: 6px;
+  padding: 0 6px;
+}
+
+.navItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: var(--radius-md);
+  text-decoration: none;
+  font-size: 13px;
+  color: var(--text-secondary);
+  transition: background var(--transition), color var(--transition);
+  margin-bottom: 1px;
+  border: none;
+  background: transparent;
+  width: 100%;
+  cursor: pointer;
+  font-family: var(--font-body);
+}
+
+.navItem:hover {
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-primary);
+}
+
+.navItem.active {
+  background: var(--accent-violet-dim);
+  color: var(--accent-violet);
+}
+
+.navIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  opacity: 0.7;
+}
+
+.navItem.active .navIcon,
+.navItem:hover .navIcon {
+  opacity: 1;
+}
+
+/* Path items in sidebar */
+.pathItem {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 8px 10px;
+  border-radius: var(--radius-md);
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  width: 100%;
+  transition: background var(--transition);
+  margin-bottom: 2px;
+}
+
+.pathItem:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.pathRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.pathIcon {
+  font-size: 13px;
+  flex-shrink: 0;
+}
+
+.pathName {
+  font-size: 12px;
+  color: var(--text-primary);
+  flex: 1;
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pathPct {
+  font-size: 10px;
+  font-family: var(--font-mono);
+  flex-shrink: 0;
+}
+
+.progressTrack {
+  height: 3px;
+  background: var(--border-subtle);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.5s ease;
+}
+
+.emptyHint {
+  font-size: 11px;
+  color: var(--text-muted);
+  padding: 6px 10px;
+  font-style: italic;
+}
+
+.bottom {
+  margin-top: auto;
+  padding: 0 12px;
+  border-top: 1px solid var(--border-subtle);
+  padding-top: 12px;
+}

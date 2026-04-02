@@ -1,0 +1,165 @@
+.page {
+  padding: 28px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  max-width: 900px;
+}
+
+.header { display: flex; flex-direction: column; gap: 6px; }
+
+.title {
+  font-family: var(--font-display);
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.sub { font-size: 13px; color: var(--text-secondary); max-width: 560px; }
+
+/* Paths */
+.paths { display: flex; flex-direction: column; gap: 16px; }
+
+.pathCard {
+  background: var(--bg-raised);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  transition: border-color var(--transition);
+}
+.pathCard:hover { border-color: var(--border-default); }
+
+.accentLine {
+  height: 2px;
+  width: 100%;
+}
+.accentLine[data-color="violet"] { background: var(--accent-violet); }
+.accentLine[data-color="teal"]   { background: var(--accent-teal); }
+.accentLine[data-color="amber"]  { background: var(--accent-amber); }
+.accentLine[data-color="red"]    { background: var(--accent-red); }
+
+.pathHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 22px 16px;
+  cursor: pointer;
+  gap: 20px;
+}
+
+.pathLeft { display: flex; align-items: flex-start; gap: 16px; flex: 1; }
+.pathIcon { font-size: 28px; flex-shrink: 0; }
+
+.pathTitleRow { display: flex; align-items: center; gap: 10px; margin-bottom: 5px; flex-wrap: wrap; }
+.pathName { font-family: var(--font-display); font-size: 17px; font-weight: 700; }
+.pathDesc { font-size: 13px; color: var(--text-secondary); line-height: 1.55; }
+
+.pathRight {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-shrink: 0;
+}
+
+.pathStats { text-align: center; }
+.pathStatNum {
+  display: block;
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 700;
+}
+.pathStatNum[data-color="violet"] { color: var(--accent-violet); }
+.pathStatNum[data-color="teal"]   { color: var(--accent-teal); }
+.pathStatNum[data-color="amber"]  { color: var(--accent-amber); }
+.pathStatNum[data-color="red"]    { color: var(--accent-red); }
+
+.pathStatLabel {
+  font-size: 10px;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+}
+
+.startBtn {
+  background: var(--bg-overlay);
+  border: 1px solid var(--border-default);
+  color: var(--text-primary);
+  padding: 8px 18px;
+  border-radius: var(--radius-md);
+  font-size: 13px;
+  font-family: var(--font-body);
+  cursor: pointer;
+  transition: all var(--transition);
+  white-space: nowrap;
+}
+.startBtn:hover { border-color: var(--border-strong); background: var(--bg-overlay); }
+
+/* Lessons list */
+.lessonsList {
+  border-top: 1px solid var(--border-subtle);
+  display: flex;
+  flex-direction: column;
+}
+
+.lessonRow {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 22px;
+  cursor: pointer;
+  border-bottom: 1px solid var(--border-subtle);
+  transition: background var(--transition);
+}
+.lessonRow:hover { background: rgba(255,255,255,0.03); }
+.lessonRow:last-child { border-bottom: none; }
+
+.lessonDone .lessonTitle { color: var(--text-muted); }
+.lessonDone .lessonNum   { color: var(--accent-teal); border-color: rgba(79,209,165,0.3); }
+
+.lessonCurrent { background: var(--accent-violet-dim); }
+
+.lessonNum {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 1px solid var(--border-default);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-family: var(--font-mono);
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.lessonInfo { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+.lessonTitle { font-size: 13px; color: var(--text-primary); }
+.lessonDuration { font-size: 11px; color: var(--text-muted); font-family: var(--font-mono); }
+
+.lessonCurrentBadge {
+  font-size: 10px;
+  font-family: var(--font-mono);
+  color: var(--accent-violet);
+  background: var(--accent-violet-dim);
+  border: 1px solid var(--accent-violet-border);
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+}
+
+.toggleBtn {
+  background: transparent;
+  border: none;
+  border-top: 1px solid var(--border-subtle);
+  color: var(--text-muted);
+  font-size: 12px;
+  font-family: var(--font-mono);
+  padding: 10px 22px;
+  cursor: pointer;
+  text-align: left;
+  transition: color var(--transition);
+  width: 100%;
+}
+.toggleBtn:hover { color: var(--text-secondary); }
