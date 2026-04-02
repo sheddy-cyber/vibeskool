@@ -7,17 +7,15 @@
 }
 
 .header { display: flex; flex-direction: column; gap: 6px; }
-.title  { font-family: var(--font-display); font-size: 22px; font-weight: 700; }
+.title  { font-weight: 600; font-size: 22px; }
 .sub    { font-size: 13px; color: var(--text-secondary); }
 
 /* Section */
 .section { display: flex; flex-direction: column; gap: 14px; }
 
 .sectionTitle {
-  font-family: var(--font-display);
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--text-muted);
+  font-weight: 600; font-size: 13px;
+  color: var(--text-tertiary);
   text-transform: uppercase;
   letter-spacing: 1.2px;
 }
@@ -46,7 +44,7 @@
 
 .cardSub {
   font-size: 12px;
-  color: var(--text-muted);
+  color: var(--text-tertiary);
 }
 
 /* Theme grid */
@@ -69,7 +67,7 @@
   transition: all var(--transition);
   position: relative;
   text-align: left;
-  font-family: var(--font-body);
+  font-family: var(--font-sans);
 }
 
 .themeCard:hover {
@@ -78,8 +76,8 @@
 }
 
 .themeCardActive {
-  border-color: var(--accent-violet) !important;
-  background: var(--accent-violet-dim);
+  border-color: var(--accent) !important;
+  background: var(--accent-dim);
 }
 
 .themeSwatch {
@@ -104,7 +102,7 @@
 
 .themeDesc {
   font-size: 11px;
-  color: var(--text-muted);
+  color: var(--text-tertiary);
   line-height: 1.4;
 }
 
@@ -113,7 +111,7 @@
   top: 10px;
   right: 10px;
   font-size: 11px;
-  color: var(--accent-violet);
+  color: var(--accent);
   font-family: var(--font-mono);
 }
 
@@ -132,7 +130,7 @@
   padding: 10px 20px;
   cursor: pointer;
   color: var(--text-secondary);
-  font-family: var(--font-body);
+  font-family: var(--font-sans);
   transition: all var(--transition);
 }
 
@@ -142,9 +140,9 @@
 }
 
 .fontSizeBtnActive {
-  border-color: var(--accent-violet) !important;
-  background: var(--accent-violet-dim);
-  color: var(--accent-violet);
+  border-color: var(--accent) !important;
+  background: var(--accent-dim);
+  color: var(--accent);
 }
 
 /* Toggle row */
@@ -165,7 +163,7 @@
 
 .toggleDesc {
   font-size: 11px;
-  color: var(--text-muted);
+  color: var(--text-tertiary);
   margin-top: 3px;
   line-height: 1.5;
 }
@@ -183,8 +181,8 @@
 }
 
 .toggleOn {
-  background: var(--accent-violet);
-  border-color: var(--accent-violet);
+  background: var(--accent);
+  border-color: var(--accent);
 }
 
 .toggleThumb {
@@ -194,7 +192,7 @@
   width: 16px;
   height: 16px;
   border-radius: 50%;
-  background: var(--text-muted);
+  background: var(--text-tertiary);
   transition: transform 0.25s ease, background 0.25s ease;
   display: block;
 }

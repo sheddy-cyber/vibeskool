@@ -24,8 +24,8 @@
   min-width: 0;
 }
 
-.breadcrumbPath { color: var(--text-muted); }
-.breadcrumbSep  { color: var(--text-muted); }
+.breadcrumbPath { color: var(--text-tertiary); }
+.breadcrumbSep  { color: var(--text-tertiary); }
 .breadcrumbLesson {
   color: var(--text-secondary);
   overflow: hidden;
@@ -43,14 +43,14 @@
 .duration {
   font-size: 12px;
   font-family: var(--font-mono);
-  color: var(--text-muted);
+  color: var(--text-tertiary);
 }
 
 .completedBadge {
   font-size: 12px;
   font-family: var(--font-mono);
-  color: var(--accent-teal);
-  background: var(--accent-teal-dim);
+  color: var(--green);
+  background: var(--green-dim);
   border: 1px solid rgba(79,209,165,0.25);
   padding: 5px 12px;
   border-radius: var(--radius-sm);
@@ -78,9 +78,7 @@
 }
 
 .lessonTitle {
-  font-family: var(--font-display);
-  font-size: 22px;
-  font-weight: 700;
+  font-weight: 600; font-size: 22px;
   line-height: 1.2;
   letter-spacing: -0.5px;
 }
@@ -88,10 +86,8 @@
 .section { display: flex; flex-direction: column; gap: 10px; }
 
 .sectionHeading {
-  font-family: var(--font-display);
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--accent-violet);
+  font-weight: 600; font-size: 13px;
+  color: var(--accent);
   text-transform: uppercase;
   letter-spacing: 0.8px;
 }
@@ -120,7 +116,7 @@
   display: block;
   font-size: 10px;
   font-family: var(--font-mono);
-  color: var(--text-muted);
+  color: var(--text-tertiary);
   text-transform: uppercase;
   letter-spacing: 1px;
   margin-bottom: 4px;
@@ -133,7 +129,7 @@
   align-items: center;
   gap: 14px;
   font-size: 13px;
-  color: var(--accent-teal);
+  color: var(--green);
   flex-wrap: wrap;
 }
 
@@ -154,7 +150,7 @@
   color: var(--text-primary);
 }
 
-.terminalSub { font-size: 11px; color: var(--text-muted); }
+.terminalSub { font-size: 11px; color: var(--text-tertiary); }
 
 .terminalWrap { flex: 1; min-height: 0; }
 
@@ -169,5 +165,5 @@
   text-align: center;
 }
 
-.notFound h2 { font-family: var(--font-display); font-size: 20px; font-weight: 700; }
+.notFound h2 { font-weight: 600; font-size: 20px; }
 .notFound p  { font-size: 13px; color: var(--text-secondary); }

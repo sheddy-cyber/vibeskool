@@ -1,154 +1,137 @@
-import React, { useEffect, useRef } from 'react'
+import React from 'react'
 import { useNavigate } from 'react-router-dom'
 import styles from './LandingPage.module.css'
 
 const FEATURES = [
   {
-    icon: '⚡',
-    title: 'Minimum Effective Knowledge',
-    body: 'We cut 80% of traditional curriculum. You learn only what unlocks your ability to build with AI — nothing more.',
+    label: 'Minimum Effective Knowledge',
+    body: 'We cut 80% of traditional curriculum. You learn exactly what you need to direct AI — and nothing more.',
   },
   {
-    icon: '🧪',
-    title: 'The Lab — Friendly Terminal',
-    body: 'A terminal that explains itself as you type. No black void. No cryptic errors. Just guided, safe experimentation.',
+    label: 'The Lab',
+    body: 'A guided terminal that explains every command as you type it. Safe, sandboxed, and designed to remove fear.',
   },
   {
-    icon: '🤖',
-    title: 'AI Prompt Templates',
-    body: 'Every lesson ends with a ready-made prompt. Close the lesson, open Claude or ChatGPT, and build something immediately.',
+    label: 'Prompt templates',
+    body: 'Every lesson ends with a prompt you can copy straight into Claude or ChatGPT to build something immediately.',
   },
   {
-    icon: '🎯',
-    title: 'Skill Check in 10 Minutes',
-    body: "Short, sharp quizzes that prove you're ready. Not certificates — competence badges. 'You can now build X with AI.'",
+    label: 'Skill Check',
+    body: 'Short, precise quizzes that tell you exactly what you are ready to build — not how many lessons you completed.',
   },
   {
-    icon: '🗺️',
-    title: 'Goal-First Learning',
-    body: 'Tell us what you want to build. We tell you exactly which skills you need and in what order. No guessing.',
+    label: 'Vibe coding checklist',
+    body: 'What to look for when AI gives you code. How to spot hallucinated imports, missing error handling, and stale syntax.',
   },
   {
-    icon: '📈',
-    title: 'MEK Score',
-    body: "Track your leverage, not just your completion. Your score reflects what you can actually build — not how many videos you watched.",
+    label: 'MEK Score',
+    body: 'A single number that reflects your actual leverage with AI — not completion percentage or badges.',
   },
 ]
 
 const PATHS = [
-  { icon: '🌐', name: 'Vibe Coding for Web',     tag: 'Beginner',      color: '#8b7cf8' },
-  { icon: '🤖', name: 'Vibe Coding Mastery',      tag: '🔥 Essential',  color: '#4fd1a5' },
-  { icon: '🗂️', name: 'Git & GitHub Basics',      tag: 'Beginner',      color: '#f0a05a' },
-  { icon: '🐍', name: 'Python for AI Builders',   tag: 'Beginner',      color: '#a78bfa' },
-  { icon: '🔌', name: 'APIs, Explained Simply',   tag: 'Beginner',      color: '#f0a05a' },
-  { icon: '🗄️', name: 'SQL Without the Pain',     tag: 'Beginner',      color: '#f06a6a' },
+  { name: 'Vibe Coding for Web',   desc: 'HTML, CSS, JS — the useful parts', tag: 'Beginner' },
+  { name: 'Vibe Coding Mastery',   desc: 'Prompting, reviewing, debugging AI output', tag: 'Essential' },
+  { name: 'Git & GitHub',          desc: 'Version control so you never lose work', tag: 'Beginner' },
+  { name: 'Python for AI Builders',desc: 'Read and direct AI-generated scripts', tag: 'Beginner' },
+  { name: 'APIs, Explained',       desc: 'What they are and how to use them', tag: 'Beginner' },
+  { name: 'SQL Without the Pain',  desc: 'Query databases well enough to tell AI what you need', tag: 'Beginner' },
 ]
 
 export default function LandingPage() {
   const navigate = useNavigate()
-  const heroRef  = useRef(null)
-
-  useEffect(() => {
-    const el = heroRef.current
-    if (!el) return
-    const onMove = (e) => {
-      const { left, top, width, height } = el.getBoundingClientRect()
-      const x = ((e.clientX - left) / width  - 0.5) * 20
-      const y = ((e.clientY - top)  / height - 0.5) * 20
-      el.style.setProperty('--gx', `${50 + x}%`)
-      el.style.setProperty('--gy', `${50 + y}%`)
-    }
-    window.addEventListener('mousemove', onMove)
-    return () => window.removeEventListener('mousemove', onMove)
-  }, [])
 
   return (
     <div className={styles.page}>
+
       {/* Nav */}
       <nav className={styles.nav}>
-        <span className={styles.logo}>Vibe<span>Skool</span></span>
-        <div className={styles.navLinks}>
-          <a href="#features">Features</a>
-          <a href="#paths">Paths</a>
+        <div className={styles.navInner}>
+          <div className={styles.brand}>
+            <div className={styles.brandMark}>VS</div>
+            <span className={styles.brandName}>VibeSkool</span>
+          </div>
+          <div className={styles.navLinks}>
+            <a href="#features" className={styles.navLink}>Features</a>
+            <a href="#paths" className={styles.navLink}>Paths</a>
+          </div>
+          <button className={styles.navCta} onClick={() => navigate('/app/dashboard')}>
+            Get started
+          </button>
         </div>
-        <button className={styles.ctaNav} onClick={() => navigate('/app/dashboard')}>
-          Start Learning →
-        </button>
       </nav>
 
       {/* Hero */}
-      <section className={styles.hero} ref={heroRef}>
-        <div className={styles.heroBadge}>
-          <span className={styles.heroBadgeDot} />
-          AI-Native Learning Platform
-        </div>
-        <h1 className={styles.heroTitle}>
-          Learn enough.<br />
-          <span className={styles.heroAccent}>Build anything.</span>
-        </h1>
-        <p className={styles.heroSub}>
-          It is true what they say — you can't vibe code without knowing how to code.
-          But that doesn't mean you have to become a full-stack developer.
-          VibeSkool gives you the Minimum Effective Knowledge to direct AI,
-          debug its output, and ship real things — fast.
-        </p>
-        <div className={styles.heroCtas}>
-          <button className={styles.ctaPrimary} onClick={() => navigate('/app/dashboard')}>
-            Start for free
-          </button>
-          <button className={styles.ctaSecondary} onClick={() => navigate('/app/lab')}>
-            Try the Lab →
-          </button>
-        </div>
-        <div className={styles.heroStats}>
-          <div className={styles.heroStat}>
-            <span className={styles.heroStatNum}>6</span>
-            <span className={styles.heroStatLabel}>Skill Paths</span>
+      <section className={styles.hero}>
+        <div className={styles.heroInner}>
+          <div className={styles.heroEyebrow}>AI-native learning platform</div>
+          <h1 className={styles.heroHeadline}>
+            Learn enough to build<br />
+            <span className={styles.heroAccent}>anything with AI.</span>
+          </h1>
+          <p className={styles.heroBody}>
+            It is true what they say — you cannot vibe code without knowing how to code.
+            But that does not mean you have to become a full-stack developer.
+            VibeSkool gives you the Minimum Effective Knowledge to direct AI,
+            understand its output, and ship real things.
+          </p>
+          <div className={styles.heroCtas}>
+            <button className={styles.ctaPrimary} onClick={() => navigate('/app/dashboard')}>
+              Start learning
+            </button>
+            <button className={styles.ctaSecondary} onClick={() => navigate('/app/lab')}>
+              Open the Lab
+            </button>
           </div>
-          <div className={styles.heroStatDiv} />
-          <div className={styles.heroStat}>
-            <span className={styles.heroStatNum}>47</span>
-            <span className={styles.heroStatLabel}>Focused Lessons</span>
-          </div>
-          <div className={styles.heroStatDiv} />
-          <div className={styles.heroStat}>
-            <span className={styles.heroStatNum}>0</span>
-            <span className={styles.heroStatLabel}>Fluff lessons</span>
+          <div className={styles.heroMeta}>
+            <span>6 skill paths</span>
+            <span className={styles.dot}>·</span>
+            <span>47 focused lessons</span>
+            <span className={styles.dot}>·</span>
+            <span>No fluff</span>
           </div>
         </div>
-      </section>
 
-      {/* Terminal preview */}
-      <section className={styles.termPreview}>
-        <div className={styles.termWindow}>
-          <div className={styles.termBar}>
-            <div className={styles.termDots}>
-              <span style={{background:'#ff5f57'}} />
-              <span style={{background:'#febc2e'}} />
-              <span style={{background:'#28c840'}} />
+        {/* Terminal preview */}
+        <div className={styles.termPreview}>
+          <div className={styles.termWindow}>
+            <div className={styles.termBar}>
+              <div className={styles.termDots}>
+                <span style={{ background: '#ff5f57' }} />
+                <span style={{ background: '#febc2e' }} />
+                <span style={{ background: '#28c840' }} />
+              </div>
+              <span className={styles.termBarLabel}>lab — guided mode</span>
             </div>
-            <span className={styles.termBarTitle}>lab — guided mode</span>
-          </div>
-          <div className={styles.termBody}>
-            <div className={styles.termLine}>
-              <span className={styles.termSuccess}>✓ Lab ready. Let's learn functions.</span>
-            </div>
-            <div className={styles.termLine}>
-              <span className={styles.termMission}>Mission: Call greetUser() with your name</span>
-            </div>
-            <div className={styles.termLine}>
-              <span className={styles.termPrompt}>›</span>
-              <span className={styles.termCmd}>greetUser("Shedrach")</span>
-            </div>
-            <div className={styles.termExplain}>
-              <span className={styles.termExplainLabel}>what that means:</span>
-              <span><code>greetUser</code> → the function being called &nbsp;|&nbsp; <code>"Shedrach"</code> → the argument passed in</span>
-            </div>
-            <div className={styles.termLine}>
-              <span className={styles.termSuccess}>→ "Hello, Shedrach!"</span>
-            </div>
-            <div className={styles.termHint}>
-              💡 You just called a function with an argument. That's the most common pattern in any AI-generated codebase.
+            <div className={styles.termBody}>
+              <div className={styles.termLine}>
+                <span className={styles.termSuccess}>✓  sandbox ready</span>
+              </div>
+              <div className={styles.termMission}>
+                Mission: call greetUser() with your name
+              </div>
+              <div className={styles.termLine}>
+                <span className={styles.termPrompt}>›</span>
+                <span className={styles.termCmd}>greetUser("Shedrach")</span>
+              </div>
+              <div className={styles.termExplain}>
+                <span className={styles.termExplainLabel}>what that means</span>
+                <div className={styles.termExplainRow}>
+                  <code>greetUser</code>
+                  <span>→</span>
+                  <span>the function being called</span>
+                  <span className={styles.termExplainSep}>·</span>
+                  <code>"Shedrach"</code>
+                  <span>→</span>
+                  <span>the argument passed in</span>
+                </div>
+              </div>
+              <div className={styles.termLine}>
+                <span className={styles.termSuccess}>→  "Hello, Shedrach!"</span>
+              </div>
+              <div className={styles.termHint}>
+                You just called a function with an argument. That is the most common pattern in any AI-generated codebase.
+              </div>
             </div>
           </div>
         </div>
@@ -156,57 +139,76 @@ export default function LandingPage() {
 
       {/* Features */}
       <section className={styles.features} id="features">
-        <div className={styles.sectionHead}>
-          <h2 className={styles.sectionTitle}>Everything you need.<br />Nothing you don't.</h2>
-          <p className={styles.sectionSub}>Built around one principle: get you from zero to building something real, as fast as possible.</p>
-        </div>
-        <div className={styles.featuresGrid}>
-          {FEATURES.map((f, i) => (
-            <div key={i} className={styles.featureCard} style={{ animationDelay: `${i * 60}ms` }}>
-              <span className={styles.featureIcon}>{f.icon}</span>
-              <h3 className={styles.featureTitle}>{f.title}</h3>
-              <p className={styles.featureBody}>{f.body}</p>
-            </div>
-          ))}
+        <div className={styles.sectionInner}>
+          <div className={styles.sectionHead}>
+            <h2 className={styles.sectionTitle}>Everything you need.<br />Nothing you don't.</h2>
+            <p className={styles.sectionSub}>
+              Built around a single principle: get you from zero to building something real, as fast as possible.
+            </p>
+          </div>
+          <div className={styles.featuresGrid}>
+            {FEATURES.map((f, i) => (
+              <div key={i} className={styles.featureItem}>
+                <div className={styles.featureNum}>{String(i + 1).padStart(2, '0')}</div>
+                <h3 className={styles.featureLabel}>{f.label}</h3>
+                <p className={styles.featureBody}>{f.body}</p>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
       {/* Paths */}
       <section className={styles.pathsSection} id="paths">
-        <div className={styles.sectionHead}>
-          <h2 className={styles.sectionTitle}>Four paths. Zero fluff.</h2>
-          <p className={styles.sectionSub}>Each path is ruthlessly edited down to only what makes you dangerous with AI.</p>
-        </div>
-        <div className={styles.pathsGrid}>
-          {PATHS.map((p, i) => (
-            <div
-              key={i}
-              className={styles.pathCard}
-              style={{ '--path-color': p.color }}
-              onClick={() => navigate('/app/paths')}
-            >
-              <span className={styles.pathIcon}>{p.icon}</span>
-              <span className={styles.pathName}>{p.name}</span>
-              <span className={styles.pathTag}>{p.tag}</span>
-            </div>
-          ))}
+        <div className={styles.sectionInner}>
+          <div className={styles.sectionHead}>
+            <h2 className={styles.sectionTitle}>Six paths.<br />Every one ruthlessly edited.</h2>
+            <p className={styles.sectionSub}>
+              No padding, no filler, no history lessons. Each path is the shortest route to competence.
+            </p>
+          </div>
+          <div className={styles.pathsTable}>
+            {PATHS.map((p, i) => (
+              <div
+                key={i}
+                className={styles.pathRow}
+                onClick={() => navigate('/app/paths')}
+              >
+                <div className={styles.pathNum}>{String(i + 1).padStart(2, '0')}</div>
+                <div className={styles.pathInfo}>
+                  <span className={styles.pathName}>{p.name}</span>
+                  <span className={styles.pathDesc}>{p.desc}</span>
+                </div>
+                <span className={styles.pathTag}>{p.tag}</span>
+                <span className={styles.pathArrow}>→</span>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
       {/* CTA */}
       <section className={styles.finalCta}>
-        <h2 className={styles.finalTitle}>Ready to actually build things?</h2>
-        <p className={styles.finalSub}>No sign-up required. Start your first lesson in 30 seconds.</p>
-        <button className={styles.ctaPrimary} onClick={() => navigate('/app/dashboard')}>
-          Start for free →
-        </button>
+        <div className={styles.sectionInner} style={{ textAlign: 'center' }}>
+          <h2 className={styles.finalTitle}>Ready to build with AI?</h2>
+          <p className={styles.finalSub}>No account required. Start your first lesson in under a minute.</p>
+          <button className={styles.ctaPrimary} onClick={() => navigate('/app/dashboard')}>
+            Start for free
+          </button>
+        </div>
       </section>
 
       {/* Footer */}
       <footer className={styles.footer}>
-        <span className={styles.logo}>Vibe<span>Skool</span></span>
-        <span className={styles.footerRight}>Built for the AI-native generation.</span>
+        <div className={styles.footerInner}>
+          <div className={styles.brand}>
+            <div className={styles.brandMark} style={{ width: 18, height: 18, fontSize: 9 }}>VS</div>
+            <span className={styles.brandName} style={{ fontSize: 13 }}>VibeSkool</span>
+          </div>
+          <span className={styles.footerRight}>Built for the AI-native generation.</span>
+        </div>
       </footer>
+
     </div>
   )
 }

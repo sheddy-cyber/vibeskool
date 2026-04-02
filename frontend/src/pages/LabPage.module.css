@@ -10,9 +10,7 @@
 .header { display: flex; align-items: flex-start; justify-content: space-between; }
 
 .title {
-  font-family: var(--font-display);
-  font-size: 22px;
-  font-weight: 700;
+  font-weight: 600; font-size: 22px;
 }
 
 .sub {
@@ -48,12 +46,10 @@
 }
 
 .refTitle {
-  font-family: var(--font-display);
-  font-size: 14px;
-  font-weight: 700;
+  font-weight: 600; font-size: 14px;
 }
 
-.refSub { font-size: 11px; color: var(--text-muted); }
+.refSub { font-size: 11px; color: var(--text-tertiary); }
 
 .refList { display: flex; flex-direction: column; gap: 0; }
 
@@ -74,19 +70,19 @@
 .refCmd {
   font-family: var(--font-mono);
   font-size: 11.5px;
-  color: var(--accent-violet);
-  background: var(--accent-violet-dim);
+  color: var(--accent);
+  background: var(--accent-dim);
   padding: 2px 6px;
   border-radius: 4px;
   display: inline-block;
   width: fit-content;
 }
 
-.refDesc { font-size: 11px; color: var(--text-muted); }
+.refDesc { font-size: 11px; color: var(--text-tertiary); }
 
 /* Tip box */
 .tipBox {
-  background: var(--accent-amber-dim);
+  background: var(--amber-dim);
   border: 1px solid rgba(240,160,90,0.2);
   border-radius: var(--radius-md);
   padding: 12px 14px;
@@ -98,7 +94,7 @@
 .tipLabel {
   font-size: 10px;
   font-family: var(--font-mono);
-  color: var(--accent-amber);
+  color: var(--amber);
   text-transform: uppercase;
   letter-spacing: 1px;
 }
@@ -120,7 +116,7 @@
 
 .safeText {
   font-size: 11.5px;
-  color: var(--text-muted);
+  color: var(--text-tertiary);
   line-height: 1.6;
 }
 
@@ -130,5 +126,5 @@
   background: var(--bg-base);
   padding: 1px 5px;
   border-radius: 3px;
-  color: var(--accent-red);
+  color: var(--red);
 }

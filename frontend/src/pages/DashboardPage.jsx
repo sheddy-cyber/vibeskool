@@ -124,22 +124,18 @@ export default function DashboardPage() {
         <SectionTitle>Quick Actions</SectionTitle>
         <div className={styles.quickGrid}>
           <button className={styles.quickCard} onClick={() => navigate('/app/lab')}>
-            <span className={styles.quickIcon}>🧪</span>
             <span className={styles.quickLabel}>Open the Lab</span>
             <span className={styles.quickSub}>Free sandbox mode</span>
           </button>
           <button className={styles.quickCard} onClick={() => navigate('/app/skillcheck')}>
-            <span className={styles.quickIcon}>🎯</span>
-            <span className={styles.quickLabel}>Take a Skill Check</span>
-            <span className={styles.quickSub}>10 minutes to prove competence</span>
+            <span className={styles.quickLabel}>Skill Check</span>
+            <span className={styles.quickSub}>10-minute competence quiz</span>
           </button>
           <button className={styles.quickCard} onClick={() => navigate('/app/paths')}>
-            <span className={styles.quickIcon}>🗺️</span>
             <span className={styles.quickLabel}>Browse All Paths</span>
             <span className={styles.quickSub}>See every skill track</span>
           </button>
           <button className={styles.quickCard} onClick={() => navigate('/app/settings')}>
-            <span className={styles.quickIcon}>⚙️</span>
             <span className={styles.quickLabel}>Settings</span>
             <span className={styles.quickSub}>Themes, font size & more</span>
           </button>

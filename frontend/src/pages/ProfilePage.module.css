@@ -21,7 +21,7 @@
   width: 64px;
   height: 64px;
   border-radius: 50%;
-  background: linear-gradient(135deg, var(--accent-violet), var(--accent-teal));
+  background: linear-gradient(135deg, var(--accent), var(--green));
   display: flex;
   align-items: center;
   justify-content: center;
@@ -34,12 +34,10 @@
 .profileInfo { display: flex; flex-direction: column; gap: 6px; }
 
 .profileName {
-  font-family: var(--font-display);
-  font-size: 22px;
-  font-weight: 700;
+  font-weight: 600; font-size: 22px;
 }
 
-.profileSub { font-size: 12px; color: var(--text-muted); }
+.profileSub { font-size: 12px; color: var(--text-tertiary); }
 
 .profileStats {
   display: flex;
@@ -51,16 +49,14 @@
 .pStat { display: flex; flex-direction: column; gap: 2px; }
 
 .pStatNum {
-  font-family: var(--font-display);
-  font-size: 20px;
-  font-weight: 700;
-  color: var(--accent-violet);
+  font-weight: 600; font-size: 20px;
+  color: var(--accent);
 }
 
 .pStatLabel {
   font-size: 10px;
   font-family: var(--font-mono);
-  color: var(--text-muted);
+  color: var(--text-tertiary);
   text-transform: uppercase;
   letter-spacing: 0.8px;
 }
@@ -75,9 +71,7 @@
 .section { display: flex; flex-direction: column; gap: 14px; }
 
 .sectionTitle {
-  font-family: var(--font-display);
-  font-size: 15px;
-  font-weight: 700;
+  font-weight: 600; font-size: 15px;
 }
 
 /* Overall progress */
@@ -100,16 +94,14 @@
 .overallLabel { font-size: 12px; color: var(--text-secondary); }
 
 .overallPct {
-  font-family: var(--font-display);
-  font-size: 18px;
-  font-weight: 700;
-  color: var(--accent-violet);
+  font-weight: 600; font-size: 18px;
+  color: var(--accent);
 }
 
 .overallSub {
   font-size: 11px;
   font-family: var(--font-mono);
-  color: var(--text-muted);
+  color: var(--text-tertiary);
 }
 
 /* Paths breakdown */
@@ -140,8 +132,8 @@
 }
 
 .pathRowName { font-size: 13px; font-weight: 500; }
-.pathRowPct  { font-size: 12px; font-family: var(--font-mono); color: var(--accent-teal); }
-.pathRowSub  { font-size: 11px; color: var(--text-muted); font-family: var(--font-mono); }
+.pathRowPct  { font-size: 12px; font-family: var(--font-mono); color: var(--green); }
+.pathRowSub  { font-size: 11px; color: var(--text-tertiary); font-family: var(--font-mono); }
 
 /* Builds */
 .buildsSub { font-size: 12px; color: var(--text-secondary); }
@@ -171,7 +163,7 @@
 .buildStatus {
   font-size: 11px;
   font-family: var(--font-mono);
-  color: var(--accent-teal);
+  color: var(--green);
 }
 
-.buildLocked .buildStatus { color: var(--text-muted); }
+.buildLocked .buildStatus { color: var(--text-tertiary); }

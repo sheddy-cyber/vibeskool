@@ -9,9 +9,7 @@
 .header { display: flex; flex-direction: column; gap: 6px; }
 
 .title {
-  font-family: var(--font-display);
-  font-size: 24px;
-  font-weight: 700;
+  font-weight: 600; font-size: 24px;
 }
 
 .sub { font-size: 13px; color: var(--text-secondary); max-width: 560px; }
@@ -35,10 +33,10 @@
   height: 2px;
   width: 100%;
 }
-.accentLine[data-color="violet"] { background: var(--accent-violet); }
-.accentLine[data-color="teal"]   { background: var(--accent-teal); }
-.accentLine[data-color="amber"]  { background: var(--accent-amber); }
-.accentLine[data-color="red"]    { background: var(--accent-red); }
+.accentLine[data-color="violet"] { background: var(--accent); }
+.accentLine[data-color="teal"]   { background: var(--green); }
+.accentLine[data-color="amber"]  { background: var(--amber); }
+.accentLine[data-color="red"]    { background: var(--red); }
 
 .pathHeader {
   display: flex;
@@ -53,7 +51,7 @@
 .pathIcon { font-size: 28px; flex-shrink: 0; }
 
 .pathTitleRow { display: flex; align-items: center; gap: 10px; margin-bottom: 5px; flex-wrap: wrap; }
-.pathName { font-family: var(--font-display); font-size: 17px; font-weight: 700; }
+.pathName { font-weight: 600; font-size: 17px; }
 .pathDesc { font-size: 13px; color: var(--text-secondary); line-height: 1.55; }
 
 .pathRight {
@@ -66,18 +64,16 @@
 .pathStats { text-align: center; }
 .pathStatNum {
   display: block;
-  font-family: var(--font-display);
-  font-size: 22px;
-  font-weight: 700;
+  font-weight: 600; font-size: 22px;
 }
-.pathStatNum[data-color="violet"] { color: var(--accent-violet); }
-.pathStatNum[data-color="teal"]   { color: var(--accent-teal); }
-.pathStatNum[data-color="amber"]  { color: var(--accent-amber); }
-.pathStatNum[data-color="red"]    { color: var(--accent-red); }
+.pathStatNum[data-color="violet"] { color: var(--accent); }
+.pathStatNum[data-color="teal"]   { color: var(--green); }
+.pathStatNum[data-color="amber"]  { color: var(--amber); }
+.pathStatNum[data-color="red"]    { color: var(--red); }
 
 .pathStatLabel {
   font-size: 10px;
-  color: var(--text-muted);
+  color: var(--text-tertiary);
   font-family: var(--font-mono);
   text-transform: uppercase;
   letter-spacing: 0.8px;
@@ -90,7 +86,7 @@
   padding: 8px 18px;
   border-radius: var(--radius-md);
   font-size: 13px;
-  font-family: var(--font-body);
+  font-family: var(--font-sans);
   cursor: pointer;
   transition: all var(--transition);
   white-space: nowrap;
@@ -116,10 +112,10 @@
 .lessonRow:hover { background: rgba(255,255,255,0.03); }
 .lessonRow:last-child { border-bottom: none; }
 
-.lessonDone .lessonTitle { color: var(--text-muted); }
-.lessonDone .lessonNum   { color: var(--accent-teal); border-color: rgba(79,209,165,0.3); }
+.lessonDone .lessonTitle { color: var(--text-tertiary); }
+.lessonDone .lessonNum   { color: var(--green); border-color: rgba(79,209,165,0.3); }
 
-.lessonCurrent { background: var(--accent-violet-dim); }
+.lessonCurrent { background: var(--accent-dim); }
 
 .lessonNum {
   width: 26px;
@@ -131,20 +127,20 @@
   justify-content: center;
   font-size: 11px;
   font-family: var(--font-mono);
-  color: var(--text-muted);
+  color: var(--text-tertiary);
   flex-shrink: 0;
 }
 
 .lessonInfo { flex: 1; display: flex; flex-direction: column; gap: 2px; }
 .lessonTitle { font-size: 13px; color: var(--text-primary); }
-.lessonDuration { font-size: 11px; color: var(--text-muted); font-family: var(--font-mono); }
+.lessonDuration { font-size: 11px; color: var(--text-tertiary); font-family: var(--font-mono); }
 
 .lessonCurrentBadge {
   font-size: 10px;
   font-family: var(--font-mono);
-  color: var(--accent-violet);
-  background: var(--accent-violet-dim);
-  border: 1px solid var(--accent-violet-border);
+  color: var(--accent);
+  background: var(--accent-dim);
+  border: 1px solid var(--accent-border);
   padding: 2px 8px;
   border-radius: var(--radius-sm);
 }
@@ -153,7 +149,7 @@
   background: transparent;
   border: none;
   border-top: 1px solid var(--border-subtle);
-  color: var(--text-muted);
+  color: var(--text-tertiary);
   font-size: 12px;
   font-family: var(--font-mono);
   padding: 10px 22px;

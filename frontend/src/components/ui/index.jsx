@@ -39,10 +39,10 @@ export function Card({ children, className, accent, onClick, ...rest }) {
 export function ProgressBar({ value, max = 100, color = 'violet', height = 4 }) {
   const pct = Math.min(100, Math.max(0, (value / max) * 100))
   const colors = {
-    violet: 'var(--accent-violet)',
-    teal:   'var(--accent-teal)',
-    amber:  'var(--accent-amber)',
-    red:    'var(--accent-red)',
+    violet: 'var(--accent)',
+    teal:   'var(--green)',
+    amber:  'var(--amber)',
+    red:    'var(--red)',
   }
   return (
     <div className={styles.progressTrack} style={{ height }}>
@@ -57,10 +57,10 @@ export function ProgressBar({ value, max = 100, color = 'violet', height = 4 }) 
 // ─── StatCard ─────────────────────────────────────────────────────────────────
 export function StatCard({ label, value, sub, color = 'violet' }) {
   const colors = {
-    violet: 'var(--accent-violet)',
-    teal:   'var(--accent-teal)',
-    amber:  'var(--accent-amber)',
-    red:    'var(--accent-red)',
+    violet: 'var(--accent)',
+    teal:   'var(--green)',
+    amber:  'var(--amber)',
+    red:    'var(--red)',
   }
   return (
     <div className={styles.statCard}>
