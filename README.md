@@ -136,11 +136,10 @@ Destructive commands (`rm -rf`, `format`, etc.) are automatically blocked with a
 | Routing | React Router v6 |
 | State | Zustand |
 | Styling | CSS Modules |
-| Animations | Framer Motion |
 | Backend | Node.js + Express |
 | Real-time | Socket.IO |
 | Database (ready) | PostgreSQL via `pg` |
-| Fonts | Syne + Instrument Sans + DM Mono |
+| Fonts | Plus Jakarta Sans + Geist Mono |
 
 ---
 
@@ -171,6 +170,31 @@ Both use the same schema:
 ```
 
 ---
+
+
+---
+
+## Deploying to Vercel or Netlify
+
+The frontend is a standard Vite SPA. Both hosting files are already included.
+
+### Vercel
+1. Import the repo into Vercel
+2. Set **Root Directory** to `frontend`
+3. Framework preset: **Vite**
+4. Build command: `npm run build`
+5. Output directory: `dist`
+6. Deploy — the `vercel.json` handles SPA routing automatically
+
+### Netlify
+1. Connect repo to Netlify
+2. Set **Base directory** to `frontend`
+3. Build command: `npm run build`
+4. Publish directory: `dist`
+5. Deploy — the `public/_redirects` file handles SPA routing automatically
+
+No environment variables are required for the frontend-only deployment.
+The backend is a separate service and is not required for the frontend to run.
 
 ## Roadmap (next things to build)
 

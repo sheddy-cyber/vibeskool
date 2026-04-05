@@ -1,3 +1,9 @@
+/*
+  Typography:
+  - DM Sans      — modern, slightly quirky, not corporate. Used by Notion, Linear, others.
+  - Geist Mono   — Vercel's monospace. Clean, technical, distinctive. Bundled via @fontsource.
+*/
+
 *, *::before, *::after {
   box-sizing: border-box;
   margin: 0;
@@ -5,90 +11,87 @@
 }
 
 :root {
-  /* ── Backgrounds ─────────────────────────────────────────────── */
-  --bg-base:    #0c0c0e;
-  --bg-surface: #111114;
-  --bg-raised:  #18181c;
-  --bg-overlay: #1f1f24;
-  --bg-input:   #16161a;
+  /* ── Twitter/X dark blue palette ─────────────────────────────── */
+  /* Backgrounds — Twitter uses layered near-blacks with blue undertones */
+  --bg-base:    #000000;
+  --bg-surface: #0d1117;
+  --bg-raised:  #141c25;
+  --bg-overlay: #1c2732;
+  --bg-input:   #0d1117;
 
-  /* ── Borders ─────────────────────────────────────────────────── */
-  --border-faint:   rgba(255, 255, 255, 0.055);
-  --border-subtle:  rgba(255, 255, 255, 0.085);
-  --border-default: rgba(255, 255, 255, 0.12);
-  --border-strong:  rgba(255, 255, 255, 0.20);
+  /* Borders */
+  --border-faint:   rgba(255, 255, 255, 0.06);
+  --border-subtle:  rgba(255, 255, 255, 0.10);
+  --border-default: rgba(255, 255, 255, 0.15);
+  --border-strong:  rgba(255, 255, 255, 0.24);
 
-  /* ── Text ────────────────────────────────────────────────────── */
-  --text-primary:   #f2f2f5;
-  --text-secondary: #8e8e9e;
-  --text-tertiary:  #5a5a6a;
-  --text-inverse:   #0c0c0e;
+  /* Text */
+  --text-primary:   #e7e9ea;
+  --text-secondary: #8b98a5;
+  --text-tertiary:  #536471;
+  --text-inverse:   #000000;
 
-  /* ── Single accent — deep indigo ─────────────────────────────── */
-  --accent:         #6366f1;
-  --accent-hover:   #5254cc;
-  --accent-dim:     rgba(99, 102, 241, 0.10);
-  --accent-border:  rgba(99, 102, 241, 0.28);
-  --accent-text:    #a5b4fc;
+  /* Twitter blue — the signature accent */
+  --accent:         #1d9bf0;
+  --accent-hover:   #1a8cd8;
+  --accent-dim:     rgba(29, 155, 240, 0.10);
+  --accent-border:  rgba(29, 155, 240, 0.30);
+  --accent-text:    #1d9bf0;
 
-  /* ── Semantic — minimal, purposeful ─────────────────────────── */
-  --green:          #34d399;
-  --green-dim:      rgba(52, 211, 153, 0.08);
-  --green-border:   rgba(52, 211, 153, 0.22);
+  /* Semantic */
+  --green:          #00ba7c;
+  --green-dim:      rgba(0, 186, 124, 0.08);
+  --green-border:   rgba(0, 186, 124, 0.25);
 
-  --amber:          #f59e0b;
-  --amber-dim:      rgba(245, 158, 11, 0.08);
-  --amber-border:   rgba(245, 158, 11, 0.22);
+  --amber:          #ffad1f;
+  --amber-dim:      rgba(255, 173, 31, 0.08);
+  --amber-border:   rgba(255, 173, 31, 0.25);
 
-  --red:            #f87171;
-  --red-dim:        rgba(248, 113, 113, 0.08);
-  --red-border:     rgba(248, 113, 113, 0.22);
-
-  --blue:           #60a5fa;
-  --blue-dim:       rgba(96, 165, 250, 0.08);
+  --red:            #f4212e;
+  --red-dim:        rgba(244, 33, 46, 0.08);
+  --red-border:     rgba(244, 33, 46, 0.25);
 
   /* ── Typography ──────────────────────────────────────────────── */
-  --font-sans:  'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  --font-mono:  'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+  --font-sans: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: 'Geist Mono', ui-monospace, 'Cascadia Code', monospace;
 
-  /* ── Radius — restrained ─────────────────────────────────────── */
-  --radius-xs:  4px;
-  --radius-sm:  6px;
-  --radius-md:  8px;
-  --radius-lg:  12px;
-  --radius-xl:  16px;
+  /* ── Radius ──────────────────────────────────────────────────── */
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
 
-  /* ── Transitions ─────────────────────────────────────────────── */
-  --ease:      cubic-bezier(0.16, 1, 0.3, 1);
-  --t-fast:    120ms;
-  --t-base:    180ms;
-  --t-slow:    320ms;
+  /* ── Motion ──────────────────────────────────────────────────── */
+  --ease:   cubic-bezier(0.16, 1, 0.3, 1);
+  --t-fast: 120ms;
+  --t-base: 180ms;
+  --t-slow: 300ms;
 
   /* ── Layout ──────────────────────────────────────────────────── */
   --sidebar-w: 220px;
   --topbar-h:  52px;
 }
 
-/* ── Reset & base ────────────────────────────────────────────────── */
+/* ── Base ────────────────────────────────────────────────────────── */
 html, body, #root { height: 100%; width: 100%; }
 
 body {
   background: var(--bg-base);
   color: var(--text-primary);
   font-family: var(--font-sans);
-  font-size: 13.5px;
+  font-size: 14px;
   line-height: 1.6;
   font-weight: 400;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.012em;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  text-rendering: optimizeLegibility;
 }
 
-button  { cursor: pointer; font-family: inherit; }
-a       { color: inherit; text-decoration: none; }
-code    { font-family: var(--font-mono); }
-img     { display: block; max-width: 100%; }
+button { cursor: pointer; font-family: inherit; }
+a      { color: inherit; text-decoration: none; }
+code   { font-family: var(--font-mono); }
+img    { display: block; max-width: 100%; }
 
 /* ── Scrollbars ──────────────────────────────────────────────────── */
 ::-webkit-scrollbar         { width: 3px; height: 3px; }
@@ -108,20 +111,19 @@ img     { display: block; max-width: 100%; }
 
 /* ── Utility ─────────────────────────────────────────────────────── */
 .truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.sr-only  { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
-            overflow: hidden; clip: rect(0,0,0,0); border: 0; }
+.sr-only  {
+  position: absolute; width: 1px; height: 1px;
+  padding: 0; margin: -1px; overflow: hidden;
+  clip: rect(0,0,0,0); border: 0;
+}
 
-/* ── Animations ──────────────────────────────────────────────────── */
+/* ── Keyframes ───────────────────────────────────────────────────── */
 @keyframes fadeUp {
-  from { opacity: 0; transform: translateY(8px); }
+  from { opacity: 0; transform: translateY(6px); }
   to   { opacity: 1; transform: translateY(0); }
 }
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to   { opacity: 1; }
-}
 @keyframes slideInLeft {
-  from { opacity: 0; transform: translateX(-8px); }
+  from { opacity: 0; transform: translateX(-6px); }
   to   { opacity: 1; transform: translateX(0); }
 }
 @keyframes pulse {
@@ -133,36 +135,21 @@ img     { display: block; max-width: 100%; }
   to   { transform: rotate(360deg); }
 }
 
-.animate-fade-in  { animation: fadeUp  0.32s var(--ease) both; }
-.animate-slide-in { animation: slideInLeft 0.28s var(--ease) both; }
-.animate-pulse    { animation: pulse 2.4s ease-in-out infinite; }
-.animate-spin     { animation: spin 0.7s linear infinite; }
+.animate-fade-in  { animation: fadeUp       0.28s var(--ease) both; }
+.animate-slide-in { animation: slideInLeft  0.24s var(--ease) both; }
+.animate-pulse    { animation: pulse  2.4s ease-in-out infinite; }
+.animate-spin     { animation: spin   0.7s linear   infinite; }
 
-/* Stagger delays */
 .stagger > *:nth-child(1) { animation-delay:   0ms; }
-.stagger > *:nth-child(2) { animation-delay:  50ms; }
-.stagger > *:nth-child(3) { animation-delay: 100ms; }
-.stagger > *:nth-child(4) { animation-delay: 150ms; }
-.stagger > *:nth-child(5) { animation-delay: 200ms; }
-.stagger > *:nth-child(6) { animation-delay: 250ms; }
+.stagger > *:nth-child(2) { animation-delay:  45ms; }
+.stagger > *:nth-child(3) { animation-delay:  90ms; }
+.stagger > *:nth-child(4) { animation-delay: 135ms; }
+.stagger > *:nth-child(5) { animation-delay: 180ms; }
+.stagger > *:nth-child(6) { animation-delay: 225ms; }
 
-/* ── Typography scale ────────────────────────────────────────────── */
-.text-xs   { font-size: 11px;   line-height: 1.5; }
-.text-sm   { font-size: 12.5px; line-height: 1.55; }
-.text-base { font-size: 13.5px; line-height: 1.6; }
-.text-md   { font-size: 15px;   line-height: 1.5; }
-.text-lg   { font-size: 18px;   line-height: 1.4; }
-.text-xl   { font-size: 22px;   line-height: 1.3; }
-.text-2xl  { font-size: 28px;   line-height: 1.2; }
-.text-3xl  { font-size: 36px;   line-height: 1.1; }
-
-.weight-400 { font-weight: 400; }
-.weight-500 { font-weight: 500; }
-.weight-600 { font-weight: 600; }
-
-/* ── Code highlight classes (used in CodeBlock) ──────────────────── */
-.hl-kw   { color: #c084fc; }
-.hl-fn   { color: #93c5fd; }
-.hl-str  { color: #86efac; }
-.hl-cm   { color: #4b5563; font-style: italic; }
-.hl-num  { color: #fcd34d; }
+/* ── Code syntax colours (Twitter blue-tinted) ───────────────────── */
+.hl-kw  { color: #7ec8e3; }
+.hl-fn  { color: #1d9bf0; }
+.hl-str { color: #00ba7c; }
+.hl-cm  { color: #536471; font-style: italic; }
+.hl-num { color: #ffad1f; }

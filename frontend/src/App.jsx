@@ -1,23 +1,27 @@
 import React from 'react'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
-import AppLayout from '@/components/layout/AppLayout'
-import LandingPage from '@/pages/LandingPage'
+import AppLayout    from '@/components/layout/AppLayout'
+import ScrollToTop  from '@/components/layout/ScrollToTop'
+import LandingPage  from '@/pages/LandingPage'
 import DashboardPage from '@/pages/DashboardPage'
-import PathsPage from '@/pages/PathsPage'
-import LessonPage from '@/pages/LessonPage'
-import LabPage from '@/pages/LabPage'
+import PathsPage    from '@/pages/PathsPage'
+import LessonPage   from '@/pages/LessonPage'
+import LabPage      from '@/pages/LabPage'
 import SkillCheckPage from '@/pages/SkillCheckPage'
-import ProfilePage from '@/pages/ProfilePage'
+import ProfilePage  from '@/pages/ProfilePage'
 import SettingsPage from '@/pages/SettingsPage'
 
 export default function App() {
   return (
     <BrowserRouter>
+      {/* Scrolls to top on every route change */}
+      <ScrollToTop />
+
       <Routes>
         {/* Public landing */}
         <Route path="/" element={<LandingPage />} />
 
-        {/* App shell with persistent sidebar/topbar */}
+        {/* App shell — persistent sidebar + topbar */}
         <Route path="/app" element={<AppLayout />}>
           <Route index element={<Navigate to="/app/dashboard" replace />} />
           <Route path="dashboard"  element={<DashboardPage />} />
@@ -29,7 +33,7 @@ export default function App() {
           <Route path="settings"   element={<SettingsPage />} />
         </Route>
 
-        {/* Fallback */}
+        {/* Catch-all fallback */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
