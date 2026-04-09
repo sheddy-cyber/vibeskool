@@ -10,6 +10,7 @@ import LabPage      from '@/pages/LabPage'
 import SkillCheckPage from '@/pages/SkillCheckPage'
 import ProfilePage  from '@/pages/ProfilePage'
 import SettingsPage from '@/pages/SettingsPage'
+import AdminCMSPage from '@/pages/AdminCMSPage'
 
 export default function App() {
   return (
@@ -31,6 +32,7 @@ export default function App() {
           <Route path="skillcheck" element={<SkillCheckPage />} />
           <Route path="profile"    element={<ProfilePage />} />
           <Route path="settings"   element={<SettingsPage />} />
+          <Route path="admin/cms"   element={<AdminCMSPage />} />
         </Route>
 
         {/* Catch-all fallback */}

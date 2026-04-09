@@ -122,7 +122,7 @@ export default function FriendlyTerminal({ mission, mode: initialMode = 'guided'
         toAdd.push({ type: 'mission', text: `Mission ${next + 1}: ${GUIDED_MISSIONS[next].prompt}` })
         setMissionIdx(next)
       } else {
-        toAdd.push({ type: 'success', text: '🎉 All missions complete! Try free mode to explore further.' })
+        toAdd.push({ type: 'success', text: '★ All missions complete! Try free mode to explore further.' })
       }
     }
 

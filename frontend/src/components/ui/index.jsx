@@ -78,15 +78,19 @@ export function SectionTitle({ children }) {
 
 // ─── CodeBlock ────────────────────────────────────────────────────────────────
 export function CodeBlock({ code }) {
-  // Very simple syntax highlighting
-  const highlighted = code
+  // Step 1: escape HTML special chars in the raw code
+  const escaped = code
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
-    .replace(/(\/\/.*)/g, '<span class="cm">$1</span>')
-    .replace(/\b(function|return|const|let|var|if|else|for|while|async|await|import|export|default|class|new|this)\b/g, '<span class="kw">$1</span>')
-    .replace(/(".*?"|'.*?'|`.*?`)/g, '<span class="str">$1</span>')
-    .replace(/\b([a-zA-Z_]\w*)\s*(?=\()/g, '<span class="fn">$1</span>')
+
+  // Step 2: apply syntax highlighting on the escaped string
+  // Order matters: comments first (greedy), then keywords, strings, functions
+  const highlighted = escaped
+    .replace(/(\/\/[^\n]*)/g, '<span class="hl-cm">$1</span>')
+    .replace(/\b(function|return|const|let|var|if|else|for|while|async|await|import|export|default|class|new|this|from|of|in|typeof|instanceof)\b/g, '<span class="hl-kw">$1</span>')
+    .replace(/(&quot;[^&]*?&quot;|&#39;[^&]*?&#39;|`[^`]*?`)/g, '<span class="hl-str">$1</span>')
+    .replace(/\b([A-Z][a-zA-Z0-9_]*)(?=\s*\()/g, '<span class="hl-fn">$1</span>')
 
   return (
     <pre className={styles.codeBlock} dangerouslySetInnerHTML={{ __html: highlighted }} />

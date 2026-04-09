@@ -1,5 +1,5 @@
 .terminal {
-  background: var(--bg-base);
+  background: #100e0b;
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
   display: flex;
@@ -203,4 +203,4 @@
   transition: all var(--t-fast);
   flex-shrink: 0;
 }
-.runBtn:hover { background: rgba(99,102,241,0.18); }
+.runBtn:hover { background: rgba(201,122,58,0.18); }

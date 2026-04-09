@@ -6,6 +6,21 @@ The AI-native learning platform. VibeSkool teaches you the Minimum Effective Kno
 
 ---
 
+---
+
+## BB Casual Pro font
+
+BB Casual Pro is a commercial typeface and is not included in this repo.
+To activate it:
+
+1. Purchase or license BB Casual Pro from its foundry
+2. Export `bbcasualpro-regular.woff2` and `bbcasualpro-medium.woff2`
+3. Place both files in `frontend/public/fonts/`
+
+Until the files are present, the site falls back to **Nunito** (loaded from Google Fonts),
+which shares BB Casual Pro's rounded, friendly character. The UI looks great either way.
+
+
 ## What's in this project
 
 ```

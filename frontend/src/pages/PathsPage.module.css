@@ -1,161 +1,136 @@
 .page {
-  padding: 28px 32px;
-  display: flex;
-  flex-direction: column;
-  gap: 28px;
+  margin: 0 auto; width: 100%;
+  padding: 32px 40px 64px;
+  display: flex; flex-direction: column; gap: 28px;
   max-width: 900px;
 }
 
 .header { display: flex; flex-direction: column; gap: 6px; }
-
 .title {
-  font-weight: 600; font-size: 24px;
+  font-family: var(--font-display);
+  font-size: 28px; font-weight: 700; letter-spacing: -0.02em; color: var(--text-primary);
 }
+.sub { font-size: 14px; color: var(--text-secondary); max-width: 560px; line-height: 1.65; }
 
-.sub { font-size: 13px; color: var(--text-secondary); max-width: 560px; }
-
-/* Paths */
-.paths { display: flex; flex-direction: column; gap: 16px; }
+/* ── Path cards ─────────────────────────────────────────────── */
+.paths { display: flex; flex-direction: column; gap: 14px; }
 
 .pathCard {
-  background: var(--bg-raised);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-lg);
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-  transition: border-color var(--transition);
+  background: var(--bg-raised); border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-xl); overflow: hidden;
+  transition: border-color var(--t-base), box-shadow var(--t-slow);
 }
 .pathCard:hover { border-color: var(--border-default); }
 
-.accentLine {
-  height: 2px;
-  width: 100%;
-}
-.accentLine[data-color="violet"] { background: var(--accent); }
-.accentLine[data-color="teal"]   { background: var(--green); }
-.accentLine[data-color="amber"]  { background: var(--amber); }
-.accentLine[data-color="red"]    { background: var(--red); }
+.accentLine { height: 2px; }
+.accentLine[data-color="violet"] { background: linear-gradient(90deg, var(--accent), transparent); }
+.accentLine[data-color="teal"]   { background: linear-gradient(90deg, var(--sage), transparent); }
+.accentLine[data-color="amber"]  { background: linear-gradient(90deg, var(--amber), transparent); }
+.accentLine[data-color="red"]    { background: linear-gradient(90deg, var(--red), transparent); }
 
 .pathHeader {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 20px 22px 16px;
-  cursor: pointer;
-  gap: 20px;
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 16px; padding: 20px 24px; cursor: pointer;
+  transition: background var(--t-fast);
 }
+.pathHeader:hover { background: var(--bg-overlay); }
 
-.pathLeft { display: flex; align-items: flex-start; gap: 16px; flex: 1; }
-.pathIcon { font-size: 28px; flex-shrink: 0; }
+.pathLeft { display: flex; align-items: center; gap: 16px; flex: 1; min-width: 0; }
 
-.pathTitleRow { display: flex; align-items: center; gap: 10px; margin-bottom: 5px; flex-wrap: wrap; }
-.pathName { font-weight: 600; font-size: 17px; }
-.pathDesc { font-size: 13px; color: var(--text-secondary); line-height: 1.55; }
-
-.pathRight {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-  flex-shrink: 0;
+.pathIcon {
+  width: 42px; height: 42px; border-radius: var(--radius-md); flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--bg-overlay); color: var(--accent-text);
 }
+[data-color="teal"]   .pathIcon { color: var(--sage-text); }
+[data-color="amber"]  .pathIcon { color: var(--amber); }
+[data-color="red"]    .pathIcon { color: var(--red); }
 
-.pathStats { text-align: center; }
+.pathTitleRow { display: flex; align-items: center; gap: 10px; margin-bottom: 4px; flex-wrap: wrap; }
+.pathName {
+  font-family: var(--font-display);
+  font-size: 16px; font-weight: 700; letter-spacing: -0.02em; color: var(--text-primary);
+}
+.pathDesc { font-size: 13px; color: var(--text-secondary); line-height: 1.5; }
+
+.pathRight { display: flex; align-items: center; gap: 20px; flex-shrink: 0; }
+
+.pathStats { display: flex; flex-direction: column; align-items: center; gap: 2px; }
 .pathStatNum {
-  display: block;
-  font-weight: 600; font-size: 22px;
+  font-family: var(--font-display); font-size: 18px; font-weight: 700;
+  letter-spacing: -0.03em; line-height: 1;
 }
-.pathStatNum[data-color="violet"] { color: var(--accent); }
-.pathStatNum[data-color="teal"]   { color: var(--green); }
+.pathStatNum[data-color="violet"] { color: var(--accent-text); }
+.pathStatNum[data-color="teal"]   { color: var(--sage-text); }
 .pathStatNum[data-color="amber"]  { color: var(--amber); }
 .pathStatNum[data-color="red"]    { color: var(--red); }
-
-.pathStatLabel {
-  font-size: 10px;
-  color: var(--text-tertiary);
-  font-family: var(--font-mono);
-  text-transform: uppercase;
-  letter-spacing: 0.8px;
-}
+.pathStatLabel { font-size: 10px; font-family: var(--font-mono); color: var(--text-tertiary); }
 
 .startBtn {
-  background: var(--bg-overlay);
-  border: 1px solid var(--border-default);
-  color: var(--text-primary);
-  padding: 8px 18px;
-  border-radius: var(--radius-md);
-  font-size: 13px;
-  font-family: var(--font-sans);
-  cursor: pointer;
-  transition: all var(--transition);
-  white-space: nowrap;
+  background: var(--accent); color: var(--bg-base); border: none;
+  padding: 8px 18px; border-radius: var(--radius-pill);
+  font-size: 13px; font-weight: 600; font-family: var(--font-sans);
+  cursor: pointer; white-space: nowrap;
+  transition: background var(--t-fast), transform var(--t-fast);
 }
-.startBtn:hover { border-color: var(--border-strong); background: var(--bg-overlay); }
+.startBtn:hover { background: var(--accent-hover); transform: translateY(-1px); }
 
-/* Lessons list */
+/* ── Lessons list ─────────────────────────────────────────── */
 .lessonsList {
-  border-top: 1px solid var(--border-subtle);
-  display: flex;
-  flex-direction: column;
+  border-top: 1px solid var(--border-faint);
+  animation: fadeUp 0.22s var(--ease) both;
 }
 
 .lessonRow {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 12px 22px;
-  cursor: pointer;
-  border-bottom: 1px solid var(--border-subtle);
-  transition: background var(--transition);
+  display: flex; align-items: center; gap: 12px;
+  padding: 11px 24px; cursor: pointer;
+  border-bottom: 1px solid var(--border-faint);
+  transition: background var(--t-fast);
 }
-.lessonRow:hover { background: rgba(255,255,255,0.03); }
 .lessonRow:last-child { border-bottom: none; }
+.lessonRow:hover { background: var(--bg-overlay); }
 
-.lessonDone .lessonTitle { color: var(--text-tertiary); }
-.lessonDone .lessonNum   { color: var(--green); border-color: rgba(79,209,165,0.3); }
-
+.lessonDone { opacity: 0.65; }
+.lessonDone:hover { opacity: 1; }
 .lessonCurrent { background: var(--accent-dim); }
+.lessonCurrent:hover { background: rgba(201,122,58,0.16); }
 
 .lessonNum {
-  width: 26px;
-  height: 26px;
-  border-radius: 50%;
-  border: 1px solid var(--border-default);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 11px;
-  font-family: var(--font-mono);
+  width: 26px; height: 26px; border-radius: 50%; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700; font-family: var(--font-mono);
+  background: var(--bg-input); border: 1px solid var(--border-subtle);
   color: var(--text-tertiary);
-  flex-shrink: 0;
 }
+.lessonDone .lessonNum { background: var(--accent-dim); border-color: var(--accent-border); color: var(--accent-text); }
+.lessonCurrent .lessonNum { background: var(--accent); border-color: var(--accent); color: var(--bg-base); }
 
-.lessonInfo { flex: 1; display: flex; flex-direction: column; gap: 2px; }
-.lessonTitle { font-size: 13px; color: var(--text-primary); }
-.lessonDuration { font-size: 11px; color: var(--text-tertiary); font-family: var(--font-mono); }
+.lessonInfo { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.lessonTitle { font-size: 13.5px; font-weight: 500; color: var(--text-primary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lessonDuration { font-size: 11px; font-family: var(--font-mono); color: var(--text-tertiary); }
+
+.partTag {
+  font-size: 9.5px; font-weight: 700; padding: 2px 8px;
+  border-radius: var(--radius-pill); text-transform: uppercase;
+  letter-spacing: 0.05em; flex-shrink: 0;
+}
+.partTag[data-part="Before"] { background: var(--amber-dim); color: var(--amber); }
+.partTag[data-part="During"] { background: var(--accent-dim); color: var(--accent-text); }
+.partTag[data-part="After"]  { background: var(--green-dim); color: var(--green); }
 
 .lessonCurrentBadge {
-  font-size: 10px;
-  font-family: var(--font-mono);
-  color: var(--accent);
-  background: var(--accent-dim);
-  border: 1px solid var(--accent-border);
-  padding: 2px 8px;
-  border-radius: var(--radius-sm);
+  font-size: 9.5px; font-weight: 700; padding: 2px 8px;
+  background: var(--accent-dim); color: var(--accent-text);
+  border: 1px solid var(--accent-border); border-radius: var(--radius-pill);
+  text-transform: uppercase; letter-spacing: 0.05em; flex-shrink: 0;
 }
 
+/* ── Toggle button ────────────────────────────────────────── */
 .toggleBtn {
-  background: transparent;
-  border: none;
-  border-top: 1px solid var(--border-subtle);
-  color: var(--text-tertiary);
-  font-size: 12px;
-  font-family: var(--font-mono);
-  padding: 10px 22px;
-  cursor: pointer;
-  text-align: left;
-  transition: color var(--transition);
-  width: 100%;
+  width: 100%; padding: 11px 24px;
+  font-size: 12.5px; font-family: var(--font-sans); font-weight: 500;
+  color: var(--text-tertiary); background: transparent; border: none;
+  border-top: 1px solid var(--border-faint); cursor: pointer;
+  transition: color var(--t-fast), background var(--t-fast); text-align: center;
 }
-.toggleBtn:hover { color: var(--text-secondary); }
+.toggleBtn:hover { color: var(--text-secondary); background: var(--bg-overlay); }

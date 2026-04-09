@@ -22,7 +22,7 @@ export default function LabPage() {
       {/* Header */}
       <div className={styles.header + ' animate-fade-in'}>
         <div>
-          <h1 className={styles.title}>The Lab 🧪</h1>
+          <h1 className={styles.title}>The Lab</h1>
           <p className={styles.sub}>
             A safe sandbox. Nothing you type here can break anything.
             Experiment freely — that's literally the point.
@@ -58,7 +58,11 @@ export default function LabPage() {
           </div>
 
           <div className={styles.safeBox}>
-            <span className={styles.safeIcon}>🛡️</span>
+            <span className={styles.safeIcon}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--green)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+              </svg>
+            </span>
             <p className={styles.safeText}>
               Destructive commands like <code>rm -rf</code> are automatically blocked.
               You're in a sandboxed environment — you can't break anything.

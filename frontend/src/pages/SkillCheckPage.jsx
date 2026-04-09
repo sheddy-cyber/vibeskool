@@ -116,7 +116,15 @@ export default function SkillCheckPage() {
     return (
       <div className={styles.page}>
         <div className={styles.results + ' animate-fade-in'}>
-          <div className={styles.resultIcon}>{passed ? '🎉' : '📚'}</div>
+          <div className={styles.resultIcon} style={{
+            background: passed ? 'var(--accent-dim)' : 'var(--red-dim)',
+            border: `1px solid ${passed ? 'var(--accent-border)' : 'var(--red-border)'}`,
+          }}>
+            {passed
+              ? <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--accent-text)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+              : <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--red)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
+            }
+          </div>
           <h1 className={styles.resultTitle}>
             {passed ? 'You\'re ready to build.' : 'Keep going — you\'re close.'}
           </h1>
@@ -132,7 +140,12 @@ export default function SkillCheckPage() {
           <div className={styles.answerSummary}>
             {answers.map((a, i) => (
               <div key={i} className={`${styles.answerRow} ${a.correct ? styles.correct : styles.wrong}`}>
-                <span>{a.correct ? '✓' : '✗'}</span>
+                <span style={{display:'flex',alignItems:'center'}}>
+                  {a.correct
+                    ? <svg width="13" height="13" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><polyline points="2,6 5,9 10,3"/></svg>
+                    : <svg width="13" height="13" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="3" x2="9" y2="9"/><line x1="9" y1="3" x2="3" y2="9"/></svg>
+                  }
+                </span>
                 <span>{a.question}</span>
               </div>
             ))}
@@ -155,7 +168,7 @@ export default function SkillCheckPage() {
       {/* Header */}
       <div className={styles.header + ' animate-fade-in'}>
         <div>
-          <h1 className={styles.title}>Skill Check 🎯</h1>
+          <h1 className={styles.title}>Skill Check</h1>
           <p className={styles.sub}>10 minutes. Prove you know enough to build with AI.</p>
         </div>
         <div className={styles.progress}>
@@ -196,7 +209,12 @@ export default function SkillCheckPage() {
 
         {answered && (
           <div className={`${styles.explanation} ${q.options[selected]?.correct ? styles.expCorrect : styles.expWrong}`}>
-            <span className={styles.expIcon}>{q.options[selected]?.correct ? '✓' : '✗'}</span>
+            <span className={styles.expIcon}>
+              {q.options[selected]?.correct
+                ? <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><polyline points="2,6 5,9 10,3"/></svg>
+                : <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="3" x2="9" y2="9"/><line x1="9" y1="3" x2="3" y2="9"/></svg>
+              }
+            </span>
             <p>{q.explanation}</p>
           </div>
         )}

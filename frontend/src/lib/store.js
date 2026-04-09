@@ -26,15 +26,27 @@ export const PATHS = [
     id: 'vibe-coding',
     icon: '🤖',
     name: 'Vibe Coding Mastery',
-    description: 'How to prompt AI, what to watch for, and how to stay in control',
+    description: 'Before, during, and after — the full vibe coding playbook',
     color: 'teal',
     tag: '🔥 Essential',
     lessons_data: [
-      { id: 'prompting-ai',      title: 'How to prompt AI effectively',            duration: '10 min' },
-      { id: 'vibe-checklist',    title: 'What to check when vibe coding',          duration: '9 min'  },
-      { id: 'error-solving',     title: 'How to solve an error without panicking', duration: '10 min' },
-      { id: 'reading-ai-output', title: 'Reading AI output before running it',     duration: '8 min'  },
-      { id: 'iterating-with-ai', title: 'Iterating with AI — back and forth',      duration: '9 min'  },
+      // Part 1: Before you start
+      { id: 'vc-before-intro',    title: 'Part 1 — Before you start',                      duration: '5 min',  part: 'Before' },
+      { id: 'vc-choose-stack',    title: 'Choosing the right stack for your project',       duration: '10 min', part: 'Before' },
+      { id: 'vc-plan-features',   title: 'Defining features before you write a prompt',    duration: '9 min',  part: 'Before' },
+      { id: 'vc-security-basics', title: 'Security risks every vibe coder must know',      duration: '11 min', part: 'Before' },
+      { id: 'vc-first-prompt',    title: 'Writing your first project prompt',               duration: '10 min', part: 'Before' },
+      // Part 2: During
+      { id: 'vc-during-intro',    title: 'Part 2 — While you are building',                duration: '4 min',  part: 'During' },
+      { id: 'vc-error-handling',  title: 'How to handle errors without panicking',         duration: '10 min', part: 'During' },
+      { id: 'vc-review-output',   title: 'What to check before running AI code',           duration: '9 min',  part: 'During' },
+      { id: 'vc-iterate',         title: 'Iterating — how to guide AI toward the goal',   duration: '9 min',  part: 'During' },
+      { id: 'vc-terminal',        title: 'The terminal — commands every vibe coder needs', duration: '12 min', part: 'During' },
+      // Part 3: After
+      { id: 'vc-after-intro',     title: 'Part 3 — After you build',                       duration: '4 min',  part: 'After'  },
+      { id: 'vc-deploy',          title: 'How to deploy your project',                      duration: '11 min', part: 'After'  },
+      { id: 'vc-update',          title: 'How to update and maintain your project',        duration: '9 min',  part: 'After'  },
+      { id: 'vc-env-vars',        title: 'Environment variables and secrets',               duration: '8 min',  part: 'After'  },
     ],
   },
   {
@@ -362,6 +374,181 @@ What is causing it and how do I fix just this part?"`,
     terminalMission: `Type something the terminal does not recognize and observe the error. Notice it tells you exactly what to try next — that is good error design.`,
   },
 
+  // ── Vibe Coding Mastery — Part 1: Before ───────────────────────────────────
+
+  'vc-before-intro': {
+    pathId: 'vibe-coding', title: 'Part 1 — Before you start', duration: '5 min', part: 'Before',
+    mekLabel: 'the foundation that makes everything else work',
+    sections: [
+      { heading: 'The mistake most people make', body: `Most people open Claude or ChatGPT, type "build me an app that does X," and wonder why the result is a mess. The problem is not the AI — it is that they gave the AI nothing to work with. No stack, no feature list, no constraints. Vague input produces vague output.`, callout: `Vibe coding is not about typing less. It is about thinking clearly first, then letting AI do the heavy lifting.` },
+      { heading: 'Three things you need before your first prompt', body: `A clear stack (the technologies you want used), a clear feature list (what the project must do), and awareness of the security risks specific to your project type. Get these three right and your first prompt will produce something usable. Skip them and you will spend hours cleaning up AI guesswork.` },
+    ],
+    aiPrompt: `I want to build [describe your project in one sentence]. What stack would you recommend, what are the 5 most important features I should define before I start, and what are the main security risks I should be aware of?`,
+    terminalMission: `Type: help — read what the Lab offers. Build the habit of understanding your tools before using them.`,
+  },
+
+  'vc-choose-stack': {
+    pathId: 'vibe-coding', title: 'Choosing the right stack for your project', duration: '10 min', part: 'Before',
+    mekLabel: 'enough to tell AI exactly what to build with',
+    sections: [
+      { heading: 'What is a tech stack', body: `A tech stack is the combination of technologies used to build your project — frontend (what users see), backend (the server logic), and database (where data lives). Every project needs all three, or a deliberate decision to skip one.` },
+      { heading: 'Why the stack matters before you prompt', body: `If you do not specify a stack, AI will pick one for you — often whatever it saw most in training. You end up with technology you did not choose. Decide first, then tell AI. You can ask for a recommendation, but you make the final call.`, callout: `Tell AI the stack — do not ask it to choose one blindly. You are the one maintaining this project.` },
+      { heading: 'Common stacks and when to use each', code: `// Simple website or landing page:\nHTML + CSS + Vanilla JS\n→ No framework. AI builds it in one file.\n\n// Web app with a backend:\nReact + Node/Express + PostgreSQL\n→ The standard. AI knows it extremely well.\n\n// Quick prototype:\nNext.js + Supabase\n→ Faster to set up. Good for solo projects.\n\n// Python-heavy (AI scripts, data):\nPython + FastAPI + React\n→ When you need pandas, numpy, etc.\n\n// Mobile app:\nReact Native / Expo\n→ One codebase for iOS and Android.` },
+    ],
+    aiPrompt: `I want to build [your project]. My constraints: [list constraints]. Recommend a tech stack. For each technology, explain in one sentence why it is the right choice for my specific project — not just in general.`,
+    terminalMission: `Type: npm install axios — this simulates installing a package. Your stack choice determines which packages your whole project will use.`,
+  },
+
+  'vc-plan-features': {
+    pathId: 'vibe-coding', title: 'Defining features before you write a prompt', duration: '9 min', part: 'Before',
+    mekLabel: 'enough to get exactly what you asked for from AI',
+    sections: [
+      { heading: 'Features vs wishes', body: `A wish is "I want users to be able to sign up." A feature is "Users can register with email and password. They receive a verification email. They cannot access the app until verified." The difference is specificity. AI cannot build a feature from a wish — it has to guess, and it will guess wrong on several things.` },
+      { heading: 'The feature definition format', code: `// Format every feature like this before prompting:\n\nFeature: User authentication\n- User registers with email + password\n- User receives a verification email on signup\n- User cannot log in until email is verified\n- User can reset password via email link\n- Session persists for 7 days\n- User is logged out after 30 min of inactivity\n\n// Compare to: "Add login" — which is what most people send.` },
+      { heading: 'Edge cases are features too', body: `What happens when a user submits an empty form? What if two users edit the same item simultaneously? What if the API is down? AI skips these unless you mention them. Ask "what could go wrong with this feature" for 5 minutes before prompting.`, callout: `A focused MVP with 3 well-defined features beats a vague 10-feature prompt every time. You can always add more later.` },
+    ],
+    aiPrompt: `Here are the features I want for my project: [list features in the format above]. For each feature, tell me: what edge cases I have not considered, what could go wrong, and what the simplest implementation looks like.`,
+    terminalMission: `Type: greetUser("your project name") — practice being specific. A function needs exact input. So does a prompt.`,
+  },
+
+  'vc-security-basics': {
+    pathId: 'vibe-coding', title: 'Security risks every vibe coder must know', duration: '11 min', part: 'Before',
+    mekLabel: 'enough to not accidentally expose your users or data',
+    sections: [
+      { heading: 'Why security matters before you start', body: `AI builds what you ask for. It does not always build it securely. It may hardcode API keys, skip input validation, or expose database queries to injection attacks. These are the most common issues in AI-generated code. Knowing the risks before you start means you know what to check.`, callout: `Security is not a feature you add at the end. It is a constraint you define at the start.` },
+      { heading: 'The five risks every project faces', code: `// 1. Exposed secrets\n// Never hardcode API keys or passwords in code.\n// They must live in environment variables (.env files).\n\n// 2. SQL injection\n// Database queries must use parameterised inputs.\n// Ask AI for parameterised queries explicitly.\n\n// 3. Missing authentication\n// Any route that accesses user data must verify login.\n// AI often generates routes without auth checks.\n\n// 4. Unvalidated user input\n// Never trust what a user submits. Validate server-side.\n\n// 5. CORS misconfiguration\n// If your API accepts requests from any origin (*),\n// anyone can call it. Specify exactly which domains.` },
+      { heading: 'The security line to add to every first prompt', body: `Include this in your first prompt: "Follow security best practices. Use environment variables for all secrets. Validate all user input server-side. Use parameterised queries for all database operations." That one line significantly improves AI output quality.` },
+    ],
+    aiPrompt: `Review the following code for security vulnerabilities. Check for: hardcoded secrets, SQL injection risks, missing authentication on routes, unvalidated user input, and insecure CORS settings. For each issue, show the vulnerable line and the secure version: [paste code]`,
+    terminalMission: `Type: help — notice how destructive commands like rm -rf are blocked. That is a security constraint. Your projects need the same thinking built in from the start.`,
+  },
+
+  'vc-first-prompt': {
+    pathId: 'vibe-coding', title: 'Writing your first project prompt', duration: '10 min', part: 'Before',
+    mekLabel: 'enough to start any project with a prompt that actually works',
+    sections: [
+      { heading: 'The anatomy of a first project prompt', body: `A good first prompt has five components: what you are building (one sentence), the tech stack, the core features (defined precisely), the security constraints, and the output format (what files you want back). Most people send one sentence and wonder why the result needs five rounds of correction.` },
+      { heading: 'The template', code: `"I am building [what] for [who].\n\nTech stack:\n- Frontend: [e.g. React with Vite]\n- Backend: [e.g. Node.js with Express]\n- Database: [e.g. PostgreSQL]\n\nCore features (build these only):\n1. [Feature 1 — defined in detail]\n2. [Feature 2 — defined in detail]\n3. [Feature 3 — defined in detail]\n\nSecurity requirements:\n- Use environment variables for all secrets\n- Validate all user input server-side\n- Use parameterised queries for all DB operations\n\nPlease:\n- Build the project structure first\n- Add a comment above every function\n- Flag uncertainty with TODO comments"` },
+      { heading: 'After the first response', body: `Look at the structure, not the details. Is the folder layout sensible? Are the filenames clear? If yes, move to the details. If no, correct the structure first — fixing bad architecture later is far more painful than fixing it now.` },
+    ],
+    aiPrompt: `[Use the template above — fill in your actual project details. This is the lesson. The prompt IS the practice.]`,
+    terminalMission: `Type: git init — that is the first command of any real project. Your first prompt and your first git init should happen in the same session.`,
+  },
+
+  // ── Vibe Coding Mastery — Part 2: During ─────────────────────────────────
+
+  'vc-during-intro': {
+    pathId: 'vibe-coding', title: 'Part 2 — While you are building', duration: '4 min', part: 'During',
+    mekLabel: 'the skills that keep a vibe coding session on track',
+    sections: [
+      { heading: 'The session mindset', body: `A vibe coding session is a conversation, not a one-shot transaction. You prompt, review, correct, and prompt again. The people who get great results are not the ones with the best first prompt — they are the ones who review carefully and correct precisely.`, callout: `Review every response before running it. One minute of reading saves thirty minutes of debugging.` },
+      { heading: 'What this part covers', body: `How to handle errors without losing momentum, what to check before you run AI-generated code, how to iterate when the output is close but not right, and how to use the terminal — the tool that connects everything AI builds.` },
+    ],
+    aiPrompt: `I am in the middle of building [project]. I just received this code: [paste code]. Before I run it, what should I check? Walk me through a quick review for obvious issues.`,
+    terminalMission: `Type: git status — in a real session you run this before every commit. Build the habit now.`,
+  },
+
+  'vc-error-handling': {
+    pathId: 'vibe-coding', title: 'How to handle errors without panicking', duration: '10 min', part: 'During',
+    mekLabel: 'enough to debug any error AI throws at you',
+    sections: [
+      { heading: 'Errors are directions, not dead ends', body: `An error message tells you exactly where the computer got confused — the type, the message, the file, and the line number together point at the problem with more precision than any guess. The panic response — asking AI to "fix everything" — is slower and less reliable than reading the error first.`, callout: `Read the error fully before doing anything. The answer is almost always in the message itself.` },
+      { heading: 'How to read any error', code: `TypeError: Cannot read properties of undefined (reading 'map')\n    at UserList (UserList.jsx:12:18)\n\n// Break it down:\n// Error type:  TypeError\n// Message:     Cannot read properties of undefined\n// Detail:      which property — 'map'\n// Location:    UserList.jsx line 12\n// Action:      Go to line 12. Look at the two lines above it.` },
+      { heading: 'The exact prompt to fix an error', code: `"I am getting this error:\n[paste the full error message]\n\nIn this code:\n[paste the 15 lines around the error]\n\nI expected it to:\n[describe what should happen]\n\nFix only the broken part — do not rewrite anything else."` },
+      { heading: 'When AI makes it worse', body: `If the fix introduces a new error, stop. Do not ask it to fix the new error blindly. Ask it to explain what it changed and why. If the explanation does not make sense, ask it to revert its last change and try a different approach.` },
+    ],
+    aiPrompt: `I am getting this error: [paste error]. Here is the relevant code: [paste code]. I expected it to [expected behavior]. Explain what is causing this in plain English, then fix only the broken part without changing anything else.`,
+    terminalMission: `Type something invalid and read the error carefully. Good error messages tell you exactly what to try next.`,
+  },
+
+  'vc-review-output': {
+    pathId: 'vibe-coding', title: 'What to check before running AI code', duration: '9 min', part: 'During',
+    mekLabel: 'enough to catch AI mistakes before they become your problems',
+    sections: [
+      { heading: 'The 60-second review', body: `Before running any AI-generated code, spend sixty seconds scanning it — not reading every line, but scanning for the patterns that most commonly break things. This single habit saves more time than any other practice in vibe coding.` },
+      { heading: 'The checklist', code: `Before running AI code, check:\n\n[ ] Does it import packages not in your package.json?\n[ ] Are there hardcoded values that should be env variables?\n[ ] Does it handle errors — try/catch around async calls?\n[ ] Are there TODO or placeholder comments AI left incomplete?\n[ ] Does the file structure match what you already have?\n[ ] Are there console.log statements that should not be in production?` },
+      { heading: 'The follow-up prompt', body: `After AI gives you code, send: "Review this for bugs, missing error handling, hardcoded values that should be env variables, and any TODO stubs you left incomplete." AI is better at reviewing its own output than at writing it perfectly first time.` },
+    ],
+    aiPrompt: `Review the following code before I run it. Check for: missing package imports, hardcoded secrets, missing error handling, incomplete TODOs, and anything that could crash on first run. Show each issue and the fix: [paste your code]`,
+    terminalMission: `Type: npm install — this installs all declared dependencies. Running this before starting is your pre-flight checklist.`,
+  },
+
+  'vc-iterate': {
+    pathId: 'vibe-coding', title: 'Iterating — how to guide AI toward the goal', duration: '9 min', part: 'During',
+    mekLabel: 'enough to get from close to exactly right',
+    sections: [
+      { heading: 'Iteration is the skill', body: `The best vibe coders are not those with the best first prompts. They are the ones who correct precisely and quickly. Getting from "almost right" to "exactly right" in two corrections instead of ten is the real differentiator.` },
+      { heading: 'Precise correction prompts', code: `// Bad (forces AI to guess):\n"This is not working, fix it"\n\n// Good (tells AI exactly what to change):\n"The button on line 34 does not trigger form submit.\n It should call handleSubmit() on click. Fix only that."\n\n"The user list shows all users instead of only\n the current user's items. The filter should be:\n items.filter(i => i.userId === user.id)"` },
+      { heading: 'When to start over vs correct', body: `Correct when the overall structure is right but a specific part is wrong. Start over when the structure itself is wrong — when AI has organised the code in a way that makes future changes painful.`, callout: `If you have made more than five corrections to the same piece of code without it working, explain the goal again from scratch. Fresh context often solves what targeted corrections cannot.` },
+    ],
+    aiPrompt: `The code you gave me is close but [specific issue]. Here is what is happening: [actual behavior]. Here is what I expected: [expected behavior]. Make only this one change — do not modify anything else.`,
+    terminalMission: `Type: git commit -m "describe your change" — good iteration means committing every working state. Each commit is a checkpoint you can return to.`,
+  },
+
+  'vc-terminal': {
+    pathId: 'vibe-coding', title: 'The terminal — commands every vibe coder needs', duration: '12 min', part: 'During',
+    mekLabel: 'enough to run, install, and manage any AI-generated project',
+    sections: [
+      { heading: 'Why the terminal matters', body: `Every project AI builds gives you instructions to run in the terminal. Install this, run that, start the server. If the terminal feels like a black box, those instructions feel like magic spells. This lesson explains what each command is actually doing.`, callout: `You do not need to memorise commands. You need to understand them so you can read them, recognise when they are wrong, and ask AI to explain the ones you do not know.` },
+      { heading: 'Navigation', code: `pwd              # Where am I right now?\nls               # What files are in this folder?\nls -la           # All files including hidden ones\ncd my-project    # Move into a folder\ncd ..            # Go up one level\nmkdir new-folder # Create a folder\nrm -rf folder    # Delete a folder completely (careful)` },
+      { heading: 'Package management', code: `npm install              # Install all packages in package.json\nnpm install axios        # Install a specific package\nnpm install -D eslint    # Install as a dev-only dependency\nnpm uninstall axios      # Remove a package\nnpm run dev              # Start the dev server\nnpm run build            # Build for production\nnpx create-react-app .   # Run a package without installing globally` },
+      { heading: 'Running and stopping', code: `node index.js   # Run a Node.js file directly\nnpm start       # Start the project\nCtrl + C        # Stop whatever is running — most important command` },
+      { heading: 'When a command fails', body: `Most terminal errors are one of three things: you are in the wrong folder (check with pwd), a package is not installed (run npm install), or you do not have permission (try adding sudo on Mac/Linux). If none of those apply, paste the exact error into AI with the command you ran.` },
+    ],
+    aiPrompt: `Explain what each of these commands does in plain English, no jargon. I want to understand what is happening, not just what to type: [paste the commands AI gave you]`,
+    terminalMission: `Work through the commands above: pwd, ls, cd, npm install axios, git status, clear. Read what each does before you run it.`,
+  },
+
+  // ── Vibe Coding Mastery — Part 3: After ──────────────────────────────────
+
+  'vc-after-intro': {
+    pathId: 'vibe-coding', title: 'Part 3 — After you build', duration: '4 min', part: 'After',
+    mekLabel: 'the step most vibe coders skip — and regret',
+    sections: [
+      { heading: 'Shipping is not the end', body: `Most vibe coding tutorials stop when the app works locally. But running locally is not a product. A product is deployed, backed up, and updatable without breaking. Part 3 covers what to do after the build is done.`, callout: `A project that only runs on your laptop is a prototype. The next three lessons turn it into something real.` },
+      { heading: 'What this part covers', body: `Deploying your project so others can access it. Updating it after changes without downtime. And environment variables — the thing AI most often gets wrong, and the source of most post-launch security issues.` },
+    ],
+    aiPrompt: `My project is built and running locally. Walk me through what I need to do to: 1. Get it online, 2. Set it up for easy updates, 3. Make sure no secrets are accidentally exposed. My stack is [your stack].`,
+    terminalMission: `Type: git log — see your commit history. That history is your safety net when you deploy and something breaks.`,
+  },
+
+  'vc-deploy': {
+    pathId: 'vibe-coding', title: 'How to deploy your project', duration: '11 min', part: 'After',
+    mekLabel: 'enough to get any project online in under 30 minutes',
+    sections: [
+      { heading: 'Deployment is simpler than it used to be', body: `Deploying used to mean configuring servers, SSH, nginx. Today it means connecting a GitHub repo to a platform and clicking deploy. For 90% of AI-built projects, you do not need to manage a server yourself.` },
+      { heading: 'Choosing a platform', code: `// Frontend only (React, Next.js, HTML):\nVercel   → Best for React/Next.js. Free tier is generous.\nNetlify  → Great for SPAs and static sites.\n\n// Backend (Node, Python, APIs):\nRailway  → Deploy any backend from GitHub. Straightforward.\nRender   → Free tier available. Good for Node and Python.\n\n// Database:\nSupabase → PostgreSQL with a UI. Free tier is solid.\nNeon     → Serverless PostgreSQL. Great with Vercel.` },
+      { heading: 'The standard Vercel deploy', code: `// For a React frontend:\n1. Push project to GitHub\n2. vercel.com → Import Project → select repo\n3. Set root directory to your frontend folder\n4. Build command: npm run build\n5. Output directory: dist\n6. Add environment variables from your .env file\n7. Deploy\n\n// Every future push to main auto-deploys.\n// That is your CI/CD pipeline — zero config.` },
+      { heading: 'After deploying', body: `Check three things: the site loads without console errors, all API calls hit the right URL (not localhost), and environment variables are set correctly in the platform dashboard. Most first-deploy failures are caused by API URLs still pointing at localhost.` },
+    ],
+    aiPrompt: `I have built a [describe project] using [stack]. Walk me through deploying the frontend to Vercel and the backend to Railway. Give me exact steps and commands, and tell me what environment variables I need to set in each platform dashboard.`,
+    terminalMission: `Type: npm run build — this prepares your project for deployment. After it runs, the dist folder contains everything the hosting platform needs.`,
+  },
+
+  'vc-update': {
+    pathId: 'vibe-coding', title: 'How to update and maintain your project', duration: '9 min', part: 'After',
+    mekLabel: 'enough to keep your project alive after launch',
+    sections: [
+      { heading: 'The update cycle', body: `Once deployed, updating is a four-step loop: change locally, test locally, push to GitHub, platform auto-deploys. If you set up auto-deploy (Vercel and Railway both do this by default), step four requires nothing from you.`, code: `git add .\ngit commit -m "describe what changed"\ngit push\n// That is it. The platform picks up the push and deploys.` },
+      { heading: 'Testing before pushing', body: `Run the project locally and check the specific feature you changed, plus two adjacent things. Changes have a way of breaking things they did not touch. For significant changes, create a new branch first.`, code: `git checkout -b feature/new-thing\n# ... make changes ...\ngit add .\ngit commit -m "add new thing"\ngit push origin feature/new-thing\n# Test it, then merge to main when ready` },
+      { heading: 'When an update breaks something', body: `In Vercel and Railway, every deployment has a Redeploy button to restore any previous version in under a minute. Use it immediately — do not try to debug a broken production site under pressure.`, callout: `Always have at least one clean commit you can roll back to before pushing a major change.` },
+    ],
+    aiPrompt: `I want to add [new feature] to my existing project. The current codebase: [describe or paste relevant parts]. Plan how to add this without breaking what already works. What should I change and in what order?`,
+    terminalMission: `Run the full git cycle: git add . → git commit -m "practice commit" → git log. That three-step sequence is the heartbeat of every maintained project.`,
+  },
+
+  'vc-env-vars': {
+    pathId: 'vibe-coding', title: 'Environment variables and secrets', duration: '8 min', part: 'After',
+    mekLabel: 'enough to never accidentally expose your API keys',
+    sections: [
+      { heading: 'What environment variables are', body: `A value stored outside your code that your code can read at runtime. API keys, database passwords, and secret tokens all go here — never in the code itself. If they are in the code, they end up in GitHub, where anyone can read them.`, callout: `If you push an API key to a public GitHub repo, assume it is compromised within minutes. Bots scan for this constantly.` },
+      { heading: 'How they work', code: `// 1. Create a .env file:\nDATABASE_URL=postgresql://user:password@host/db\nOPENAI_API_KEY=sk-...\nJWT_SECRET=a-long-random-string\n\n// 2. Add to .gitignore — never commit this file:\necho ".env" >> .gitignore\n\n// 3. Access in code:\n// Node.js:\nprocess.env.OPENAI_API_KEY\n// React/Vite (must prefix with VITE_):\nimport.meta.env.VITE_OPENAI_API_KEY\n\n// 4. Create .env.example for teammates:\nDATABASE_URL=your-database-url-here\nOPENAI_API_KEY=your-key-here\n// This IS committed — shows what vars are needed` },
+      { heading: 'Setting them in deployment platforms', body: `Every platform has an environment variables section in project settings. Copy each key-value pair from your .env file into the dashboard. The platform injects them at runtime. This is how your deployed app reads secrets without having them in the code.` },
+    ],
+    aiPrompt: `Generate a .env.example file for my project. My project uses: [list services — e.g. PostgreSQL, OpenAI API, Stripe, JWT auth]. Include every environment variable I will need, with a comment explaining what it is for and where to find the value.`,
+    terminalMission: `Type: touch .env — creates the file. Then: cat .env — notice it is empty. In a real project, you fill it with secrets before running anything.`,
+  },
+
   // ── Git & GitHub ──────────────────────────────────────────────────────────
 
   'what-is-git': {
@@ -564,7 +751,7 @@ export const useStore = create((set) => ({
 
   // Settings
   settings: {
-    theme:          'dark',   // 'dark' | 'dim' | 'midnight' | 'forest' | 'light'
+    theme:          'dark',   // 'dark' | 'warm' | 'dusk' | 'stone' | 'light'
     fontSize:       'md',
     terminalSound:  false,
     showMekBar:     true,

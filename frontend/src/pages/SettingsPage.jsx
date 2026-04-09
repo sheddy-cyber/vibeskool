@@ -2,47 +2,20 @@ import React, { useEffect } from 'react'
 import { useStore } from '@/lib/store'
 import styles from './SettingsPage.module.css'
 
-// ─── Theme definitions ────────────────────────────────────────────────────────
 const THEMES = [
-  {
-    id: 'dark',
-    name: 'Lights Off',
-    description: 'Pure black. Maximum contrast.',
-    preview: ['#000000', '#1d9bf0', '#00ba7c'],
-  },
-  {
-    id: 'dim',
-    name: 'Dim',
-    description: 'Twitter dim. Easier on the eyes.',
-    preview: ['#15202b', '#1d9bf0', '#00ba7c'],
-  },
-  {
-    id: 'midnight',
-    name: 'Midnight',
-    description: 'Deep navy. Late night sessions.',
-    preview: ['#000209', '#1d9bf0', '#00ba7c'],
-  },
-  {
-    id: 'forest',
-    name: 'Forest',
-    description: 'Dark green. Calm and focused.',
-    preview: ['#040d07', '#00ba7c', '#1d9bf0'],
-  },
-  {
-    id: 'light',
-    name: 'Light',
-    description: 'For daylight. High contrast.',
-    preview: ['#ffffff', '#1d9bf0', '#00ba7c'],
-  },
+  { id: 'dark',     name: 'Siltstone',   description: 'Default. Warm charcoal, terracotta.',   preview: ['#1c1a17', '#c97a3a', '#8a9e8a'] },
+  { id: 'dim',      name: 'Worn Stone',  description: 'Lifted warmth. Easier on the eyes.',    preview: ['#231f1b', '#c97a3a', '#8a9e8a'] },
+  { id: 'midnight', name: 'Sage Night',  description: 'Deep green-black. Focus mode.',          preview: ['#0e1410', '#c97a3a', '#8a9e8a'] },
+  { id: 'forest',   name: 'Chalk',       description: 'Warm parchment. Daylight reading.',      preview: ['#f5f0e8', '#c97a3a', '#6a8a6a'] },
+  { id: 'light',    name: 'Mocha Deep',  description: 'Near-black espresso. Rich contrast.',    preview: ['#100d0a', '#c97a3a', '#8a9e8a'] },
 ]
 
-// ─── CSS variable sets per theme ──────────────────────────────────────────────
 const THEME_VARS = {
-  dark:     { '--bg-base':'#000000','--bg-surface':'#0d1117','--bg-raised':'#141c25','--bg-overlay':'#1c2732','--text-primary':'#e7e9ea','--text-secondary':'#8b98a5','--text-tertiary':'#536471','--border-faint':'rgba(255,255,255,0.06)','--border-subtle':'rgba(255,255,255,0.10)','--border-default':'rgba(255,255,255,0.15)','--border-strong':'rgba(255,255,255,0.24)','--accent':'#1d9bf0','--accent-hover':'#1a8cd8','--accent-dim':'rgba(29,155,240,0.10)','--accent-border':'rgba(29,155,240,0.30)','--accent-text':'#1d9bf0','--green':'#00ba7c','--green-dim':'rgba(0,186,124,0.08)','--green-border':'rgba(0,186,124,0.25)','--amber':'#ffad1f','--amber-dim':'rgba(255,173,31,0.08)','--amber-border':'rgba(255,173,31,0.25)','--red':'#f4212e','--red-dim':'rgba(244,33,46,0.08)','--red-border':'rgba(244,33,46,0.25)' },
-  dim:      { '--bg-base':'#15202b','--bg-surface':'#1e2732','--bg-raised':'#253341','--bg-overlay':'#2c3e50','--text-primary':'#f7f9f9','--text-secondary':'#8b98a5','--text-tertiary':'#536471','--border-faint':'rgba(255,255,255,0.06)','--border-subtle':'rgba(255,255,255,0.10)','--border-default':'rgba(255,255,255,0.16)','--border-strong':'rgba(255,255,255,0.26)','--accent':'#1d9bf0','--accent-hover':'#1a8cd8','--accent-dim':'rgba(29,155,240,0.12)','--accent-border':'rgba(29,155,240,0.35)','--accent-text':'#1d9bf0','--green':'#00ba7c','--green-dim':'rgba(0,186,124,0.08)','--green-border':'rgba(0,186,124,0.25)','--amber':'#ffad1f','--amber-dim':'rgba(255,173,31,0.08)','--amber-border':'rgba(255,173,31,0.25)','--red':'#f4212e','--red-dim':'rgba(244,33,46,0.08)','--red-border':'rgba(244,33,46,0.25)' },
-  midnight: { '--bg-base':'#000209','--bg-surface':'#050d1a','--bg-raised':'#0a1628','--bg-overlay':'#101e34','--text-primary':'#dce8f5','--text-secondary':'#7a9ab5','--text-tertiary':'#3d5a73','--border-faint':'rgba(29,155,240,0.07)','--border-subtle':'rgba(29,155,240,0.12)','--border-default':'rgba(29,155,240,0.20)','--border-strong':'rgba(29,155,240,0.32)','--accent':'#1d9bf0','--accent-hover':'#1a8cd8','--accent-dim':'rgba(29,155,240,0.12)','--accent-border':'rgba(29,155,240,0.35)','--accent-text':'#1d9bf0','--green':'#00ba7c','--green-dim':'rgba(0,186,124,0.08)','--green-border':'rgba(0,186,124,0.25)','--amber':'#ffad1f','--amber-dim':'rgba(255,173,31,0.08)','--amber-border':'rgba(255,173,31,0.25)','--red':'#f4212e','--red-dim':'rgba(244,33,46,0.08)','--red-border':'rgba(244,33,46,0.25)' },
-  forest:   { '--bg-base':'#040d07','--bg-surface':'#0a1610','--bg-raised':'#111f17','--bg-overlay':'#182a1f','--text-primary':'#dcf0e4','--text-secondary':'#6a9e7c','--text-tertiary':'#3a6348','--border-faint':'rgba(0,186,124,0.07)','--border-subtle':'rgba(0,186,124,0.12)','--border-default':'rgba(0,186,124,0.20)','--border-strong':'rgba(0,186,124,0.32)','--accent':'#00ba7c','--accent-hover':'#009d68','--accent-dim':'rgba(0,186,124,0.10)','--accent-border':'rgba(0,186,124,0.32)','--accent-text':'#00ba7c','--green':'#1d9bf0','--green-dim':'rgba(29,155,240,0.08)','--green-border':'rgba(29,155,240,0.25)','--amber':'#ffad1f','--amber-dim':'rgba(255,173,31,0.08)','--amber-border':'rgba(255,173,31,0.25)','--red':'#f4212e','--red-dim':'rgba(244,33,46,0.08)','--red-border':'rgba(244,33,46,0.25)' },
-  light:    { '--bg-base':'#ffffff','--bg-surface':'#f7f9f9','--bg-raised':'#eff3f4','--bg-overlay':'#e7eaeb','--text-primary':'#0f1419','--text-secondary':'#536471','--text-tertiary':'#8b98a5','--border-faint':'rgba(0,0,0,0.05)','--border-subtle':'rgba(0,0,0,0.08)','--border-default':'rgba(0,0,0,0.13)','--border-strong':'rgba(0,0,0,0.22)','--accent':'#1d9bf0','--accent-hover':'#1a8cd8','--accent-dim':'rgba(29,155,240,0.08)','--accent-border':'rgba(29,155,240,0.25)','--accent-text':'#1d9bf0','--green':'#00ba7c','--green-dim':'rgba(0,186,124,0.08)','--green-border':'rgba(0,186,124,0.22)','--amber':'#ffad1f','--amber-dim':'rgba(255,173,31,0.08)','--amber-border':'rgba(255,173,31,0.22)','--red':'#f4212e','--red-dim':'rgba(244,33,46,0.08)','--red-border':'rgba(244,33,46,0.22)' },
+  dark:     { '--bg-base':'#1c1a17','--bg-surface':'#231f1b','--bg-raised':'#2c2822','--bg-overlay':'#36312a','--bg-input':'#272320','--text-primary':'#f0ebe3','--text-secondary':'#a8998a','--text-tertiary':'#6a5e50','--border-faint':'rgba(240,235,227,0.055)','--border-subtle':'rgba(240,235,227,0.09)','--border-default':'rgba(240,235,227,0.15)','--border-strong':'rgba(240,235,227,0.26)','--accent':'#c97a3a','--accent-hover':'#b86e30','--accent-dim':'rgba(201,122,58,0.12)','--accent-border':'rgba(201,122,58,0.32)','--accent-text':'#e0a060','--green':'#7aad84','--green-dim':'rgba(122,173,132,0.10)','--green-border':'rgba(122,173,132,0.28)','--amber':'#c9a25a','--amber-dim':'rgba(201,162,90,0.10)','--amber-border':'rgba(201,162,90,0.28)','--red':'#c47868','--red-dim':'rgba(196,120,104,0.10)','--red-border':'rgba(196,120,104,0.28)','--sage':'#8a9e8a','--stone':'#c4b8a8' },
+  dim:      { '--bg-base':'#231f1b','--bg-surface':'#2c2822','--bg-raised':'#36312a','--bg-overlay':'#403b32','--bg-input':'#302c26','--text-primary':'#f0ebe3','--text-secondary':'#a8998a','--text-tertiary':'#6a5e50','--border-faint':'rgba(240,235,227,0.07)','--border-subtle':'rgba(240,235,227,0.11)','--border-default':'rgba(240,235,227,0.17)','--border-strong':'rgba(240,235,227,0.30)','--accent':'#c97a3a','--accent-hover':'#b86e30','--accent-dim':'rgba(201,122,58,0.14)','--accent-border':'rgba(201,122,58,0.36)','--accent-text':'#e0a060','--green':'#7aad84','--green-dim':'rgba(122,173,132,0.10)','--green-border':'rgba(122,173,132,0.28)','--amber':'#c9a25a','--amber-dim':'rgba(201,162,90,0.10)','--amber-border':'rgba(201,162,90,0.28)','--red':'#c47868','--red-dim':'rgba(196,120,104,0.10)','--red-border':'rgba(196,120,104,0.28)','--sage':'#8a9e8a','--stone':'#c4b8a8' },
+  midnight: { '--bg-base':'#0e1410','--bg-surface':'#141c16','--bg-raised':'#1b261d','--bg-overlay':'#223022','--bg-input':'#172019','--text-primary':'#e0f0e0','--text-secondary':'#80a888','--text-tertiary':'#486050','--border-faint':'rgba(138,173,132,0.07)','--border-subtle':'rgba(138,173,132,0.12)','--border-default':'rgba(138,173,132,0.20)','--border-strong':'rgba(138,173,132,0.34)','--accent':'#c97a3a','--accent-hover':'#b86e30','--accent-dim':'rgba(201,122,58,0.12)','--accent-border':'rgba(201,122,58,0.32)','--accent-text':'#e0a060','--green':'#8a9e8a','--green-dim':'rgba(138,158,138,0.10)','--green-border':'rgba(138,158,138,0.28)','--amber':'#c9a25a','--amber-dim':'rgba(201,162,90,0.10)','--amber-border':'rgba(201,162,90,0.28)','--red':'#c47868','--red-dim':'rgba(196,120,104,0.10)','--red-border':'rgba(196,120,104,0.28)','--sage':'#8a9e8a','--stone':'#c4b8a8' },
+  forest:   { '--bg-base':'#f5f0e8','--bg-surface':'#fdf9f4','--bg-raised':'#ede8de','--bg-overlay':'#e5dfd4','--bg-input':'#e8e2d8','--text-primary':'#2d2520','--text-secondary':'#6a5e50','--text-tertiary':'#a0907e','--border-faint':'rgba(45,37,32,0.06)','--border-subtle':'rgba(45,37,32,0.10)','--border-default':'rgba(45,37,32,0.16)','--border-strong':'rgba(45,37,32,0.28)','--accent':'#c97a3a','--accent-hover':'#b86e30','--accent-dim':'rgba(201,122,58,0.10)','--accent-border':'rgba(201,122,58,0.30)','--accent-text':'#b86e30','--green':'#5a8a5a','--green-dim':'rgba(90,138,90,0.10)','--green-border':'rgba(90,138,90,0.28)','--amber':'#a07830','--amber-dim':'rgba(160,120,48,0.10)','--amber-border':'rgba(160,120,48,0.28)','--red':'#a05040','--red-dim':'rgba(160,80,64,0.10)','--red-border':'rgba(160,80,64,0.28)','--sage':'#6a8a6a','--stone':'#c4b8a8' },
+  light:    { '--bg-base':'#100d0a','--bg-surface':'#18140f','--bg-raised':'#201a14','--bg-overlay':'#28221a','--bg-input':'#1c1710','--text-primary':'#f0e8d8','--text-secondary':'#907060','--text-tertiary':'#604838','--border-faint':'rgba(240,232,216,0.055)','--border-subtle':'rgba(240,232,216,0.09)','--border-default':'rgba(240,232,216,0.15)','--border-strong':'rgba(240,232,216,0.26)','--accent':'#c97a3a','--accent-hover':'#b86e30','--accent-dim':'rgba(201,122,58,0.14)','--accent-border':'rgba(201,122,58,0.36)','--accent-text':'#e0a060','--green':'#7aad84','--green-dim':'rgba(122,173,132,0.10)','--green-border':'rgba(122,173,132,0.28)','--amber':'#c9a25a','--amber-dim':'rgba(201,162,90,0.10)','--amber-border':'rgba(201,162,90,0.28)','--red':'#c47868','--red-dim':'rgba(196,120,104,0.10)','--red-border':'rgba(196,120,104,0.28)','--sage':'#8a9e8a','--stone':'#c4b8a8' },
 }
 
 function applyTheme(themeId) {
@@ -78,7 +51,6 @@ function ToggleRow({ label, description, value, onChange }) {
 export default function SettingsPage() {
   const { settings, updateSettings } = useStore()
 
-  // Apply theme on change
   useEffect(() => {
     applyTheme(settings.theme)
   }, [settings.theme])
@@ -96,15 +68,13 @@ export default function SettingsPage() {
   return (
     <div className={styles.page}>
       <div className={styles.header + ' animate-fade-in'}>
-        <h1 className={styles.title}>Settings ⚙️</h1>
+        <h1 className={styles.title}>Settings</h1>
         <p className={styles.sub}>Customise your VibeSkool experience.</p>
       </div>
 
-      {/* Appearance */}
       <section className={styles.section + ' animate-fade-in'} style={{ animationDelay: '40ms' }}>
         <h2 className={styles.sectionTitle}>Appearance</h2>
 
-        {/* Theme picker */}
         <div className={styles.card}>
           <div className={styles.cardHeader}>
             <span className={styles.cardLabel}>Theme</span>
@@ -117,27 +87,19 @@ export default function SettingsPage() {
                 className={`${styles.themeCard} ${settings.theme === theme.id ? styles.themeCardActive : ''}`}
                 onClick={() => setTheme(theme.id)}
               >
-                {/* Color preview swatch */}
                 <div className={styles.themeSwatch}>
                   {theme.preview.map((color, i) => (
-                    <span
-                      key={i}
-                      className={styles.themeSwatchDot}
-                      style={{ background: color }}
-                    />
+                    <span key={i} className={styles.themeSwatchDot} style={{ background: color }} />
                   ))}
                 </div>
                 <span className={styles.themeName}>{theme.name}</span>
                 <span className={styles.themeDesc}>{theme.description}</span>
-                {settings.theme === theme.id && (
-                  <span className={styles.themeCheck}>✓</span>
-                )}
+                {settings.theme === theme.id && <span className={styles.themeCheck}>✓</span>}
               </button>
             ))}
           </div>
         </div>
 
-        {/* Font size */}
         <div className={styles.card}>
           <div className={styles.cardHeader}>
             <span className={styles.cardLabel}>Font size</span>
@@ -158,7 +120,6 @@ export default function SettingsPage() {
         </div>
       </section>
 
-      {/* Learning preferences */}
       <section className={styles.section + ' animate-fade-in'} style={{ animationDelay: '80ms' }}>
         <h2 className={styles.sectionTitle}>Learning preferences</h2>
         <div className={styles.card}>
@@ -185,7 +146,6 @@ export default function SettingsPage() {
         </div>
       </section>
 
-      {/* About */}
       <section className={styles.section + ' animate-fade-in'} style={{ animationDelay: '120ms' }}>
         <h2 className={styles.sectionTitle}>About</h2>
         <div className={styles.card}>

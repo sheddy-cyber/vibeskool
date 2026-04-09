@@ -3,6 +3,45 @@ import { NavLink, useNavigate } from 'react-router-dom'
 import { useStore, PATHS } from '@/lib/store'
 import styles from './Sidebar.module.css'
 
+
+const PATH_SVGS = {
+  'vibe-web': (
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/>
+      <path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/>
+    </svg>
+  ),
+  'vibe-coding': (
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/>
+    </svg>
+  ),
+  'git-github': (
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="18" cy="18" r="3"/><circle cx="6" cy="6" r="3"/>
+      <path d="M13 6h3a2 2 0 012 2v7"/><line x1="6" y1="9" x2="6" y2="21"/>
+    </svg>
+  ),
+  'python-basics': (
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/>
+    </svg>
+  ),
+  'apis': (
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M8 9l3 3-3 3"/><line x1="13" y1="15" x2="16" y2="15"/>
+      <rect x="3" y="3" width="18" height="18" rx="2"/>
+    </svg>
+  ),
+  'sql-basics': (
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <ellipse cx="12" cy="5" rx="9" ry="3"/>
+      <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/>
+      <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>
+    </svg>
+  ),
+}
+
 const NAV_ITEMS = [
   {
     to: '/app/dashboard',
@@ -85,7 +124,7 @@ export default function Sidebar() {
               onClick={() => navigate(`/app/lesson/${path.lessons_data[Math.min(done, total - 1)].id}`)}
             >
               <div className={styles.pathRow}>
-                <span className={styles.pathName}>{path.name}</span>
+                <span className={styles.pathIcon}>{PATH_SVGS[path.id] || PATH_SVGS['vibe-coding']}</span><span className={styles.pathName}>{path.name}</span>
                 <span className={styles.pathPct}>{pct}%</span>
               </div>
               <div className={styles.progressTrack}>
@@ -117,6 +156,15 @@ export default function Sidebar() {
             </svg>
           </span>
           Settings
+        </NavLink>
+        <NavLink to="/app/admin/cms" className={({ isActive }) => [styles.navItem, isActive ? styles.active : ''].join(' ')}>
+          <span className={styles.navIcon}>
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round">
+              <path d="M2 2h10a1 1 0 011 1v8a1 1 0 01-1 1H2a1 1 0 01-1-1V3a1 1 0 011-1z"/>
+              <path d="M4 6h6M4 9h4"/>
+            </svg>
+          </span>
+          Content
         </NavLink>
       </div>
     </aside>

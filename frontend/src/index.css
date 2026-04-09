@@ -1,89 +1,127 @@
 /*
-  Typography:
-  - DM Sans      — modern, slightly quirky, not corporate. Used by Notion, Linear, others.
-  - Geist Mono   — Vercel's monospace. Clean, technical, distinctive. Bundled via @fontsource.
+  VibeSkool — Siltstone (Figma #79)
+  ════════════════════════════════════════════════════════════
+  Palette: warm stone layered depths
+    #f0ebe3  — chalk (lightest, text on dark)
+    #c4b8a8  — warm linen mid
+    #8a8077  — mid stone (accent base)
+    #2d2520  — deep mocha (darkest base)
+
+  Philosophy: Aged paper meets precision engineering.
+  Think architect's desk at golden hour. Every tone
+  belongs to the earth. Bold by restraint.
+  ════════════════════════════════════════════════════════════
 */
 
-*, *::before, *::after {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
+@font-face {
+  font-family: 'BB Casual Pro';
+  src: url('/fonts/bbcasualpro-regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
 }
+@font-face {
+  font-family: 'BB Casual Pro';
+  src: url('/fonts/bbcasualpro-medium.woff2') format('woff2');
+  font-weight: 500 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-  /* ── Twitter/X dark blue palette ─────────────────────────────── */
-  /* Backgrounds — Twitter uses layered near-blacks with blue undertones */
-  --bg-base:    #000000;
-  --bg-surface: #0d1117;
-  --bg-raised:  #141c25;
-  --bg-overlay: #1c2732;
-  --bg-input:   #0d1117;
+  /* ── Siltstone backgrounds ──────────────────────────────── */
+  --bg-base:    #1c1a17;
+  --bg-surface: #231f1b;
+  --bg-raised:  #2c2822;
+  --bg-overlay: #36312a;
+  --bg-input:   #272320;
 
-  /* Borders */
-  --border-faint:   rgba(255, 255, 255, 0.06);
-  --border-subtle:  rgba(255, 255, 255, 0.10);
-  --border-default: rgba(255, 255, 255, 0.15);
-  --border-strong:  rgba(255, 255, 255, 0.24);
+  /* ── Borders — warm stone dust ──────────────────────────── */
+  --border-faint:   rgba(240, 235, 227, 0.055);
+  --border-subtle:  rgba(240, 235, 227, 0.09);
+  --border-default: rgba(240, 235, 227, 0.15);
+  --border-strong:  rgba(240, 235, 227, 0.26);
 
-  /* Text */
-  --text-primary:   #e7e9ea;
-  --text-secondary: #8b98a5;
-  --text-tertiary:  #536471;
-  --text-inverse:   #000000;
+  /* ── Text — warm linen hierarchy ───────────────────────── */
+  --text-primary:   #f0ebe3;
+  --text-secondary: #a8998a;
+  --text-tertiary:  #6a5e50;
+  --text-inverse:   #1c1a17;
 
-  /* Twitter blue — the signature accent */
-  --accent:         #1d9bf0;
-  --accent-hover:   #1a8cd8;
-  --accent-dim:     rgba(29, 155, 240, 0.10);
-  --accent-border:  rgba(29, 155, 240, 0.30);
-  --accent-text:    #1d9bf0;
+  /* ── Primary accent — warm terracotta-rust ──────────────── */
+  /* This is the "punch" — warm, earthy, unexpected energy   */
+  --accent:         #c97a3a;
+  --accent-hover:   #b86e30;
+  --accent-dim:     rgba(201, 122, 58, 0.12);
+  --accent-border:  rgba(201, 122, 58, 0.32);
+  --accent-text:    #e0a060;
 
-  /* Semantic */
-  --green:          #00ba7c;
-  --green-dim:      rgba(0, 186, 124, 0.08);
-  --green-border:   rgba(0, 186, 124, 0.25);
+  /* ── Secondary — dusty sage (siltstone hallmark) ────────── */
+  --sage:           #8a9e8a;
+  --sage-dim:       rgba(138, 158, 138, 0.10);
+  --sage-border:    rgba(138, 158, 138, 0.28);
+  --sage-text:      #b0c8b0;
 
-  --amber:          #ffad1f;
-  --amber-dim:      rgba(255, 173, 31, 0.08);
-  --amber-border:   rgba(255, 173, 31, 0.25);
+  /* ── Stone — warm mid-palette neutral ───────────────────── */
+  --stone:          #c4b8a8;
+  --stone-dim:      rgba(196, 184, 168, 0.08);
+  --stone-border:   rgba(196, 184, 168, 0.20);
 
-  --red:            #f4212e;
-  --red-dim:        rgba(244, 33, 46, 0.08);
-  --red-border:     rgba(244, 33, 46, 0.25);
+  /* ── Semantic ───────────────────────────────────────────── */
+  --green:        #7aad84;
+  --green-dim:    rgba(122, 173, 132, 0.10);
+  --green-border: rgba(122, 173, 132, 0.28);
 
-  /* ── Typography ──────────────────────────────────────────────── */
-  --font-sans: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-  --font-mono: 'Geist Mono', ui-monospace, 'Cascadia Code', monospace;
+  --amber:        --accent;  /* reuse terracotta for warnings */
+  --amber:        #c9a25a;
+  --amber-dim:    rgba(201, 162, 90, 0.10);
+  --amber-border: rgba(201, 162, 90, 0.28);
 
-  /* ── Radius ──────────────────────────────────────────────────── */
-  --radius-xs: 4px;
-  --radius-sm: 6px;
-  --radius-md: 8px;
-  --radius-lg: 12px;
-  --radius-xl: 16px;
+  --red:          #c47868;
+  --red-dim:      rgba(196, 120, 104, 0.10);
+  --red-border:   rgba(196, 120, 104, 0.28);
 
-  /* ── Motion ──────────────────────────────────────────────────── */
-  --ease:   cubic-bezier(0.16, 1, 0.3, 1);
-  --t-fast: 120ms;
-  --t-base: 180ms;
-  --t-slow: 300ms;
+  /* Aliases */
+  --pink:        var(--accent);
+  --pink-dim:    var(--accent-dim);
+  --pink-border: var(--accent-border);
+  --transition:  200ms ease;
 
-  /* ── Layout ──────────────────────────────────────────────────── */
-  --sidebar-w: 220px;
-  --topbar-h:  52px;
+  /* ── Typography ─────────────────────────────────────────── */
+  --font-display: 'Space Grotesk', sans-serif;
+  --font-sans:    'BB Casual Pro', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono:    'Geist Mono', ui-monospace, monospace;
+
+  /* ── Radius ─────────────────────────────────────────────── */
+  --radius-xs:  3px;
+  --radius-sm:  6px;
+  --radius-md:  10px;
+  --radius-lg:  16px;
+  --radius-xl:  24px;
+  --radius-pill: 999px;
+
+  /* ── Motion ─────────────────────────────────────────────── */
+  --ease:    cubic-bezier(0.22, 1, 0.36, 1);
+  --t-fast:  110ms;
+  --t-base:  200ms;
+  --t-slow:  380ms;
+
+  /* ── Layout ─────────────────────────────────────────────── */
+  --sidebar-w: 228px;
+  --topbar-h:  58px;
 }
 
-/* ── Base ────────────────────────────────────────────────────────── */
 html, body, #root { height: 100%; width: 100%; }
 
 body {
   background: var(--bg-base);
   color: var(--text-primary);
   font-family: var(--font-sans);
-  font-size: 14px;
-  line-height: 1.6;
+  font-size: 14.5px;
+  line-height: 1.65;
   font-weight: 400;
-  letter-spacing: -0.012em;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -93,37 +131,30 @@ a      { color: inherit; text-decoration: none; }
 code   { font-family: var(--font-mono); }
 img    { display: block; max-width: 100%; }
 
-/* ── Scrollbars ──────────────────────────────────────────────────── */
 ::-webkit-scrollbar         { width: 3px; height: 3px; }
 ::-webkit-scrollbar-track   { background: transparent; }
 ::-webkit-scrollbar-thumb   { background: var(--border-subtle); border-radius: 2px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--border-default); }
 
-/* ── Selection ───────────────────────────────────────────────────── */
 ::selection { background: var(--accent-dim); color: var(--accent-text); }
 
-/* ── Focus ───────────────────────────────────────────────────────── */
 :focus-visible {
   outline: 1.5px solid var(--accent);
   outline-offset: 2px;
   border-radius: var(--radius-sm);
 }
 
-/* ── Utility ─────────────────────────────────────────────────────── */
 .truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.sr-only  {
-  position: absolute; width: 1px; height: 1px;
-  padding: 0; margin: -1px; overflow: hidden;
-  clip: rect(0,0,0,0); border: 0;
-}
+.sr-only  { position: absolute; width: 1px; height: 1px; padding: 0;
+            margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0; }
 
-/* ── Keyframes ───────────────────────────────────────────────────── */
+/* ── Keyframes ──────────────────────────────────────────────── */
 @keyframes fadeUp {
-  from { opacity: 0; transform: translateY(6px); }
+  from { opacity: 0; transform: translateY(10px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 @keyframes slideInLeft {
-  from { opacity: 0; transform: translateX(-6px); }
+  from { opacity: 0; transform: translateX(-8px); }
   to   { opacity: 1; transform: translateX(0); }
 }
 @keyframes pulse {
@@ -131,25 +162,28 @@ img    { display: block; max-width: 100%; }
   50%       { opacity: 0.35; }
 }
 @keyframes spin {
-  from { transform: rotate(0deg); }
-  to   { transform: rotate(360deg); }
+  to { transform: rotate(360deg); }
+}
+@keyframes shimmer {
+  from { background-position: -200% center; }
+  to   { background-position: 200% center; }
 }
 
-.animate-fade-in  { animation: fadeUp       0.28s var(--ease) both; }
-.animate-slide-in { animation: slideInLeft  0.24s var(--ease) both; }
-.animate-pulse    { animation: pulse  2.4s ease-in-out infinite; }
-.animate-spin     { animation: spin   0.7s linear   infinite; }
+.animate-fade-in  { animation: fadeUp      0.32s var(--ease) both; }
+.animate-slide-in { animation: slideInLeft 0.28s var(--ease) both; }
+.animate-pulse    { animation: pulse 2.4s ease-in-out infinite; }
+.animate-spin     { animation: spin  0.8s linear infinite; }
 
 .stagger > *:nth-child(1) { animation-delay:   0ms; }
-.stagger > *:nth-child(2) { animation-delay:  45ms; }
-.stagger > *:nth-child(3) { animation-delay:  90ms; }
-.stagger > *:nth-child(4) { animation-delay: 135ms; }
-.stagger > *:nth-child(5) { animation-delay: 180ms; }
-.stagger > *:nth-child(6) { animation-delay: 225ms; }
+.stagger > *:nth-child(2) { animation-delay:  55ms; }
+.stagger > *:nth-child(3) { animation-delay: 110ms; }
+.stagger > *:nth-child(4) { animation-delay: 165ms; }
+.stagger > *:nth-child(5) { animation-delay: 220ms; }
+.stagger > *:nth-child(6) { animation-delay: 275ms; }
 
-/* ── Code syntax colours (Twitter blue-tinted) ───────────────────── */
-.hl-kw  { color: #7ec8e3; }
-.hl-fn  { color: #1d9bf0; }
-.hl-str { color: #00ba7c; }
-.hl-cm  { color: #536471; font-style: italic; }
-.hl-num { color: #ffad1f; }
+/* ── Code syntax — warm tones ───────────────────────────────── */
+.hl-kw  { color: #d4956a; }  /* terracotta keywords */
+.hl-fn  { color: #b0c8b0; }  /* sage functions      */
+.hl-str { color: #c4b898; }  /* linen strings       */
+.hl-cm  { color: #5a5048; font-style: italic; }
+.hl-num { color: #c9a25a; }  /* amber numbers       */
