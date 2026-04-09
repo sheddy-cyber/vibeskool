@@ -98,8 +98,8 @@ export default function LandingPage() {
           </h1>
 
           <p className={styles.heroBody}>
-            You cannot vibe code without knowing how to code.
-            But you do not need to become a full-stack developer either.
+            You cannot vibe code effectively if you know nothing about coding.
+            At the same time, you need not become a full-fledged developer either.
             VibeSkool gives you the{' '}
             <strong>Minimum Effective Knowledge</strong>{' '}
             to direct AI, understand its output, and ship real things — fast.
