@@ -21,7 +21,7 @@
 .navInner {
   max-width: 1140px; margin: 0 auto;
   padding: 0 40px; height: 60px;
-  display: flex; align-items: center; gap: 32px;
+  display: flex; align-items: center;
 }
 
 .brand {
@@ -41,7 +41,7 @@
   font-weight: 700; letter-spacing: -0.02em; color: var(--text-primary);
 }
 
-.navLinks { display: flex; gap: 24px; }
+.navLinks { display: flex; gap: 24px; margin-left: 28px; }
 .navLink {
   font-size: 13.5px; color: var(--text-secondary);
   text-decoration: none; transition: color var(--t-fast);
@@ -49,7 +49,6 @@
 .navLink:hover { color: var(--text-primary); }
 
 .navCta {
-  margin-left: auto;
   background: var(--accent); color: var(--bg-base);
   border: none; padding: 8px 20px; border-radius: var(--radius-pill);
   font-size: 13.5px; font-weight: 600; font-family: var(--font-sans);
@@ -59,21 +58,25 @@
 .navCta:hover { background: var(--accent-hover); transform: translateY(-1px); }
 
 /* ── Hero ─────────────────────────────────────────────────── */
-.hero {
+.heroWrap {
   --rx: 0px; --ry: 0px;
   position: relative; overflow: hidden;
   min-height: 92vh;
+  display: flex; align-items: center;
+}
+.hero {
+  position: relative; z-index: 2;
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 0;
   align-items: center;
-  max-width: 1140px; margin: 0 auto;
+  max-width: 1140px; margin: 0 auto; width: 100%;
   padding: 80px 40px 60px;
 }
 
 /* Grain texture overlay */
 .heroGrain {
-  position: absolute; inset: -50%;
+  position: absolute; inset: 0; z-index: 1;
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
   opacity: 0.025;
   pointer-events: none;
@@ -87,6 +90,7 @@
   right: -2%;
   top: 50%;
   transform: translateY(-50%);
+  z-index: 1;
   font-family: var(--font-display);
   font-size: clamp(120px, 18vw, 240px);
   font-weight: 800;
@@ -264,7 +268,7 @@
 }
 .mekInner {
   max-width: 1140px; margin: 0 auto;
-  display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center;
+  display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: start;
 }
 .mekRight { display: flex; flex-direction: column; gap: 20px; padding-top: 8px; }
 .mekBody { font-size: 15px; color: var(--text-secondary); line-height: 1.8; }
@@ -295,10 +299,10 @@
   padding: 22px 28px;
   border-bottom: 1px solid var(--border-faint);
   cursor: pointer; background: var(--bg-surface);
-  transition: background var(--t-fast);
+  transition: background var(--t-fast), padding-left 200ms ease;
 }
 .pathRow:last-child { border-bottom: none; }
-.pathRow:hover { background: var(--bg-raised); }
+.pathRow:hover { background: var(--bg-raised); padding-left: 32px; }
 
 .pathRowNum {
   font-size: 11px; font-family: var(--font-mono);
@@ -325,7 +329,7 @@
 .bentoInner {
   max-width: 1140px; margin: 0 auto;
   display: grid;
-  grid-template-columns: 1.5fr 1fr 1fr;
+  grid-template-columns: 1.4fr 1fr 1fr;
   grid-template-rows: auto auto;
   gap: 16px;
 }
@@ -335,13 +339,24 @@
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-xl); padding: 32px;
   display: flex; flex-direction: column; gap: 14px;
+  height: 100%;
   transition: border-color var(--t-base), transform var(--t-slow);
 }
-.bentoCard:hover { border-color: var(--border-default); transform: translateY(-2px); }
+.bentoCard:hover {
+  border-color: var(--border-default);
+  transform: translateY(-4px);
+  box-shadow: 0 20px 48px rgba(0,0,0,0.35), 0 0 0 1px var(--border-default);
+}
+.bentoCard:active { transform: translateY(-2px) scale(0.99); }
 
 .bentoLarge {
   grid-column: 1;
   grid-row: 1 / 3;
+}
+
+.bentoMekWide {
+  grid-column: 2 / 4;
+  grid-row: 2;
 }
 .bentoAccented {
   background: linear-gradient(135deg, var(--bg-raised) 0%, var(--bg-overlay) 100%);
@@ -365,15 +380,17 @@
 }
 .chatBubbleAI, .chatBubbleUser {
   padding: 10px 14px; border-radius: var(--radius-lg); font-size: 12.5px; line-height: 1.6;
-  max-width: 90%;
+  max-width: 82%;
 }
 .chatBubbleAI {
   background: var(--bg-overlay); border: 1px solid var(--border-subtle);
   color: var(--text-primary); border-bottom-left-radius: var(--radius-xs);
+  align-self: flex-start;
 }
 .chatBubbleUser {
   background: var(--accent); color: var(--bg-base); font-weight: 500;
-  align-self: flex-end; border-bottom-right-radius: var(--radius-xs);
+  align-self: flex-end; margin-left: auto;
+  border-bottom-right-radius: var(--radius-xs);
 }
 
 /* MEK score viz in bento */
@@ -426,3 +443,7 @@
 }
 .footerBrand { display: flex; align-items: center; gap: 8px; }
 .footerTag { font-size: 12px; color: var(--text-tertiary); }
+
+.navActions {
+  display: flex; align-items: center; gap: 12px; margin-left: auto;
+}

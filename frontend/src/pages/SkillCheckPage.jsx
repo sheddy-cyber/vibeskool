@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui'
 import styles from './SkillCheckPage.module.css'
+import { FadeUp, ScaleIn, RevealOnScroll } from '@/components/ui/Motion'
 
 const QUESTIONS = [
   {
@@ -115,7 +116,7 @@ export default function SkillCheckPage() {
     const passed = pct >= 60
     return (
       <div className={styles.page}>
-        <div className={styles.results + ' animate-fade-in'}>
+        <ScaleIn delay={0}><div className={styles.results}>
           <div className={styles.resultIcon} style={{
             background: passed ? 'var(--accent-dim)' : 'var(--red-dim)',
             border: `1px solid ${passed ? 'var(--accent-border)' : 'var(--red-border)'}`,
@@ -158,7 +159,7 @@ export default function SkillCheckPage() {
               </Button>
             )}
           </div>
-        </div>
+        </div></ScaleIn>
       </div>
     )
   }
@@ -166,7 +167,7 @@ export default function SkillCheckPage() {
   return (
     <div className={styles.page}>
       {/* Header */}
-      <div className={styles.header + ' animate-fade-in'}>
+      <FadeUp delay={0}><div className={styles.header}>
         <div>
           <h1 className={styles.title}>Skill Check</h1>
           <p className={styles.sub}>10 minutes. Prove you know enough to build with AI.</p>
@@ -180,10 +181,10 @@ export default function SkillCheckPage() {
             />
           </div>
         </div>
-      </div>
+      </div></FadeUp>
 
       {/* Question card */}
-      <div className={styles.questionCard + ' animate-fade-in'} key={current}>
+      <ScaleIn delay={60} key={current}><div className={styles.questionCard}>
         <div className={styles.topicBadge}>{q.topic}</div>
         <p className={styles.question}>{q.question.split('\n\n')[0]}</p>
         {q.code && (
@@ -226,7 +227,7 @@ export default function SkillCheckPage() {
             </Button>
           </div>
         )}
-      </div>
+      </div></ScaleIn>
     </div>
   )
 }

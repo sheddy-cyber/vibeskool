@@ -1,6 +1,8 @@
 import React, { useEffect } from 'react'
 import { useStore } from '@/lib/store'
+import { useAuth } from '@/lib/auth'
 import styles from './SettingsPage.module.css'
+import { FadeUp, RevealOnScroll } from '@/components/ui/Motion'
 
 const THEMES = [
   { id: 'dark',     name: 'Siltstone',   description: 'Default. Warm charcoal, terracotta.',   preview: ['#1c1a17', '#c97a3a', '#8a9e8a'] },
@@ -49,30 +51,37 @@ function ToggleRow({ label, description, value, onChange }) {
 }
 
 export default function SettingsPage() {
-  const { settings, updateSettings } = useStore()
+  const { settings: storeSettings, updateSettings } = useStore()
+  const { currentUser, updateUserSettings } = useAuth()
+  // Use persisted user settings when available
+  const settings = currentUser?.settings || storeSettings
+  function updateAllSettings(patch) {
+    updateSettings(patch)
+    updateUserSettings(patch)
+  }
 
   useEffect(() => {
     applyTheme(settings.theme)
   }, [settings.theme])
 
   function setTheme(id) {
-    updateSettings({ theme: id })
+    updateAllSettings({ theme: id })
   }
 
   function setFontSize(id) {
     const found = FONT_SIZES.find(f => f.id === id)
     if (found) document.documentElement.style.setProperty('--font-size-base', found.size)
-    updateSettings({ fontSize: id })
+    updateAllSettings({ fontSize: id })
   }
 
   return (
     <div className={styles.page}>
-      <div className={styles.header + ' animate-fade-in'}>
+      <FadeUp delay={0}><div className={styles.header}>
         <h1 className={styles.title}>Settings</h1>
         <p className={styles.sub}>Customise your VibeSkool experience.</p>
-      </div>
+      </div></FadeUp>
 
-      <section className={styles.section + ' animate-fade-in'} style={{ animationDelay: '40ms' }}>
+      <RevealOnScroll delay={40} y={14}><section className={styles.section}>
         <h2 className={styles.sectionTitle}>Appearance</h2>
 
         <div className={styles.card}>
@@ -118,35 +127,35 @@ export default function SettingsPage() {
             ))}
           </div>
         </div>
-      </section>
+      </section></RevealOnScroll>
 
-      <section className={styles.section + ' animate-fade-in'} style={{ animationDelay: '80ms' }}>
+      <RevealOnScroll delay={0} y={14}><section className={styles.section}>
         <h2 className={styles.sectionTitle}>Learning preferences</h2>
         <div className={styles.card}>
           <ToggleRow
             label="Show MEK progress bar"
             description="Display your Minimum Effective Knowledge score on lesson pages"
             value={settings.showMekBar}
-            onChange={(v) => updateSettings({ showMekBar: v })}
+            onChange={(v) => updateAllSettings({ showMekBar: v })}
           />
           <div className={styles.divider} />
           <ToggleRow
             label="Compact sidebar"
             description="Show only icons in the sidebar — more space for content"
             value={settings.compactSidebar}
-            onChange={(v) => updateSettings({ compactSidebar: v })}
+            onChange={(v) => updateAllSettings({ compactSidebar: v })}
           />
           <div className={styles.divider} />
           <ToggleRow
             label="Terminal typing sounds"
             description="Subtle click sound when typing in the Lab"
             value={settings.terminalSound}
-            onChange={(v) => updateSettings({ terminalSound: v })}
+            onChange={(v) => updateAllSettings({ terminalSound: v })}
           />
         </div>
-      </section>
+      </section></RevealOnScroll>
 
-      <section className={styles.section + ' animate-fade-in'} style={{ animationDelay: '120ms' }}>
+      <RevealOnScroll delay={0} y={14}><section className={styles.section}>
         <h2 className={styles.sectionTitle}>About</h2>
         <div className={styles.card}>
           <div className={styles.aboutRow}>
@@ -169,7 +178,7 @@ export default function SettingsPage() {
             <span className={styles.aboutValue}>Minimum Effective Knowledge</span>
           </div>
         </div>
-      </section>
+      </section></RevealOnScroll>
     </div>
   )
 }

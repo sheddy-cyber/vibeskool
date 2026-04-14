@@ -1,6 +1,7 @@
 import React from 'react'
 import { NavLink, useNavigate } from 'react-router-dom'
 import { useStore, PATHS } from '@/lib/store'
+import { useAuth } from '@/lib/auth'
 import styles from './Sidebar.module.css'
 
 
@@ -90,7 +91,9 @@ const PATH_COLORS = { violet: 'var(--accent)', teal: 'var(--green)', amber: 'var
 
 export default function Sidebar() {
   const { progress } = useStore()
+  const { currentUser } = useAuth()
   const navigate = useNavigate()
+  const isAdmin = currentUser?.role === 'admin'
 
   return (
     <aside className={styles.sidebar}>
@@ -157,15 +160,17 @@ export default function Sidebar() {
           </span>
           Settings
         </NavLink>
-        <NavLink to="/app/admin/cms" className={({ isActive }) => [styles.navItem, isActive ? styles.active : ''].join(' ')}>
-          <span className={styles.navIcon}>
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round">
-              <path d="M2 2h10a1 1 0 011 1v8a1 1 0 01-1 1H2a1 1 0 01-1-1V3a1 1 0 011-1z"/>
-              <path d="M4 6h6M4 9h4"/>
-            </svg>
-          </span>
-          Content
-        </NavLink>
+        {isAdmin && (
+          <NavLink to="/app/admin/cms" className={({ isActive }) => [styles.navItem, isActive ? styles.active : ''].join(' ')}>
+            <span className={styles.navIcon}>
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round">
+                <path d="M2 2h10a1 1 0 011 1v8a1 1 0 01-1 1H2a1 1 0 01-1-1V3a1 1 0 011-1z"/>
+                <path d="M4 6h6M4 9h4"/>
+              </svg>
+            </span>
+            Content
+          </NavLink>
+        )}
       </div>
     </aside>
   )

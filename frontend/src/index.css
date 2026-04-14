@@ -174,12 +174,12 @@ img    { display: block; max-width: 100%; }
 .animate-pulse    { animation: pulse 2.4s ease-in-out infinite; }
 .animate-spin     { animation: spin  0.8s linear infinite; }
 
-.stagger > *:nth-child(1) { animation-delay:   0ms; }
-.stagger > *:nth-child(2) { animation-delay:  55ms; }
-.stagger > *:nth-child(3) { animation-delay: 110ms; }
-.stagger > *:nth-child(4) { animation-delay: 165ms; }
-.stagger > *:nth-child(5) { animation-delay: 220ms; }
-.stagger > *:nth-child(6) { animation-delay: 275ms; }
+.stagger > *:nth-child(1) { animation-delay:   0ms; animation: fadeUp 0.40s cubic-bezier(0.22,1,0.36,1) both; }
+.stagger > *:nth-child(2) { animation-delay:  70ms; animation: fadeUp 0.40s cubic-bezier(0.22,1,0.36,1) 70ms both; }
+.stagger > *:nth-child(3) { animation-delay: 140ms; animation: fadeUp 0.40s cubic-bezier(0.22,1,0.36,1) 140ms both; }
+.stagger > *:nth-child(4) { animation-delay: 210ms; animation: fadeUp 0.40s cubic-bezier(0.22,1,0.36,1) 210ms both; }
+.stagger > *:nth-child(5) { animation-delay: 280ms; animation: fadeUp 0.40s cubic-bezier(0.22,1,0.36,1) 280ms both; }
+.stagger > *:nth-child(6) { animation-delay: 350ms; animation: fadeUp 0.40s cubic-bezier(0.22,1,0.36,1) 350ms both; }
 
 /* ── Code syntax — warm tones ───────────────────────────────── */
 .hl-kw  { color: #d4956a; }  /* terracotta keywords */
@@ -187,3 +187,61 @@ img    { display: block; max-width: 100%; }
 .hl-str { color: #c4b898; }  /* linen strings       */
 .hl-cm  { color: #5a5048; font-style: italic; }
 .hl-num { color: #c9a25a; }  /* amber numbers       */
+
+/* ── Micro-interaction utilities ─────────────────────────────────────── */
+
+/* GPU-accelerated card hover lift — apply to any interactive card */
+.lift {
+  transition: transform 280ms cubic-bezier(0.22,1,0.36,1),
+              box-shadow 280ms cubic-bezier(0.22,1,0.36,1);
+  will-change: transform;
+}
+.lift:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 32px rgba(0,0,0,0.25), 0 0 0 1px var(--border-default);
+}
+.lift:active { transform: translateY(-1px) scale(0.99); }
+
+/* Press — button press tactile feel */
+.press {
+  transition: transform 100ms ease, opacity 100ms ease;
+}
+.press:hover  { opacity: 0.92; }
+.press:active { transform: scale(0.97); opacity: 0.85; }
+
+/* Glow — accent glow on hover (for CTAs) */
+.glow {
+  transition: box-shadow 240ms ease, transform 180ms ease;
+}
+.glow:hover {
+  box-shadow: 0 0 0 3px var(--accent-dim), 0 0 20px var(--accent-dim);
+  transform: translateY(-1px);
+}
+
+/* Shimmer loading skeleton */
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--bg-raised) 0%,
+    var(--bg-overlay) 45%,
+    var(--bg-raised) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
+  border-radius: var(--radius-md);
+}
+
+/* Reveal — elements that start invisible and animate in via JS */
+.reveal-hidden { opacity: 0; }
+
+/* Smooth page scrolling */
+html { scroll-behavior: smooth; }
+
+/* Reduced motion — respect the user's OS preference */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

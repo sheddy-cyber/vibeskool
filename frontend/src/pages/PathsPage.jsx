@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { PATHS, useStore } from '@/lib/store'
 import { Badge, ProgressBar, SectionTitle } from '@/components/ui'
 import styles from './PathsPage.module.css'
+import { FadeUp, RevealOnScroll, StaggerGroup } from '@/components/ui/Motion'
 
 
 const PATH_SVGS = {
@@ -23,12 +24,12 @@ export default function PathsPage() {
 
   return (
     <div className={styles.page}>
-      <div className={styles.header + ' animate-fade-in'}>
+      <FadeUp delay={0}><div className={styles.header}>
         <h1 className={styles.title}>Skill Paths</h1>
         <p className={styles.sub}>
           Four ruthlessly edited tracks. Each one gives you exactly enough to build with AI — and nothing you don't need.
         </p>
-      </div>
+      </div></FadeUp>
 
       <div className={styles.paths}>
         {PATHS.map((path, i) => {
@@ -41,8 +42,7 @@ export default function PathsPage() {
           return (
             <div
               key={path.id}
-              className={styles.pathCard + ' animate-fade-in'}
-              style={{ animationDelay: `${i * 60}ms` }}
+              className={styles.pathCard}
               data-color={color}
             >
               {/* Top accent line */}

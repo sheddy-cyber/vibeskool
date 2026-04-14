@@ -2,6 +2,45 @@ import React, { useState, useRef, useEffect, useCallback } from 'react'
 import { evalCommand, resetSandbox } from '@/lib/terminalEval'
 import styles from './FriendlyTerminal.module.css'
 
+// ── Drag-to-resize hook ────────────────────────────────────────
+function useVerticalResize({ minHeight = 280, maxHeight = 900, defaultHeight = 480 }) {
+  const [height, setHeight] = useState(defaultHeight)
+  const dragging = useRef(false)
+  const startY   = useRef(0)
+  const startH   = useRef(0)
+
+  const onMouseDown = useCallback((e) => {
+    e.preventDefault()
+    dragging.current = true
+    startY.current   = e.clientY
+    startH.current   = height
+    document.body.style.cursor     = 'ns-resize'
+    document.body.style.userSelect = 'none'
+  }, [height])
+
+  useEffect(() => {
+    function onMove(e) {
+      if (!dragging.current) return
+      const delta = e.clientY - startY.current
+      setHeight(Math.min(maxHeight, Math.max(minHeight, startH.current + delta)))
+    }
+    function onUp() {
+      if (!dragging.current) return
+      dragging.current               = false
+      document.body.style.cursor     = ''
+      document.body.style.userSelect = ''
+    }
+    window.addEventListener('mousemove', onMove)
+    window.addEventListener('mouseup',   onUp)
+    return () => {
+      window.removeEventListener('mousemove', onMove)
+      window.removeEventListener('mouseup',   onUp)
+    }
+  }, [minHeight, maxHeight])
+
+  return { height, onMouseDown }
+}
+
 const COMMAND_CHIPS = [
   { label: 'greetUser()', cmd: 'greetUser("Shedrach")' },
   { label: 'console.log()', cmd: 'console.log("hello world")' },
@@ -46,6 +85,7 @@ export default function FriendlyTerminal({ mission, mode: initialMode = 'guided'
   const [missionIdx, setMissionIdx] = useState(0)
   const outputRef = useRef(null)
   const inputRef  = useRef(null)
+  const { height, onMouseDown: onResizeMouseDown } = useVerticalResize({ defaultHeight: 480 })
 
   // Initialize
   useEffect(() => {
@@ -158,6 +198,7 @@ export default function FriendlyTerminal({ mission, mode: initialMode = 'guided'
   }
 
   return (
+    <div className={styles.resizeWrap} style={{ height }}>
     <div className={styles.terminal}>
       {/* Title bar */}
       <div className={styles.titleBar}>
@@ -234,6 +275,16 @@ export default function FriendlyTerminal({ mission, mode: initialMode = 'guided'
           Run
         </button>
       </div>
+    </div>
+
+    {/* Resize handle */}
+    <div
+      className={styles.resizeHandle}
+      onMouseDown={onResizeMouseDown}
+      title="Drag to resize terminal"
+    >
+      <span className={styles.resizeGrip} />
+    </div>
     </div>
   )
 }

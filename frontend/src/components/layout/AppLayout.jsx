@@ -1,8 +1,9 @@
 import React, { useEffect } from 'react'
-import { Outlet } from 'react-router-dom'
+import { Outlet, useLocation } from 'react-router-dom'
 import Sidebar from './Sidebar'
 import Topbar from './Topbar'
 import { useStore } from '@/lib/store'
+import { PageTransition } from '@/components/ui/Motion'
 import styles from './AppLayout.module.css'
 
 const THEME_VARS = {
@@ -15,6 +16,7 @@ const THEME_VARS = {
 
 export default function AppLayout() {
   const { settings } = useStore()
+  const location = useLocation()
 
   useEffect(() => {
     const vars = THEME_VARS[settings.theme] || THEME_VARS.dark
@@ -27,7 +29,10 @@ export default function AppLayout() {
       <Topbar />
       <Sidebar />
       <main className={styles.main}>
-        <Outlet />
+        {/* Re-key on pathname so every route change triggers PageTransition */}
+        <PageTransition key={location.pathname}>
+          <Outlet />
+        </PageTransition>
       </main>
     </div>
   )

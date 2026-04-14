@@ -1,6 +1,7 @@
 import React from 'react'
 import FriendlyTerminal from '@/components/terminal/FriendlyTerminal'
 import styles from './LabPage.module.css'
+import { FadeUp, SlideIn, RevealOnScroll } from '@/components/ui/Motion'
 
 const QUICK_REFS = [
   { cmd: 'greetUser("name")',    desc: 'Call a function with an argument' },
@@ -20,7 +21,7 @@ export default function LabPage() {
   return (
     <div className={styles.page}>
       {/* Header */}
-      <div className={styles.header + ' animate-fade-in'}>
+      <FadeUp delay={0}><div className={styles.header}>
         <div>
           <h1 className={styles.title}>The Lab</h1>
           <p className={styles.sub}>
@@ -28,17 +29,17 @@ export default function LabPage() {
             Experiment freely — that's literally the point.
           </p>
         </div>
-      </div>
+      </div></FadeUp>
 
       {/* Main layout */}
       <div className={styles.layout}>
         {/* Terminal */}
-        <div className={styles.terminalWrap + ' animate-slide-in'}>
+        <SlideIn delay={80} x={-16}><div className={styles.terminalWrap}>
           <FriendlyTerminal mode="free" />
-        </div>
+        </div></SlideIn>
 
         {/* Quick reference */}
-        <div className={styles.refPanel + ' animate-fade-in'} style={{ animationDelay: '80ms' }}>
+        <RevealOnScroll delay={120} y={12}><div className={styles.refPanel}>
           <h2 className={styles.refTitle}>Quick Reference</h2>
           <p className={styles.refSub}>Click any command to copy it to the terminal.</p>
           <div className={styles.refList}>
@@ -68,7 +69,7 @@ export default function LabPage() {
               You're in a sandboxed environment — you can't break anything.
             </p>
           </div>
-        </div>
+        </div></RevealOnScroll>
       </div>
     </div>
   )

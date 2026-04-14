@@ -17,14 +17,13 @@
   display: grid;
   grid-template-columns: 1fr 280px;
   gap: 16px;
-  flex: 1;
-  min-height: 500px;
+  align-items: start;
 }
 
 .terminalWrap {
-  border-radius: var(--radius-xl); overflow: hidden;
-  border: 1px solid var(--border-subtle);
-  min-height: 480px;
+  min-height: 280px;
+  display: flex;
+  flex-direction: column;
 }
 
 /* ── Reference panel ─────────────────────────────────────── */

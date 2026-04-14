@@ -73,7 +73,7 @@
   cursor: pointer; white-space: nowrap;
   transition: background var(--t-fast), transform var(--t-fast);
 }
-.startBtn:hover { background: var(--accent-hover); transform: translateY(-1px); }
+.startBtn:hover { background: var(--accent-hover); transform: translateY(-1px); box-shadow: 0 0 20px var(--accent-dim); }
 
 /* ── Lessons list ─────────────────────────────────────────── */
 .lessonsList {

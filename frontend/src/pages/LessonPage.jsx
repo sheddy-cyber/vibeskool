@@ -1,9 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useStore, LESSONS_CONTENT, PATHS } from '@/lib/store'
+import { useAuth } from '@/lib/auth'
 import { Button, MEKBar, CodeBlock, Callout, AiPromptBox } from '@/components/ui'
 import FriendlyTerminal from '@/components/terminal/FriendlyTerminal'
 import styles from './LessonPage.module.css'
+import { FadeUp, RevealOnScroll, StaggerGroup } from '@/components/ui/Motion'
 
 // ─── Inline conversation box ──────────────────────────────────────────────────
 function InlineChat({ lesson }) {
@@ -127,7 +129,10 @@ const PART_COLORS = { Before: 'var(--amber)', During: 'var(--accent)', After: 'v
 export default function LessonPage() {
   const { id }   = useParams()
   const navigate = useNavigate()
-  const { completeLesson, progress, settings } = useStore()
+  const { completeLesson, progress: storeProgress, settings } = useStore()
+  const { currentUser, updateProgress } = useAuth()
+  // Merge auth progress with store progress (auth wins when logged in)
+  const progress = currentUser?.progress || storeProgress
   const [completed, setCompleted] = useState(false)
   const [showLab, setShowLab]     = useState(false)
 
@@ -155,7 +160,11 @@ export default function LessonPage() {
   const partColor   = lesson.part ? PART_COLORS[lesson.part] : 'var(--accent)'
 
   function handleComplete() {
-    if (!completed) { completeLesson(lesson.pathId); setCompleted(true) }
+    if (!completed) {
+      completeLesson(lesson.pathId)
+      if (currentUser) updateProgress(lesson.pathId)
+      setCompleted(true)
+    }
   }
 
   return (
@@ -193,8 +202,9 @@ export default function LessonPage() {
 
       {/* Lesson content */}
       <div className={styles.content}>
-        <h1 className={styles.lessonTitle}>{lesson.title}</h1>
+        <FadeUp delay={80}><h1 className={styles.lessonTitle}>{lesson.title}</h1></FadeUp>
 
+        <StaggerGroup stagger={90} baseDelay={160}>
         {lesson.sections.map((sec, i) => (
           <div key={i} className={styles.section}>
             <h2 className={styles.sectionHeading}>{sec.heading}</h2>
@@ -203,8 +213,9 @@ export default function LessonPage() {
             {sec.code    && <CodeBlock code={sec.code} />}
           </div>
         ))}
+        </StaggerGroup>
 
-        <AiPromptBox prompt={lesson.aiPrompt} />
+        <RevealOnScroll y={16}><AiPromptBox prompt={lesson.aiPrompt} /></RevealOnScroll>
 
         {/* Inline conversation */}
         <InlineChat lesson={lesson} />

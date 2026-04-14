@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { PATHS, LESSONS_CONTENT } from '@/lib/store'
 import { CodeBlock } from '@/components/ui'
 import styles from './AdminCMSPage.module.css'
+import { FadeUp, StaggerGroup } from '@/components/ui/Motion'
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 const BLANK_LESSON = () => ({
@@ -160,13 +161,13 @@ export default function AdminCMSPage() {
   if (mode === 'list') {
     return (
       <div className={styles.page}>
-        <div className={styles.header}>
+        <FadeUp delay={0}><div className={styles.header}>
           <div>
             <h1 className={styles.title}>Content Management</h1>
             <p className={styles.sub}>Write and edit lesson content. Copy the output into store.js to publish.</p>
           </div>
           <button className={styles.primaryBtn} onClick={newLesson}>+ New Lesson</button>
-        </div>
+        </div></FadeUp>
 
         <div className={styles.pathList}>
           {PATHS.map(path => {
@@ -213,7 +214,7 @@ export default function AdminCMSPage() {
   // ── Edit view ──────────────────────────────────────────────────────────────
   return (
     <div className={styles.page}>
-      <div className={styles.header}>
+      <FadeUp delay={0}><div className={styles.header}>
         <div>
           <h1 className={styles.title}>{editingExisting ? 'Edit Lesson' : 'New Lesson'}</h1>
           <p className={styles.sub}>Fill in the fields below. Copy the output and paste it into store.js to publish.</p>
@@ -222,7 +223,7 @@ export default function AdminCMSPage() {
           <button className={styles.ghostBtn} onClick={() => setMode('list')}>← All lessons</button>
           <button className={styles.ghostBtn} onClick={() => setMode('preview')}>Preview output</button>
         </div>
-      </div>
+      </div></FadeUp>
 
       <div className={styles.editorGrid}>
         {/* Left: form */}
