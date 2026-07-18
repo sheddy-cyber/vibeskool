@@ -78,23 +78,33 @@ export function SectionTitle({ children }) {
 
 // ─── CodeBlock ────────────────────────────────────────────────────────────────
 export function CodeBlock({ code }) {
-  // Step 1: escape HTML special chars in the raw code
-  const escaped = code
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
+  const lines = code.split('\n')
+  const kw = new Set(['function','return','const','let','var','if','else','for','while','async','await','import','export','default','class','new','this','from','of','in','typeof','instanceof'])
 
-  // Step 2: apply syntax highlighting on the escaped string
-  // Order matters: comments first (greedy), then keywords, strings, functions
-  const highlighted = escaped
-    .replace(/(\/\/[^\n]*)/g, '<span class="hl-cm">$1</span>')
-    .replace(/\b(function|return|const|let|var|if|else|for|while|async|await|import|export|default|class|new|this|from|of|in|typeof|instanceof)\b/g, '<span class="hl-kw">$1</span>')
-    .replace(/(&quot;[^&]*?&quot;|&#39;[^&]*?&#39;|`[^`]*?`)/g, '<span class="hl-str">$1</span>')
-    .replace(/\b([A-Z][a-zA-Z0-9_]*)(?=\s*\()/g, '<span class="hl-fn">$1</span>')
+  function highlightLine(line) {
+    if (/^\s*\/\//.test(line)) {
+      return <span className="hl-cm">{line}</span>
+    }
+    const parts = line.split(/(\/\/.*)/)
+    if (parts.length === 1) return <>{tokenize(line, kw)}</>
+    return <>{tokenize(parts[0], kw)}<span className="hl-cm">{parts[1]}</span></>
+  }
 
   return (
-    <pre className={styles.codeBlock} dangerouslySetInnerHTML={{ __html: highlighted }} />
+    <pre className={styles.codeBlock}>
+      {lines.map((line, i) => <div key={i}>{highlightLine(line)}</div>)}
+    </pre>
   )
+}
+
+function tokenize(text, kw) {
+  const tokens = text.split(/(\b(?:[A-Z][a-zA-Z0-9_]*)(?=\s*\()|\b(const|let|var|function|return|if|else|for|while|async|await|import|export|default|class|new|this|from|of|in|typeof|instanceof)\b|("[^"]*"|'[^']*'|`[^`]*`))/)
+  return tokens.filter(Boolean).map((t, i) => {
+    if (kw.has(t)) return <span key={i} className="hl-kw">{t}</span>
+    if (/^[A-Z][a-zA-Z0-9_]*$/.test(t)) return <span key={i} className="hl-fn">{t}</span>
+    if (/^["'`]/.test(t)) return <span key={i} className="hl-str">{t}</span>
+    return t
+  })
 }
 
 // ─── Callout ──────────────────────────────────────────────────────────────────
@@ -146,6 +156,52 @@ export function EmptyState({ icon, title, body, action }) {
       <h3 className={styles.emptyTitle}>{title}</h3>
       {body && <p className={styles.emptyBody}>{body}</p>}
       {action}
+    </div>
+  )
+}
+
+// ─── GoalWidget ───────────────────────────────────────────────────────────────
+import { useStore } from '@/lib/store'
+
+export function GoalWidget() {
+  const { settings, updateSettings, user } = useStore()
+  const goal = settings.dailyGoal || 2
+  // Simulate completed today based on completed count.
+  const completedToday = Math.min(goal, user.lessonsCompleted % (goal + 1))
+  const streak = 3 // simulated streak
+
+  return (
+    <div className={styles.goalWidget}>
+      <div className={styles.goalHeader}>
+        <div className={styles.goalTitleRow}>
+          <span className={styles.goalIcon}>🔥</span>
+          <div>
+            <h4 className={styles.goalTitle}>{streak} Day Streak!</h4>
+            <p className={styles.goalSub}>Keep the momentum going</p>
+          </div>
+        </div>
+        <div className={styles.goalTargetSelector}>
+          {[1, 2, 3].map(t => (
+            <button
+              key={t}
+              className={clsx(styles.targetBtn, goal === t && styles.targetBtnActive)}
+              onClick={() => updateSettings({ dailyGoal: t })}
+              title={`Set daily target to ${t} lessons`}
+            >
+              {t}
+            </button>
+          ))}
+        </div>
+      </div>
+      <div className={styles.goalBody}>
+        <div className={styles.goalProgressInfo}>
+          <span className={styles.goalProgressLabel}>Daily Target: {completedToday} / {goal} Lessons</span>
+          <span className={styles.goalProgressPct}>{Math.round((completedToday / goal) * 100)}%</span>
+        </div>
+        <div className={styles.goalTrack}>
+          <div className={styles.goalFill} style={{ width: `${(completedToday / goal) * 100}%` }} />
+        </div>
+      </div>
     </div>
   )
 }

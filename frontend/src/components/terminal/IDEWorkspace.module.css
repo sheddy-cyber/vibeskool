@@ -1,0 +1,171 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background: var(--bg-raised);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.ideMain {
+  display: flex;
+  flex: 1;
+  min-height: 280px;
+  border-bottom: 1px solid var(--border-default);
+}
+
+/* ── Sidebar Explorer ── */
+.fileTree {
+  width: 200px;
+  background: var(--bg-surface);
+  border-right: 1px solid var(--border-default);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+}
+.treeHeader {
+  padding: 12px 16px;
+  font-size: 10px;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  border-bottom: 1px solid var(--border-subtle);
+}
+.treeList {
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.fileBtn {
+  background: transparent;
+  border: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: var(--radius-xs);
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+  transition: all var(--t-fast);
+}
+.fileBtn:hover {
+  background: var(--bg-overlay);
+}
+.fileBtnActive {
+  background: var(--accent-dim) !important;
+  color: var(--accent-text);
+  font-weight: 600;
+  box-shadow: inset 2px 0 0 var(--accent);
+}
+.fileIcon {
+  font-size: 12px;
+  flex-shrink: 0;
+}
+.fileName {
+  font-size: 12.5px;
+  font-family: var(--font-mono);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── Code Editor Pane ── */
+.editorArea {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-base);
+}
+
+.editorHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  background: var(--bg-surface);
+  border-bottom: 1px solid var(--border-subtle);
+}
+.tabName {
+  font-size: 12.5px;
+  font-family: var(--font-mono);
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.tabIcon {
+  font-size: 12px;
+}
+.editorStatus {
+  font-size: 11px;
+  color: var(--text-tertiary);
+  font-family: var(--font-mono);
+}
+
+.editorContainer {
+  flex: 1;
+  display: flex;
+  padding: 16px;
+  position: relative;
+  overflow: hidden;
+}
+
+.lineNumbers {
+  display: flex;
+  flex-direction: column;
+  padding-right: 14px;
+  border-right: 1px solid var(--border-subtle);
+  user-select: none;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text-tertiary);
+  text-align: right;
+  min-width: 24px;
+}
+.lineNumber {
+  line-height: 1.7;
+}
+
+.editorTextarea {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  resize: none;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--text-primary);
+  padding-left: 14px;
+  overflow-y: auto;
+}
+
+/* ── Bottom Terminal Area ── */
+.terminalPanel {
+  flex-shrink: 0;
+  background: var(--bg-surface);
+}
+
+/* Responsive adjust */
+@media (max-width: 680px) {
+  .ideMain {
+    flex-direction: column;
+  }
+  .fileTree {
+    width: 100%;
+    border-right: none;
+    border-bottom: 1px solid var(--border-default);
+    height: 100px;
+  }
+  .treeList {
+    flex-direction: row;
+    overflow-x: auto;
+  }
+}

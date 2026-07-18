@@ -1,6 +1,7 @@
 import React from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/lib/auth'
+import { useStore } from '@/lib/store'
 import styles from './Topbar.module.css'
 
 export default function Topbar() {
@@ -14,8 +15,26 @@ export default function Topbar() {
     navigate('/', { replace: true })
   }
 
+  function handleToggle() {
+    if (window.innerWidth > 768) {
+      useStore.setState(s => ({
+        settings: { ...s.settings, compactSidebar: !s.settings.compactSidebar }
+      }))
+    } else {
+      useStore.setState(s => ({ sidebarOpen: !s.sidebarOpen }))
+    }
+  }
+
   return (
     <header className={styles.topbar}>
+      <button className={styles.menuBtn} onClick={handleToggle} aria-label="Toggle Sidebar">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+          <line x1="3" y1="12" x2="21" y2="12" />
+          <line x1="3" y1="6" x2="21" y2="6" />
+          <line x1="3" y1="18" x2="21" y2="18" />
+        </svg>
+      </button>
+
       <Link to="/app/dashboard" className={styles.logo}>
         <div className={styles.logoMark}>VS</div>
         <span className={styles.logoText}>VibeSkool</span>

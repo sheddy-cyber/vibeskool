@@ -1,5 +1,5 @@
-import React from 'react'
-import FriendlyTerminal from '@/components/terminal/FriendlyTerminal'
+import React, { useState } from 'react'
+import IDEWorkspace from '@/components/terminal/IDEWorkspace'
 import styles from './LabPage.module.css'
 import { FadeUp, SlideIn, RevealOnScroll } from '@/components/ui/Motion'
 
@@ -18,58 +18,79 @@ const QUICK_REFS = [
 ]
 
 export default function LabPage() {
+  const [copiedCmd, setCopiedCmd] = useState(null)
+
+  const handleCopy = (cmd) => {
+    navigator.clipboard?.writeText(cmd)
+    setCopiedCmd(cmd)
+    setTimeout(() => setCopiedCmd(null), 1500)
+  }
+
   return (
     <div className={styles.page}>
       {/* Header */}
-      <FadeUp delay={0}><div className={styles.header}>
-        <div>
-          <h1 className={styles.title}>The Lab</h1>
-          <p className={styles.sub}>
-            A safe sandbox. Nothing you type here can break anything.
-            Experiment freely — that's literally the point.
-          </p>
+      <FadeUp delay={0}>
+        <div className={styles.header}>
+          <div>
+            <h1 className={styles.title}>The Lab</h1>
+            <p className={styles.sub}>
+              A safe sandbox environment. Nothing you type here can break anything.
+              Experiment freely in our virtual editor and terminal VM.
+            </p>
+          </div>
         </div>
-      </div></FadeUp>
+      </FadeUp>
 
       {/* Main layout */}
       <div className={styles.layout}>
-        {/* Terminal */}
-        <SlideIn delay={80} x={-16}><div className={styles.terminalWrap}>
-          <FriendlyTerminal mode="free" />
-        </div></SlideIn>
+        
+        {/* IDE Workspace Terminal */}
+        <SlideIn delay={80} x={-16} className={styles.terminalWrap}>
+          <IDEWorkspace />
+        </SlideIn>
 
-        {/* Quick reference */}
-        <RevealOnScroll delay={120} y={12}><div className={styles.refPanel}>
-          <h2 className={styles.refTitle}>Quick Reference</h2>
-          <p className={styles.refSub}>Click any command to copy it to the terminal.</p>
-          <div className={styles.refList}>
-            {QUICK_REFS.map((r) => (
-              <div key={r.cmd} className={styles.refRow}>
-                <code className={styles.refCmd}>{r.cmd}</code>
-                <span className={styles.refDesc}>{r.desc}</span>
-              </div>
-            ))}
-          </div>
+        {/* Quick reference sidebar */}
+        <RevealOnScroll delay={120} y={12}>
+          <div className={styles.refPanel}>
+            <h2 className={styles.refTitle}>Quick Reference</h2>
+            <p className={styles.refSub}>Click any command to copy it to clipboard.</p>
+            
+            <div className={styles.refList}>
+              {QUICK_REFS.map((r) => (
+                <div 
+                  key={r.cmd} 
+                  className={styles.refRow} 
+                  onClick={() => handleCopy(r.cmd)}
+                  title="Click to copy"
+                >
+                  <div className={styles.cmdRow}>
+                    <code className={styles.refCmd}>{r.cmd}</code>
+                    {copiedCmd === r.cmd && <span className={styles.copyCheck}>✓</span>}
+                  </div>
+                  <span className={styles.refDesc}>{r.desc}</span>
+                </div>
+              ))}
+            </div>
 
-          <div className={styles.tipBox}>
-            <span className={styles.tipLabel}>Pro tip</span>
-            <p className={styles.tipText}>
-              Use ↑ and ↓ arrow keys to cycle through your command history — just like a real terminal.
-            </p>
-          </div>
+            <div className={styles.tipBox}>
+              <span className={styles.tipLabel}>Pro tip</span>
+              <p className={styles.tipText}>
+                Use ↑ and ↓ arrow keys in the terminal input to cycle through your command history.
+              </p>
+            </div>
 
-          <div className={styles.safeBox}>
-            <span className={styles.safeIcon}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--green)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-              </svg>
-            </span>
-            <p className={styles.safeText}>
-              Destructive commands like <code>rm -rf</code> are automatically blocked.
-              You're in a sandboxed environment — you can't break anything.
-            </p>
+            <div className={styles.safeBox}>
+              <span className={styles.safeIcon}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--green)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                </svg>
+              </span>
+              <p className={styles.safeText}>
+                Destructive actions like <code>rm -rf</code> are blocked. You are in a sandboxed client container.
+              </p>
+            </div>
           </div>
-        </div></RevealOnScroll>
+        </RevealOnScroll>
       </div>
     </div>
   )

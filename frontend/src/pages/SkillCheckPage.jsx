@@ -1,84 +1,48 @@
-import React, { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import React, { useState, useEffect } from 'react'
+import { useParams, useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui'
+import { useStore, PATHS } from '@/lib/store'
+import { useAuth } from '@/lib/auth'
+import { QUIZ_QUESTIONS } from '@/lib/quiz_questions'
 import styles from './SkillCheckPage.module.css'
-import { FadeUp, ScaleIn, RevealOnScroll } from '@/components/ui/Motion'
-
-const QUESTIONS = [
-  {
-    id: 1,
-    topic: `JavaScript Functions`,
-    question: `You see this in AI-generated code:\n\nfunction calculateTotal(price, tax)\n\nWhat does this line do?`,
-    code: `function calculateTotal(price, tax)`,
-    options: [
-      { text: `It runs a calculation immediately when the page loads`, correct: false },
-      { text: `It defines a reusable block of code that takes two inputs`, correct: true },
-      { text: `It stores the number 0 in a variable called calculateTotal`, correct: false },
-      { text: `It imports a math library from the internet`, correct: false },
-    ],
-    explanation: `A function declaration defines what to do when called — it doesn't run anything yet. The name is calculateTotal, and price and tax are its parameters (the inputs it needs). This is the most common pattern in any AI-generated codebase.`,
-  },
-  {
-    id: 2,
-    topic: `HTML Structure`,
-    question: `What is the correct relationship between these two HTML elements?`,
-    code: `<div>\n  <p>Hello world</p>\n</div>`,
-    options: [
-      { text: `They are siblings — two elements at the same level`, correct: false },
-      { text: `The p is the parent and the div is the child`, correct: false },
-      { text: `The div is the parent and the p is the child (nested inside it)`, correct: true },
-      { text: `They are duplicates of the same element`, correct: false },
-    ],
-    explanation: `When an element sits inside another, the outer one is the parent and the inner one is the child. Reading this nesting is the core skill for understanding any AI-generated HTML.`,
-  },
-  {
-    id: 3,
-    topic: `Variables`,
-    question: `What is the difference between let and const in JavaScript?`,
-    code: `let name = "Shedrach"\nconst age = 25`,
-    options: [
-      { text: `let is for numbers, const is for text`, correct: false },
-      { text: `There is no difference — they do the same thing`, correct: false },
-      { text: `const variables cannot be reassigned; let variables can`, correct: true },
-      { text: `const runs faster than let`, correct: false },
-    ],
-    explanation: `const means the variable's value is locked after assignment — AI uses it for things that shouldn't change. let means the value can be updated later. When you see const in AI code, you know that value is meant to stay fixed.`,
-  },
-  {
-    id: 4,
-    topic: `APIs`,
-    question: `What does this line of code do?`,
-    code: `fetch("https://api.example.com/users")`,
-    options: [
-      { text: `It saves a user to the database`, correct: false },
-      { text: `It makes a request to get data from an external URL`, correct: true },
-      { text: `It opens a new browser tab to that URL`, correct: false },
-      { text: `It deletes all users from the API`, correct: false },
-    ],
-    explanation: `fetch() is how JavaScript requests data from an API. By default it's a GET request — asking the server to send you something. When AI generates API calls, fetch() (or its cousin axios) is almost always what it uses.`,
-  },
-  {
-    id: 5,
-    topic: `Reading AI Code`,
-    question: `AI gives you this error. What does it mean?\n\nTypeError: Cannot read properties of undefined (reading 'name')`,
-    options: [
-      { text: `Your computer doesn't have permission to read the file`, correct: false },
-      { text: `The variable you're trying to read a property from doesn't exist yet`, correct: true },
-      { text: `The word 'name' is a reserved keyword in JavaScript`, correct: false },
-      { text: `There is a typo in the word "properties"`, correct: false },
-    ],
-    explanation: `This error means you're trying to access .name on something that is undefined (doesn't exist). The fix: check that the variable is defined and has data before accessing its properties. This is one of the most common AI code errors you'll encounter.`,
-  },
-]
+import { FadeUp, ScaleIn } from '@/components/ui/Motion'
 
 export default function SkillCheckPage() {
+  const { moduleId } = useParams()
   const navigate = useNavigate()
+  const { currentUser, passModule: authPassModule } = useAuth()
+  const { passModule: storePassModule } = useStore()
+
+  const QUESTIONS = QUIZ_QUESTIONS[moduleId] || []
+
   const [current, setCurrent]   = useState(0)
   const [selected, setSelected] = useState(null)
   const [answered, setAnswered] = useState(false)
   const [score, setScore]       = useState(0)
   const [done, setDone]         = useState(false)
   const [answers, setAnswers]   = useState([])
+
+  // Reset state if moduleId changes
+  useEffect(() => {
+    setCurrent(0)
+    setSelected(null)
+    setAnswered(false)
+    setScore(0)
+    setDone(false)
+    setAnswers([])
+  }, [moduleId])
+
+  if (!QUESTIONS.length) {
+    return (
+      <div className={styles.page}>
+        <div className={styles.notFound}>
+          <h2>Test Coming Soon</h2>
+          <p>No quiz found for module ID "{moduleId}".</p>
+          <Button onClick={() => navigate('/app/paths')}>← Back to Paths</Button>
+        </div>
+      </div>
+    )
+  }
 
   const q = QUESTIONS[current]
 
@@ -94,6 +58,14 @@ export default function SkillCheckPage() {
   function next() {
     if (current + 1 >= QUESTIONS.length) {
       setDone(true)
+      const finalScore = score + (q.options[selected]?.correct ? 1 : 0)
+      const pct = Math.round((finalScore / QUESTIONS.length) * 100)
+      if (pct >= 70) {
+        storePassModule(moduleId)
+        if (currentUser) {
+          authPassModule(moduleId)
+        }
+      }
     } else {
       setCurrent(c => c + 1)
       setSelected(null)
@@ -111,32 +83,39 @@ export default function SkillCheckPage() {
   }
 
   const pct = Math.round((score / QUESTIONS.length) * 100)
+  const passed = pct >= 70
+
+  const path = PATHS.find(p => p.id === 'full-stack-web')
+  const currentModule = path?.modules.find(m => m.id === moduleId)
+  const currentModIdx = path?.modules.findIndex(m => m.id === moduleId) ?? -1
+  const nextMod = path?.modules[currentModIdx + 1]
+  const nextModLessons = nextMod ? path.lessons_data.filter(l => l.part?.startsWith(nextMod.id.replace('m', 'M') + ':')) : []
+  const nextLessonId = nextModLessons[0]?.id
 
   if (done) {
-    const passed = pct >= 60
     return (
       <div className={styles.page}>
         <ScaleIn delay={0}><div className={styles.results}>
           <div className={styles.resultIcon} style={{
-            background: passed ? 'var(--accent-dim)' : 'var(--red-dim)',
-            border: `1px solid ${passed ? 'var(--accent-border)' : 'var(--red-border)'}`,
+            background: passed ? 'var(--green-dim)' : 'var(--red-dim)',
+            border: `1px solid ${passed ? 'var(--green-border)' : 'var(--red-border)'}`,
           }}>
             {passed
-              ? <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--accent-text)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-              : <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--red)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
+              ? <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--green)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+              : <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--red)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
             }
           </div>
           <h1 className={styles.resultTitle}>
-            {passed ? 'You\'re ready to build.' : 'Keep going — you\'re close.'}
+            {passed ? 'Module unlocked!' : 'Keep reviewing — you\'re close.'}
           </h1>
-          <div className={styles.scoreCircle} data-passed={passed}>
-            <span className={styles.scoreNum}>{pct}%</span>
+          <div className={styles.scoreCircle} data-passed={passed} style={{ borderColor: passed ? 'var(--green)' : 'var(--red)' }}>
+            <span className={styles.scoreNum} style={{ color: passed ? 'var(--green)' : 'var(--red)' }}>{pct}%</span>
             <span className={styles.scoreLabel}>{score}/{QUESTIONS.length} correct</span>
           </div>
           <p className={styles.resultSub}>
             {passed
-              ? `You have enough knowledge to effectively direct AI in these topics. Open a lesson that interests you and start building.`
-              : `You got ${QUESTIONS.length - score} questions wrong. Review those topics in the lesson pages and try again.`}
+              ? `Congratulations! You scored ${pct}% and earned +10 MEK points! You have unlocked the next module's curriculum.`
+              : `You got ${QUESTIONS.length - score} questions wrong (requires 70% or 14/20 to pass). Review the lessons in this module and try again.`}
           </p>
           <div className={styles.answerSummary}>
             {answers.map((a, i) => (
@@ -152,11 +131,23 @@ export default function SkillCheckPage() {
             ))}
           </div>
           <div className={styles.resultActions}>
-            <Button onClick={restart} variant="secondary">Try again</Button>
-            {passed && (
-              <Button onClick={() => navigate('/app/paths')}>
-                Back to Paths →
-              </Button>
+            {passed ? (
+              nextLessonId ? (
+                <Button onClick={() => navigate(`/app/lesson/${nextLessonId}`)} variant="primary">
+                  Start Module {nextMod.id.replace('m', '')} →
+                </Button>
+              ) : (
+                <Button onClick={() => navigate('/app/paths')} variant="teal">
+                  Back to Paths ✓
+                </Button>
+              )
+            ) : (
+              <>
+                <Button onClick={restart} variant="secondary">Try again</Button>
+                <Button onClick={() => navigate('/app/paths')} variant="secondary">
+                  Back to Paths
+                </Button>
+              </>
             )}
           </div>
         </div></ScaleIn>
@@ -169,8 +160,9 @@ export default function SkillCheckPage() {
       {/* Header */}
       <FadeUp delay={0}><div className={styles.header}>
         <div>
-          <h1 className={styles.title}>Skill Check</h1>
-          <p className={styles.sub}>10 minutes. Prove you know enough to build with AI.</p>
+          <span className={styles.moduleTag}>Module {moduleId.replace('m', '')} Test</span>
+          <h1 className={styles.title}>{currentModule?.title || 'Skill Check'}</h1>
+          <p className={styles.sub}>20 questions. Score 70% (14/20) or higher to unlock the next module.</p>
         </div>
         <div className={styles.progress}>
           <span className={styles.progressNum}>{current + 1} / {QUESTIONS.length}</span>

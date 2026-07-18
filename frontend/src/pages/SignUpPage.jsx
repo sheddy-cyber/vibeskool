@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '@/lib/auth'
 import { FadeUp, ScaleIn } from '@/components/ui/Motion'
-import AnimatedBg from '@/components/ui/AnimatedBg'
 import styles from './SignInPage.module.css'
 
 export default function SignUpPage() {
@@ -14,6 +13,12 @@ export default function SignUpPage() {
   useEffect(() => {
     if (currentUser) navigate('/app/dashboard', { replace: true })
   }, [currentUser])
+
+  // Force dark theme for the auth pages
+  useEffect(() => {
+    document.body.setAttribute('data-theme', 'dark');
+    return () => document.body.removeAttribute('data-theme');
+  }, []);
 
   function handleSubmit(e) {
     e.preventDefault()
@@ -29,7 +34,11 @@ export default function SignUpPage() {
 
   return (
     <div className={styles.page}>
-      <AnimatedBg />
+      {/* ── Background Mesh ── */}
+      <div className={styles.meshBackground}>
+        <div className={`${styles.glowOrb} ${styles.orb1}`} />
+        <div className={`${styles.glowOrb} ${styles.orb2}`} />
+      </div>
 
       <div className={styles.inner}>
         <FadeUp delay={0}>

@@ -25,6 +25,7 @@ function seedAdminIfNeeded() {
       buildsUnlocked:   5,
       joinedAt:  new Date().toISOString(),
       progress:  {},
+      passedModules: ['m0', 'm1', 'm2', 'm3', 'm4', 'm5', 'm6', 'm7', 'm8'],
     })
     localStorage.setItem('vs_users', JSON.stringify(existing))
   }
@@ -89,6 +90,7 @@ export const useAuth = create((set, get) => {
         buildsUnlocked:   0,
         joinedAt:         new Date().toISOString(),
         progress:         {},
+        passedModules:    [],
         settings: {
           theme: 'dark', fontSize: 'md',
           terminalSound: false, showMekBar: true, compactSidebar: false,
@@ -146,6 +148,33 @@ export const useAuth = create((set, get) => {
         progress,
         lessonsCompleted: user.lessonsCompleted + 1,
         mekScore: Math.min(100, user.mekScore + 3),
+      }
+      users[idx] = updated
+      saveUsers(users)
+
+      const { password: _, ...safeUser } = updated
+      saveSession(safeUser)
+      set({ currentUser: safeUser })
+    },
+
+    passModule: (moduleId) => {
+      const { currentUser } = get()
+      if (!currentUser) return
+
+      const users = getUsers()
+      const idx   = users.findIndex(u => u.id === currentUser.id)
+      if (idx === -1) return
+
+      const user = users[idx]
+      const passedModules = [...(user.passedModules || [])]
+      if (!passedModules.includes(moduleId)) {
+        passedModules.push(moduleId)
+      }
+
+      const updated = {
+        ...user,
+        passedModules,
+        mekScore: Math.min(100, user.mekScore + 10),
       }
       users[idx] = updated
       saveUsers(users)

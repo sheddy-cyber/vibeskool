@@ -1,116 +1,167 @@
-/*
-  VibeSkool — Siltstone (Figma #79)
-  ════════════════════════════════════════════════════════════
-  Palette: warm stone layered depths
-    #f0ebe3  — chalk (lightest, text on dark)
-    #c4b8a8  — warm linen mid
-    #8a8077  — mid stone (accent base)
-    #2d2520  — deep mocha (darkest base)
-
-  Philosophy: Aged paper meets precision engineering.
-  Think architect's desk at golden hour. Every tone
-  belongs to the earth. Bold by restraint.
-  ════════════════════════════════════════════════════════════
-*/
-
-@font-face {
-  font-family: 'BB Casual Pro';
-  src: url('/fonts/bbcasualpro-regular.woff2') format('woff2');
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
-@font-face {
-  font-family: 'BB Casual Pro';
-  src: url('/fonts/bbcasualpro-medium.woff2') format('woff2');
-  font-weight: 500 600;
-  font-style: normal;
-  font-display: swap;
-}
+@import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+:root, [data-theme="light"] {
+  /* ── motion.dev Light Theme (Amber / Carbon Accent) ────────── */
+  --bg-base:    #F3F3F5;
+  --bg-surface: #E8E8EC;
+  --bg-raised:  #FFFFFF;
+  --bg-overlay: #DFDFE3;
+  --bg-input:   #FFFFFF;
+
+  /* ── Borders ──────────────────────────────────────────────── */
+  --border-faint:   rgba(0, 0, 0, 0.04);
+  --border-subtle:  rgba(0, 0, 0, 0.08);
+  --border-default: rgba(0, 0, 0, 0.12);
+  --border-strong:  rgba(0, 0, 0, 0.20);
+
+  /* ── Text ─────────────────────────────────────────────────── */
+  --text-primary:   #0A0A0C;
+  --text-secondary: #4C4F56;
+  --text-tertiary:  #8A8E99;
+  --text-inverse:   #0A0A0C;
+
+  /* ── Accent — True Yellow ─────────────────────────────────── */
+  --accent:         #FACC15;
+  --accent-hover:   #EAB308;
+  --accent-dim:     rgba(250, 204, 21, 0.08);
+  --accent-border:  rgba(250, 204, 21, 0.2);
+  --accent-text:    #CA8A04;
+
+  /* ── Code Syntax ── */
+  --code-keyword:   #7C3AED;
+  --code-func:      #0284C7;
+  --code-param:     #374151;
+  --code-string:    #059669;
+  --code-comment:   #9CA3AF;
+  --code-error:     #DC2626;
+
+  /* ── Secondary — Sage/Slate ───────────────────────────────── */
+  --sage:           #62757F;
+  --sage-dim:       rgba(98, 117, 127, 0.08);
+  --sage-border:    rgba(98, 117, 127, 0.15);
+  --sage-text:      #62757F;
+
+  /* ── Neutral ──────────────────────────────────────────────── */
+  --stone:          #8A8E99;
+  --stone-dim:      #E8E8EC;
+  --stone-border:   #DFDFE3;
+
+  /* ── Semantic Colors ─────────────────────────────────────── */
+  --green:        #388E3C;
+  --green-dim:    rgba(56, 142, 60, 0.08);
+  --green-border: rgba(56, 142, 60, 0.15);
+  --green-text:   #388E3C;
+
+  --amber:        #FF9F1C;
+  --amber-dim:    rgba(255, 159, 28, 0.08);
+  --amber-border: rgba(255, 159, 28, 0.15);
+  --amber-text:   #B36B00;
+
+  --red:          #D32F2F;
+  --red-dim:      rgba(211, 47, 47, 0.08);
+  --red-border:   rgba(211, 47, 47, 0.15);
+  --red-text:     #D32F2F;
+}
+
+[data-theme="dark"] {
+  /* ── motion.dev Dark Theme (Carbon / Amber Accent) ────────── */
+  --bg-base:    #08080A; /* Dark carbon black */
+  --bg-surface: #0F0F12;
+  --bg-raised:  #151518;
+  --bg-overlay: #1C1C21;
+  --bg-input:   #121215;
+
+  /* ── Borders ──────────────────────────────────────────────── */
+  --border-faint:   rgba(255, 255, 255, 0.03);
+  --border-subtle:  rgba(255, 255, 255, 0.06);
+  --border-default: rgba(255, 255, 255, 0.10);
+  --border-strong:  rgba(255, 255, 255, 0.20);
+
+  /* ── Text ─────────────────────────────────────────────────── */
+  --text-primary:   #EEEEF2;
+  --text-secondary: #9FA1A6;
+  --text-tertiary:  #616369;
+  --text-inverse:   #08080A;
+
+  /* ── Accent — True Yellow (Dark Mode) ────────────────────── */
+  --accent:         #FFEE55;
+  --accent-hover:   #FFF176;
+  --accent-dim:     rgba(255, 238, 85, 0.12);
+  --accent-border:  rgba(255, 238, 85, 0.25);
+  --accent-text:    #FFEE55;
+
+  /* ── Code Syntax (Dark Mode) ── */
+  --code-keyword:   #C084FC;
+  --code-func:      #38BDF8;
+  --code-param:     #E5E7EB;
+  --code-string:    #34D399;
+  --code-comment:   #6B7280;
+  --code-error:     #F87171;
+
+  /* ── Secondary — Sage/Slate ───────────────────────────────── */
+  --sage:           #9FA1A6;
+  --sage-dim:       rgba(159, 161, 166, 0.08);
+  --sage-border:    rgba(159, 161, 166, 0.15);
+  --sage-text:      #EEEEF2;
+
+  /* ── Neutral ──────────────────────────────────────────────── */
+  --stone:          #616369;
+  --stone-dim:      #151518;
+  --stone-border:   #1C1C21;
+
+  /* ── Semantic Colors ─────────────────────────────────────── */
+  --green:        #31B5A6;
+  --green-dim:    rgba(49, 181, 166, 0.15);
+  --green-border: rgba(49, 181, 166, 0.3);
+  --green-text:   #31B5A6;
+
+  --amber:        #FFB800;
+  --amber-dim:    rgba(255, 184, 0, 0.12);
+  --amber-border: rgba(255, 184, 0, 0.25);
+  --amber-text:   #FFB800;
+
+  --red:          #EF8064;
+  --red-dim:      rgba(239, 128, 100, 0.15);
+  --red-border:   rgba(239, 128, 100, 0.3);
+  --red-text:     #EF8064;
+}
+
 :root {
-  /* ── Siltstone backgrounds ──────────────────────────────── */
-  --bg-base:    #1c1a17;
-  --bg-surface: #231f1b;
-  --bg-raised:  #2c2822;
-  --bg-overlay: #36312a;
-  --bg-input:   #272320;
-
-  /* ── Borders — warm stone dust ──────────────────────────── */
-  --border-faint:   rgba(240, 235, 227, 0.055);
-  --border-subtle:  rgba(240, 235, 227, 0.09);
-  --border-default: rgba(240, 235, 227, 0.15);
-  --border-strong:  rgba(240, 235, 227, 0.26);
-
-  /* ── Text — warm linen hierarchy ───────────────────────── */
-  --text-primary:   #f0ebe3;
-  --text-secondary: #a8998a;
-  --text-tertiary:  #6a5e50;
-  --text-inverse:   #1c1a17;
-
-  /* ── Primary accent — warm terracotta-rust ──────────────── */
-  /* This is the "punch" — warm, earthy, unexpected energy   */
-  --accent:         #c97a3a;
-  --accent-hover:   #b86e30;
-  --accent-dim:     rgba(201, 122, 58, 0.12);
-  --accent-border:  rgba(201, 122, 58, 0.32);
-  --accent-text:    #e0a060;
-
-  /* ── Secondary — dusty sage (siltstone hallmark) ────────── */
-  --sage:           #8a9e8a;
-  --sage-dim:       rgba(138, 158, 138, 0.10);
-  --sage-border:    rgba(138, 158, 138, 0.28);
-  --sage-text:      #b0c8b0;
-
-  /* ── Stone — warm mid-palette neutral ───────────────────── */
-  --stone:          #c4b8a8;
-  --stone-dim:      rgba(196, 184, 168, 0.08);
-  --stone-border:   rgba(196, 184, 168, 0.20);
-
-  /* ── Semantic ───────────────────────────────────────────── */
-  --green:        #7aad84;
-  --green-dim:    rgba(122, 173, 132, 0.10);
-  --green-border: rgba(122, 173, 132, 0.28);
-
-  --amber:        --accent;  /* reuse terracotta for warnings */
-  --amber:        #c9a25a;
-  --amber-dim:    rgba(201, 162, 90, 0.10);
-  --amber-border: rgba(201, 162, 90, 0.28);
-
-  --red:          #c47868;
-  --red-dim:      rgba(196, 120, 104, 0.10);
-  --red-border:   rgba(196, 120, 104, 0.28);
-
-  /* Aliases */
   --pink:        var(--accent);
   --pink-dim:    var(--accent-dim);
   --pink-border: var(--accent-border);
-  --transition:  200ms ease;
+  --transition:  150ms ease;
 
   /* ── Typography ─────────────────────────────────────────── */
-  --font-display: 'Space Grotesk', sans-serif;
-  --font-sans:    'BB Casual Pro', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  --font-mono:    'Geist Mono', ui-monospace, monospace;
+  --font-display: 'Bricolage Grotesque', sans-serif;
+  --font-sans:    'Inter', sans-serif;
+  --font-mono:    'JetBrains Mono', monospace;
 
-  /* ── Radius ─────────────────────────────────────────────── */
-  --radius-xs:  3px;
-  --radius-sm:  6px;
-  --radius-md:  10px;
-  --radius-lg:  16px;
-  --radius-xl:  24px;
+  /* ── Radius — sharp, deliberate ─────────────────────────── */
+  --radius-xs:  2px;
+  --radius-sm:  3px;
+  --radius-md:  4px;
+  --radius-lg:  6px;
+  --radius-xl:  8px;
   --radius-pill: 999px;
 
   /* ── Motion ─────────────────────────────────────────────── */
-  --ease:    cubic-bezier(0.22, 1, 0.36, 1);
-  --t-fast:  110ms;
-  --t-base:  200ms;
-  --t-slow:  380ms;
+  --ease:    cubic-bezier(0.32, 0.72, 0, 1);
+  --t-fast:  150ms;
+  --t-base:  300ms;
+  --t-slow:  500ms;
 
   /* ── Layout ─────────────────────────────────────────────── */
-  --sidebar-w: 228px;
-  --topbar-h:  58px;
+  --sidebar-w: 260px;
+  --topbar-h:  56px;
+
+  /* ── Glassmorphism & Glows ──────────────────────────────── */
+  --glass-bg: rgba(20, 20, 25, 0.6);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --glow-primary: rgba(255, 238, 85, 0.15);
+  --glow-secondary: rgba(139, 92, 246, 0.15); /* Purple accent */
 }
 
 html, body, #root { height: 100%; width: 100%; }
@@ -124,6 +175,7 @@ body {
   font-weight: 400;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
 }
 
 button { cursor: pointer; font-family: inherit; }
@@ -131,12 +183,13 @@ a      { color: inherit; text-decoration: none; }
 code   { font-family: var(--font-mono); }
 img    { display: block; max-width: 100%; }
 
-::-webkit-scrollbar         { width: 3px; height: 3px; }
+/* Scrollbars — minimal */
+::-webkit-scrollbar         { width: 5px; height: 5px; }
 ::-webkit-scrollbar-track   { background: transparent; }
-::-webkit-scrollbar-thumb   { background: var(--border-subtle); border-radius: 2px; }
-::-webkit-scrollbar-thumb:hover { background: var(--border-default); }
+::-webkit-scrollbar-thumb   { background: var(--border-default); border-radius: 99px; }
+::-webkit-scrollbar-thumb:hover { background: var(--border-strong); }
 
-::selection { background: var(--accent-dim); color: var(--accent-text); }
+::selection { background: rgba(28, 25, 23, 0.1); color: var(--text-primary); }
 
 :focus-visible {
   outline: 1.5px solid var(--accent);
@@ -148,100 +201,167 @@ img    { display: block; max-width: 100%; }
 .sr-only  { position: absolute; width: 1px; height: 1px; padding: 0;
             margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0; }
 
-/* ── Keyframes ──────────────────────────────────────────────── */
-@keyframes fadeUp {
-  from { opacity: 0; transform: translateY(10px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-@keyframes slideInLeft {
-  from { opacity: 0; transform: translateX(-8px); }
-  to   { opacity: 1; transform: translateX(0); }
-}
-@keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50%       { opacity: 0.35; }
-}
+/* ── Keyframes — only the spinner (functional loading indicator) ─── */
 @keyframes spin {
   to { transform: rotate(360deg); }
 }
-@keyframes shimmer {
-  from { background-position: -200% center; }
-  to   { background-position: 200% center; }
+.animate-spin { animation: spin 1s linear infinite; }
+
+/* Stoic — no entrance animations, just render */
+.animate-fade-in  { /* no-op */ }
+.animate-slide-in { /* no-op */ }
+.animate-pulse    { /* no-op */ }
+.animate-float    { /* no-op */ }
+
+/* Stagger — no-op, just show children */
+.stagger > * { /* no-op — children render immediately */ }
+
+/* ── Code Syntax — Muted, monochrome-leaning ──────────────────── */
+.hl-kw  { color: #44403c; font-weight: 600; }
+.hl-fn  { color: #1c1917; }
+.hl-str { color: #78716c; }
+.hl-cm  { color: #a8a29e; font-style: italic; }
+.hl-num { color: #57534e; }
+
+/* ── Cards — glassmorphic ───────────────────────────────────── */
+.glass {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
 }
 
-.animate-fade-in  { animation: fadeUp      0.32s var(--ease) both; }
-.animate-slide-in { animation: slideInLeft 0.28s var(--ease) both; }
-.animate-pulse    { animation: pulse 2.4s ease-in-out infinite; }
-.animate-spin     { animation: spin  0.8s linear infinite; }
+.glow-border {
+  position: relative;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  transition: all var(--t-base) var(--ease);
+}
+.glow-border:hover {
+  border-color: var(--border-strong);
+  box-shadow: 0 0 20px var(--glow-primary);
+}
 
-.stagger > *:nth-child(1) { animation-delay:   0ms; animation: fadeUp 0.40s cubic-bezier(0.22,1,0.36,1) both; }
-.stagger > *:nth-child(2) { animation-delay:  70ms; animation: fadeUp 0.40s cubic-bezier(0.22,1,0.36,1) 70ms both; }
-.stagger > *:nth-child(3) { animation-delay: 140ms; animation: fadeUp 0.40s cubic-bezier(0.22,1,0.36,1) 140ms both; }
-.stagger > *:nth-child(4) { animation-delay: 210ms; animation: fadeUp 0.40s cubic-bezier(0.22,1,0.36,1) 210ms both; }
-.stagger > *:nth-child(5) { animation-delay: 280ms; animation: fadeUp 0.40s cubic-bezier(0.22,1,0.36,1) 280ms both; }
-.stagger > *:nth-child(6) { animation-delay: 350ms; animation: fadeUp 0.40s cubic-bezier(0.22,1,0.36,1) 350ms both; }
-
-/* ── Code syntax — warm tones ───────────────────────────────── */
-.hl-kw  { color: #d4956a; }  /* terracotta keywords */
-.hl-fn  { color: #b0c8b0; }  /* sage functions      */
-.hl-str { color: #c4b898; }  /* linen strings       */
-.hl-cm  { color: #5a5048; font-style: italic; }
-.hl-num { color: #c9a25a; }  /* amber numbers       */
-
-/* ── Micro-interaction utilities ─────────────────────────────────────── */
-
-/* GPU-accelerated card hover lift — apply to any interactive card */
 .lift {
-  transition: transform 280ms cubic-bezier(0.22,1,0.36,1),
-              box-shadow 280ms cubic-bezier(0.22,1,0.36,1);
-  will-change: transform;
+  transition: transform var(--t-base) var(--ease), box-shadow var(--t-base) var(--ease), border-color var(--t-base) var(--ease);
 }
 .lift:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 12px 32px rgba(0,0,0,0.25), 0 0 0 1px var(--border-default);
+  transform: translateY(-4px);
+  border-color: var(--border-strong);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
 }
-.lift:active { transform: translateY(-1px) scale(0.99); }
 
-/* Press — button press tactile feel */
 .press {
-  transition: transform 100ms ease, opacity 100ms ease;
+  transition: transform var(--t-fast) var(--ease);
 }
-.press:hover  { opacity: 0.92; }
-.press:active { transform: scale(0.97); opacity: 0.85; }
+.press:active { transform: scale(0.97); }
 
-/* Glow — accent glow on hover (for CTAs) */
 .glow {
-  transition: box-shadow 240ms ease, transform 180ms ease;
+  transition: box-shadow var(--t-base) var(--ease), border-color var(--t-base) var(--ease);
 }
 .glow:hover {
-  box-shadow: 0 0 0 3px var(--accent-dim), 0 0 20px var(--accent-dim);
-  transform: translateY(-1px);
+  border-color: var(--accent);
+  box-shadow: 0 0 15px var(--glow-primary);
 }
 
-/* Shimmer loading skeleton */
 .skeleton {
-  background: linear-gradient(
-    90deg,
-    var(--bg-raised) 0%,
-    var(--bg-overlay) 45%,
-    var(--bg-raised) 100%
-  );
-  background-size: 200% 100%;
-  animation: shimmer 1.4s ease-in-out infinite;
+  background: var(--bg-overlay);
   border-radius: var(--radius-md);
+  position: relative;
+  overflow: hidden;
+}
+.skeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.04), transparent);
+  animation: shimmer 1.5s infinite;
+}
+@keyframes shimmer {
+  100% { transform: translateX(100%); }
 }
 
-/* Reveal — elements that start invisible and animate in via JS */
-.reveal-hidden { opacity: 0; }
+.reveal-hidden { /* no-op — content always visible */ }
 
 /* Smooth page scrolling */
 html { scroll-behavior: smooth; }
 
-/* Reduced motion — respect the user's OS preference */
+/* Reduced motion — already minimal, but respect the preference */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
+}
+
+/* ── motion.dev Blueprint Layout Helpers ──────────────────── */
+
+.ruler {
+  height: 1px;
+  background: var(--border-default);
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 12px 0;
+  user-select: none;
+}
+.ruler::before, .ruler::after {
+  content: "+";
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-tertiary);
+  line-height: 0;
+}
+
+.plus-grid-card {
+  position: relative;
+  border: 1px solid var(--border-default);
+  background: var(--bg-raised);
+}
+.plus-grid-card::before, .plus-grid-card::after {
+  content: "+";
+  position: absolute;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-tertiary);
+  line-height: 1;
+}
+.plus-grid-card::before { top: -6px; left: -4px; }
+.plus-grid-card::after { bottom: -6px; right: -4px; }
+
+/* capsule striped buttons */
+.btn-caps-stripe {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 700;
+  padding: 8px 20px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--text-primary);
+  transition: all var(--t-fast);
+  cursor: pointer;
+}
+.btn-caps-stripe:hover {
+  background: var(--accent);
+  color: var(--text-inverse);
+  border-color: var(--accent);
+}
+.btn-caps-stripe-primary {
+  background: var(--accent);
+  color: var(--text-inverse);
+  border-color: var(--accent);
+}
+.btn-caps-stripe-primary:hover {
+  background: var(--text-primary);
+  color: var(--bg-base);
+  border-color: var(--text-primary);
 }

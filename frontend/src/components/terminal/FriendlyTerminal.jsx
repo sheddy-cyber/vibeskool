@@ -76,7 +76,7 @@ function ExplainBanner({ parts }) {
   )
 }
 
-export default function FriendlyTerminal({ mission, mode: initialMode = 'guided' }) {
+export default function FriendlyTerminal({ mission, mode: initialMode = 'guided', workspaceFiles }) {
   const [mode, setMode]         = useState(initialMode)
   const [lines, setLines]       = useState([])
   const [input, setInput]       = useState('')
@@ -101,6 +101,7 @@ export default function FriendlyTerminal({ mission, mode: initialMode = 'guided'
           { type: 'success', text: '✓ Free sandbox loaded.' },
           { type: 'output',  text: "You're safe here — nothing you do can break anything." },
           { type: 'output',  text: 'Type help to see available commands.' },
+          { type: 'output',  text: 'To run files from the editor, use command: node workspace.js' },
         ]
     setLines(welcomeLines)
   }, [mode])
@@ -127,7 +128,7 @@ export default function FriendlyTerminal({ mission, mode: initialMode = 'guided'
     // Echo the command
     const toAdd = [{ type: 'cmd', text: trimmed }]
 
-    const result = evalCommand(trimmed)
+    const result = evalCommand(trimmed, workspaceFiles)
 
     if (result === null) return
 

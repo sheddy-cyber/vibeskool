@@ -115,7 +115,7 @@ const HINTS = {
   error: "Errors aren't failures — they're information. Every error tells you exactly what went wrong.",
 }
 
-export function evalCommand(cmd) {
+export function evalCommand(cmd, workspaceFiles) {
   const trimmed = cmd.trim()
 
   if (!trimmed) return null
@@ -263,6 +263,21 @@ export function evalCommand(cmd) {
     }
   }
 
+  // node workspace.js execution
+  if (trimmed === 'node workspace.js') {
+    const code = workspaceFiles?.['workspace.js'] || '';
+    const output = runJavaScriptSandbox(code);
+    return {
+      ok: true,
+      output: output || '✓ Script ran successfully (no console output).',
+      explain: [
+        { token: 'node', meaning: 'the Node.js runtime engine' },
+        { token: 'workspace.js', meaning: 'execute this file in the engine' }
+      ],
+      hint: 'You just ran node workspace.js! Node compiles and runs your javascript file.'
+    }
+  }
+
   // Unknown
   return {
     ok: false,
@@ -270,6 +285,45 @@ export function evalCommand(cmd) {
     explain: null,
     hint: HINTS.error,
   }
+}
+
+// ─── Safe JS execution engine ───
+function runJavaScriptSandbox(code) {
+  const logs = [];
+  const sandboxConsole = {
+    log: (...args) => {
+      logs.push(args.map(a => typeof a === 'object' ? JSON.stringify(a) : String(a)).join(' '));
+    },
+    error: (...args) => {
+      logs.push('❌ Error: ' + args.join(' '));
+    },
+    warn: (...args) => {
+      logs.push('⚠️ Warning: ' + args.join(' '));
+    }
+  };
+
+  try {
+    const greetUser = (name) => name ? `Hello, ${name}!` : 'Hello!';
+    const add = (a, b) => a + b;
+    const shout = (s) => String(s).toUpperCase() + '!!!';
+    const reverseString = (s) => String(s).split('').reverse().join('');
+    const isEven = (n) => n % 2 === 0;
+
+    const runner = new Function(
+      'console', 'greetUser', 'add', 'shout', 'reverseString', 'isEven',
+      `try {
+        ${code}
+      } catch(e) {
+        console.error(e.message);
+      }`
+    );
+
+    runner(sandboxConsole, greetUser, add, shout, reverseString, isEven);
+  } catch (e) {
+    logs.push('❌ Syntax Error: ' + e.message);
+  }
+
+  return logs.join('\n');
 }
 
 export function resetSandbox() {
