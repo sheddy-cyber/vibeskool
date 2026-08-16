@@ -1,399 +1,72 @@
-import React from "react";
-import { useStore, PATHS } from "@/lib/store";
-import { useAuth } from "@/lib/auth";
-import { ProgressBar, MEKBar } from "@/components/ui";
-import styles from "./ProfilePage.module.css";
-import { FadeUp, RevealOnScroll, StaggerGroup } from "@/components/ui/Motion";
+import React, { useState } from 'react'
+import { Link } from 'react-router-dom'
+import { useStore, PATHS } from '@/lib/store'
+import { useAuth } from '@/lib/auth'
+import styles from './ProfilePage.module.css'
 
-// SVG icons for builds
-const BuildIcons = {
-  web: (
-    <svg
-      width="20"
-      height="20"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.6"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <circle cx="12" cy="12" r="10" />
-      <line x1="2" y1="12" x2="22" y2="12" />
-      <path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z" />
-    </svg>
-  ),
-  bot: (
-    <svg
-      width="20"
-      height="20"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.6"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <rect x="3" y="11" width="18" height="10" rx="2" />
-      <path d="M12 11V5" />
-      <circle cx="12" cy="4" r="1" />
-      <path d="M8 15h.01M16 15h.01" />
-    </svg>
-  ),
-  api: (
-    <svg
-      width="20"
-      height="20"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.6"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
-      <polyline points="14 2 14 8 20 8" />
-      <line x1="16" y1="13" x2="8" y2="13" />
-      <line x1="16" y1="17" x2="8" y2="17" />
-    </svg>
-  ),
-  db: (
-    <svg
-      width="20"
-      height="20"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.6"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <ellipse cx="12" cy="5" rx="9" ry="3" />
-      <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3" />
-      <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5" />
-    </svg>
-  ),
-  deploy: (
-    <svg
-      width="20"
-      height="20"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.6"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-    </svg>
-  ),
-};
-
-const BUILDS = [
-  {
-    icon: BuildIcons.web,
-    title: "Landing Page with AI",
-    unlocked: (score) => score >= 30,
-  },
-  {
-    icon: BuildIcons.bot,
-    title: "Chatbot Interface",
-    unlocked: (score) => score >= 50,
-  },
-  {
-    icon: BuildIcons.api,
-    title: "REST API (AI-assisted)",
-    unlocked: (score) => score >= 65,
-  },
-  {
-    icon: BuildIcons.db,
-    title: "Database-backed App",
-    unlocked: (score) => score >= 80,
-  },
-  {
-    icon: BuildIcons.deploy,
-    title: "Full-Stack Deploy",
-    unlocked: (score) => score >= 95,
-  },
-];
-
-const CheckIcon = () => (
-  <svg
-    width="13"
-    height="13"
-    viewBox="0 0 12 12"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2.2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <polyline points="2,6 5,9 10,3" />
-  </svg>
-);
-const LockIcon = () => (
-  <svg
-    width="13"
-    height="13"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-    <path d="M7 11V7a5 5 0 0110 0v4" />
-  </svg>
-);
-
-const PATH_ICONS = {
-  "vibe-web": (
-    <svg
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.6"
-      strokeLinecap="round"
-    >
-      <circle cx="12" cy="12" r="10" />
-      <path d="M2 12h20M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z" />
-    </svg>
-  ),
-  "vibe-coding": (
-    <svg
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.6"
-      strokeLinecap="round"
-    >
-      <polyline points="16 18 22 12 16 6" />
-      <polyline points="8 6 2 12 8 18" />
-    </svg>
-  ),
-  "git-github": (
-    <svg
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.6"
-      strokeLinecap="round"
-    >
-      <circle cx="18" cy="18" r="3" />
-      <circle cx="6" cy="6" r="3" />
-      <path d="M13 6h3a2 2 0 012 2v7" />
-      <line x1="6" y1="9" x2="6" y2="21" />
-    </svg>
-  ),
-  "python-basics": (
-    <svg
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.6"
-      strokeLinecap="round"
-    >
-      <polyline points="4 17 10 11 4 5" />
-      <line x1="12" y1="19" x2="20" y2="19" />
-    </svg>
-  ),
-  apis: (
-    <svg
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.6"
-      strokeLinecap="round"
-    >
-      <path d="M8 9l3 3-3 3" />
-      <line x1="13" y1="15" x2="16" y2="15" />
-      <rect x="3" y="3" width="18" height="18" rx="2" />
-    </svg>
-  ),
-  "sql-basics": (
-    <svg
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.6"
-      strokeLinecap="round"
-    >
-      <ellipse cx="12" cy="5" rx="9" ry="3" />
-      <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3" />
-      <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5" />
-    </svg>
-  ),
-};
+const isPassed = (records, id) => Array.isArray(records) ? records.includes(id) : Boolean(records?.[id])
 
 export default function ProfilePage() {
-  const { user: storeUser, progress } = useStore();
-  const { currentUser } = useAuth();
-  const user = currentUser
-    ? {
-        name: currentUser.name,
-        avatar: currentUser.avatar,
-        mekScore: currentUser.mekScore ?? 0,
-        lessonsCompleted: currentUser.lessonsCompleted ?? 0,
-        buildsUnlocked: currentUser.buildsUnlocked ?? 0,
-      }
-    : storeUser;
-
-  const totalLessons = PATHS.reduce((sum, p) => sum + p.lessons_data.length, 0);
-  const doneLessons = Object.values(progress).reduce((a, b) => a + b, 0);
-  const overallPct = Math.round((doneLessons / totalLessons) * 100);
+  const { user: storedUser, progress, passedModules } = useStore()
+  const { currentUser } = useAuth()
+  const [copied, setCopied] = useState(false)
+  const course = PATHS[0]
+  const completed = progress[course.id] || 0
+  const total = course.lessons_data.length
+  const readiness = currentUser?.mekScore ?? storedUser.mekScore ?? 0
+  const student = {
+    name: currentUser?.name || storedUser.name || 'Student',
+    email: currentUser?.email || 'student@vibeskool.edu',
+    avatar: currentUser?.avatar || storedUser.avatar || 'VS',
+    id: currentUser?.id || 'VS-2026-001'
+  }
+  const recordDate = new Intl.DateTimeFormat('en-GB', { day: '2-digit', month: 'long', year: 'numeric' }).format(new Date())
+  const copyRecord = () => {
+    navigator.clipboard?.writeText(window.location.href)
+    setCopied(true)
+    window.setTimeout(() => setCopied(false), 1600)
+  }
 
   return (
     <div className={styles.page}>
-      {/* Profile card */}
-      <FadeUp delay={0}>
-        <div className={styles.profileCard}>
-          <div className={styles.avatarLg}>
-            <svg
-              width="28"
-              height="28"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="var(--bg-base)"
-              strokeWidth="1.8"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" />
-              <circle cx="12" cy="7" r="4" />
-            </svg>
-          </div>
-          <div className={styles.profileInfo}>
-            <h1 className={styles.profileName}>{user.name}</h1>
-            <p className={styles.profileSub}>AI-native learner · VibeSkool</p>
-            <div className={styles.profileStats}>
-              <div className={styles.pStat}>
-                <span className={styles.pStatNum}>{user.lessonsCompleted}</span>
-                <span className={styles.pStatLabel}>Lessons done</span>
-              </div>
-              <div className={styles.pStatDiv} />
-              <div className={styles.pStat}>
-                <span className={styles.pStatNum}>{user.mekScore}%</span>
-                <span className={styles.pStatLabel}>MEK Score</span>
-              </div>
-              <div className={styles.pStatDiv} />
-              <div className={styles.pStat}>
-                <span className={styles.pStatNum}>{user.buildsUnlocked}</span>
-                <span className={styles.pStatLabel}>Builds unlocked</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </FadeUp>
+      <header className={styles.titleBlock}>
+        <div><p className={styles.eyebrow}>VibeSkool / academic record</p><h1>Transcript of<br /><em>explained work.</em></h1></div>
+        <aside><span>Record generated</span><b>{recordDate}</b><span>Course status</span><b>{completed >= total ? 'Completed' : 'In progress'}</b></aside>
+      </header>
 
-      {/* MEK bar */}
-      <FadeUp delay={80}>
-        <div>
-          <MEKBar
-            score={user.mekScore}
-            label="enough to build a full landing page with AI"
-          />
-        </div>
-      </FadeUp>
+      <section className={styles.identity} aria-label="Student record holder">
+        <div className={styles.initials}>{student.avatar}</div>
+        <div className={styles.student}><p className={styles.eyebrow}>Issued to</p><h2>{student.name}</h2><p>{student.email} <span>·</span> Student no. {student.id}</p></div>
+        <div className={styles.courseStamp}><span>Course</span><b>WEB 101</b><em>Full-stack web practice</em></div>
+      </section>
 
-      {/* Overall progress */}
-      <div className={styles.section}>
-        <h2 className={styles.sectionTitle}>Overall Progress</h2>
-        <div className={styles.overallProgress}>
-          <div className={styles.overallTop}>
-            <span className={styles.overallLabel}>Across all paths</span>
-            <span className={styles.overallPct}>{overallPct}%</span>
-          </div>
-          <ProgressBar
-            value={doneLessons}
-            max={totalLessons}
-            color="violet"
-            height={6}
-          />
-          <span className={styles.overallSub}>
-            {doneLessons} of {totalLessons} lessons complete
-          </span>
-        </div>
-      </div>
+      <section className={styles.standing} aria-labelledby="standing-title">
+        <div className={styles.position}><p id="standing-title">Current standing</p><strong>{String(Math.min(completed + 1, total)).padStart(2, '0')}</strong><span>of {total} lessons</span></div>
+        <div className={styles.standingBody}><div className={styles.progressTrack} aria-label={`${Math.round((completed / total) * 100)}% complete`}><span style={{ width: `${(completed / total) * 100}%` }} /></div><div className={styles.standingFacts}><p><b>{completed}</b> lessons recorded</p><p><b>{course.modules.filter(module => isPassed(passedModules, module.id) || isPassed(currentUser?.passedModules, module.id)).length}</b> assessments recorded</p><p><b>{readiness}%</b> current readiness index</p></div><p className={styles.standard}>A lesson is counted here only after the student marks it complete. Assessment entries reflect passed module checks—not hours logged or automatic badges.</p></div>
+      </section>
 
-      {/* Per-path progress */}
-      <div className={styles.section}>
-        <h2 className={styles.sectionTitle}>Path Breakdown</h2>
-        <div className={styles.pathsBreakdown}>
-          {PATHS.map((path) => {
-            const done = progress[path.id] || 0;
-            const total = path.lessons_data.length;
-            const pct = Math.round((done / total) * 100);
-            return (
-              <div key={path.id} className={styles.pathRow}>
-                <span className={styles.pathRowIcon}>
-                  {PATH_ICONS[path.id] || PATH_ICONS["vibe-coding"]}
-                </span>
-                <div className={styles.pathRowInfo}>
-                  <div className={styles.pathRowTop}>
-                    <span className={styles.pathRowName}>{path.name}</span>
-                    <span className={styles.pathRowPct}>{pct}%</span>
-                  </div>
-                  <ProgressBar
-                    value={done}
-                    max={total}
-                    color={path.color}
-                    height={4}
-                  />
-                  <span className={styles.pathRowSub}>
-                    {done} / {total} lessons
-                  </span>
-                </div>
-              </div>
-            );
+      <section className={styles.courseRecord} aria-labelledby="record-title">
+        <header><div><p className={styles.eyebrow}>Course record</p><h2 id="record-title">Full-stack web development.</h2></div><p>Modules are listed in teaching order. Evidence is deliberately sparse: progress is useful only when it describes work that has actually happened.</p></header>
+        <div className={styles.moduleTable} role="table" aria-label="Module transcript">
+          <div className={styles.tableHead} role="row"><span role="columnheader">Unit</span><span role="columnheader">Study</span><span role="columnheader">Record</span><span role="columnheader">Evidence</span></div>
+          {course.modules.map((module, index) => {
+            const lessons = course.lessons_data.filter(lesson => lesson.part?.toLowerCase().startsWith(`${module.id.toLowerCase()}:`))
+            const start = course.lessons_data.findIndex(lesson => lesson.id === lessons[0]?.id)
+            const completedInModule = Math.max(0, Math.min(lessons.length, completed - start))
+            const passed = isPassed(passedModules, module.id) || isPassed(currentUser?.passedModules, module.id)
+            const current = completed >= start && completed < start + lessons.length
+            const state = passed ? 'Assessment passed' : completedInModule === lessons.length ? 'Assessment available' : current ? 'In study' : 'Not yet started'
+            return <div className={`${styles.tableRow} ${current ? styles.currentRow : ''}`} role="row" key={module.id}><span role="cell" className={styles.unit}>{String(index + 1).padStart(2, '0')}</span><div role="cell"><b>{module.title}</b><p>{lessons.length} lessons</p></div><div role="cell" className={styles.moduleProgress}><span>{completedInModule} / {lessons.length}</span><i><em style={{ width: `${(completedInModule / lessons.length) * 100}%` }} /></i></div><div role="cell" className={passed ? styles.passed : current ? styles.current : styles.pending}>{state}</div></div>
           })}
         </div>
-      </div>
+      </section>
 
-      {/* Builds unlocked */}
-      <div className={styles.section}>
-        <h2 className={styles.sectionTitle}>Builds Unlocked</h2>
-        <p className={styles.buildsSub}>
-          Things you can now build with AI based on your MEK score.
-        </p>
-        <div className={styles.buildsList}>
-          {BUILDS.map((b, i) => {
-            const isUnlocked = b.unlocked(user.mekScore);
-            return (
-              <div
-                key={i}
-                className={`${styles.buildRow} ${isUnlocked ? styles.buildUnlocked : styles.buildLocked}`}
-              >
-                <span className={styles.buildIcon}>{b.icon}</span>
-                <span className={styles.buildTitle}>{b.title}</span>
-                <span className={styles.buildStatus}>
-                  {isUnlocked ? (
-                    <>
-                      <CheckIcon /> Unlocked
-                    </>
-                  ) : (
-                    <>
-                      <LockIcon /> Keep learning
-                    </>
-                  )}
-                </span>
-              </div>
-            );
-          })}
-        </div>
-      </div>
+      <section className={styles.evidence}>
+        <div><p className={styles.eyebrow}>What this record means</p><h2>Ownership is<br />the qualification.</h2></div>
+        <div className={styles.evidenceText}><p>VibeSkool does not treat a generated project, a completed video, or a daily streak as proof of skill. The relevant evidence is a student&apos;s ability to inspect a system, make a change, test it, and explain their reasoning.</p><p>Use this record as a study document. It is not a degree, employer certification, or automatic endorsement.</p><Link to="/app/lab">Return to the practice studio <span>↗</span></Link></div>
+      </section>
+
+      <footer className={styles.footer}><p>Questions about this record? Keep the course evidence with the work that produced it.</p><button onClick={copyRecord}>{copied ? 'Record URL copied' : 'Copy record URL'} <span>→</span></button></footer>
     </div>
-  );
+  )
 }

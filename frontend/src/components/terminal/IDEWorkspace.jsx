@@ -3,128 +3,99 @@ import FriendlyTerminal from './FriendlyTerminal'
 import styles from './IDEWorkspace.module.css'
 
 const INITIAL_FILES = {
-  'workspace.js': `// VibeSkool Sandbox Workspace
-// Write some JS here. Then type "node workspace.js" in the terminal below to run it!
+  'workspace.js': `// 01. Receive a value from outside your program.
+const email = "student@example.edu";
 
-let student = "Developer";
-let score = 95;
-
-console.log("🚀 Initializing workspace runner...");
-console.log("Hello, " + student + "!");
-
-if (score >= 90) {
-  console.log("Your MEK rating is ELITE. Ready to write prompts!");
-} else {
-  console.log("Keep reviewing lessons to unlock your full potential.");
+// 02. Check the assumption before using the value.
+if (!email.includes("@")) {
+  throw new Error("An email address must include @");
 }
 
-// You can also use system functions:
-console.log(shout("vibecoding is live"));
-`,
-  'index.html': `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>VibeSkool Sandbox</title>
-  <style>
-    body { background: #030712; color: #f3f4f6; font-family: sans-serif; text-align: center; padding-top: 50px; }
-    h1 { color: #6366f1; }
-  </style>
-</head>
-<body>
-  <h1>Welcome to the sandbox!</h1>
-  <p>Learn enough. Build anything.</p>
-</body>
-</html>
-`,
+// 03. Log evidence that makes the result inspectable.
+console.log("Input accepted for:", email);
+console.log("The value was checked before it was used.");`,
+  'auth.example.js': `// An example boundary: input is never joined into SQL text.
+async function findUserByEmail(db, email) {
+  const statement = "SELECT id, email FROM users WHERE email = $1";
+  const values = [email];
+
+  // $1 keeps the query structure separate from user-controlled data.
+  return db.query(statement, values);
+}`,
+  'notes.md': `# Lab notes
+
+What did I observe before editing?
+
+What did I change?
+
+What evidence tells me that the result is correct?`,
   'package.json': `{
-  "name": "vibeskool-sandbox-vm",
-  "version": "1.0.0",
-  "description": "Safe client-side JS sandboxed environment",
-  "main": "workspace.js",
-  "dependencies": {
-    "axios": "^1.7.2",
-    "lodash": "^4.17.21"
-  }
+  "name": "vibeskool-lab-01",
+  "private": true,
+  "description": "A controlled practice workspace"
+}`
 }
-`
+
+const FILE_CONTEXT = {
+  'workspace.js': { title: 'Input boundary', prompt: 'Why is the check made before the value is used? What failure does it prevent?' },
+  'auth.example.js': { title: 'Query boundary', prompt: 'Explain why the SQL statement and its values are kept separate.' },
+  'notes.md': { title: 'Study record', prompt: 'Write an observation, one precise change, and the evidence you would use to defend it.' },
+  'package.json': { title: 'Project record', prompt: 'Which fact about this project does this file communicate to another developer or tool?' }
+}
+
+const TEMPLATES = {
+  baseline: INITIAL_FILES['workspace.js'],
+  validate: `const username = "Ada";
+
+if (username.trim().length < 3) {
+  throw new Error("Username must have at least three characters");
+}
+
+console.log("Validation passed for:", username);`,
+  observe: `const response = { ok: true, status: 200 };
+
+console.log("Response status:", response.status);
+console.log("Can I explain what ok means here?");`
 }
 
 export default function IDEWorkspace() {
   const [files, setFiles] = useState(INITIAL_FILES)
   const [activeFile, setActiveFile] = useState('workspace.js')
-
-  const handleEditorChange = (e) => {
-    setFiles(prev => ({
-      ...prev,
-      [activeFile]: e.target.value
-    }))
-  }
-
-  // Count lines in active file for line numbers
+  const [notes, setNotes] = useState({})
+  const context = FILE_CONTEXT[activeFile]
   const linesCount = files[activeFile].split('\n').length
+
+  const changeFile = event => setFiles(previous => ({ ...previous, [activeFile]: event.target.value }))
+  const loadTemplate = event => {
+    if (!TEMPLATES[event.target.value]) return
+    setFiles(previous => ({ ...previous, [activeFile]: TEMPLATES[event.target.value] }))
+    event.target.value = ''
+  }
 
   return (
     <div className={styles.container}>
-      {/* IDE Body: Sidebar + Editor */}
       <div className={styles.ideMain}>
-        
-        {/* Sidebar File Tree */}
-        <div className={styles.fileTree}>
-          <div className={styles.treeHeader}>WORKSPACE Explorer</div>
-          <div className={styles.treeList}>
-            {Object.keys(files).map(filename => (
-              <button
-                key={filename}
-                className={`${styles.fileBtn} ${activeFile === filename ? styles.fileBtnActive : ''}`}
-                onClick={() => setActiveFile(filename)}
-              >
-                <span className={styles.fileIcon}>
-                  {filename.endsWith('.js') ? '🟨' : filename.endsWith('.html') ? '🟧' : '⚙️'}
-                </span>
-                <span className={styles.fileName}>{filename}</span>
-              </button>
-            ))}
-          </div>
-        </div>
+        <nav className={styles.fileTree} aria-label="Workspace files">
+          <header><span>Workspace files</span><b>4 files</b></header>
+          <div className={styles.treeList}>{Object.keys(files).map(filename => <button key={filename} className={activeFile === filename ? styles.fileBtnActive : ''} onClick={() => setActiveFile(filename)}><span>{filename === 'notes.md' ? 'NOTE' : filename.endsWith('.json') ? 'JSON' : 'JS'}</span>{filename}</button>)}</div>
+          <p className={styles.fileNote}>Change one file at a time. The terminal runs <code>workspace.js</code>.</p>
+        </nav>
 
-        {/* Code Editor Panel */}
-        <div className={styles.editorArea}>
-          <div className={styles.editorHeader}>
-            <div className={styles.tabName}>
-              <span className={styles.tabIcon}>📝</span>
-              {activeFile}
-            </div>
-            <div className={styles.editorStatus}>Editing Mode</div>
-          </div>
-          
-          <div className={styles.editorContainer}>
-            {/* Mock Line Numbers */}
-            <div className={styles.lineNumbers}>
-              {Array.from({ length: Math.max(1, linesCount) }).map((_, idx) => (
-                <div key={idx} className={styles.lineNumber}>{idx + 1}</div>
-              ))}
-            </div>
-            {/* Code Textarea */}
-            <textarea
-              className={styles.editorTextarea}
-              value={files[activeFile]}
-              onChange={handleEditorChange}
-              spellCheck="false"
-              autoFocus
-            />
-          </div>
-        </div>
+        <section className={styles.editorArea} aria-label={`${activeFile} editor`}>
+          <header className={styles.editorHeader}><div><span>Open file</span><b>{activeFile}</b></div><div className={styles.editorActions}><select onChange={loadTemplate} defaultValue="" aria-label="Load a practice example"><option value="" disabled>Load example</option><option value="baseline">Input boundary</option><option value="validate">Validation check</option><option value="observe">Observation log</option></select><span>{linesCount} lines</span></div></header>
+          <div className={styles.editorContainer}><div className={styles.lineNumbers} aria-hidden="true">{Array.from({ length: Math.max(1, linesCount) }).map((_, index) => <div key={index}>{index + 1}</div>)}</div><textarea className={styles.editorTextarea} value={files[activeFile]} onChange={changeFile} spellCheck="false" aria-label={`Edit ${activeFile}`} /></div>
+        </section>
 
+        <aside className={styles.ledger}>
+          <header><span>Annotation ledger</span><b>{notes[activeFile]?.trim() ? 'note recorded' : 'note required'}</b></header>
+          <p className={styles.ledgerRef}>Reading alongside: <strong>{context.title}</strong></p>
+          <p className={styles.ledgerPrompt}>{context.prompt}</p>
+          <label htmlFor="lab-note">Your explanation</label>
+          <textarea id="lab-note" value={notes[activeFile] || ''} onChange={event => setNotes(previous => ({ ...previous, [activeFile]: event.target.value }))} placeholder="Write a short, specific explanation…" />
+          <p className={styles.ledgerFoot}>Notes remain in this browser session. They are a rehearsal for the explanation you give in a lesson review.</p>
+        </aside>
       </div>
-
-      {/* Terminal panel at bottom */}
-      <div className={styles.terminalPanel}>
-        <FriendlyTerminal 
-          mode="free" 
-          workspaceFiles={files} 
-        />
-      </div>
+      <div className={styles.terminalPanel}><FriendlyTerminal mode="free" workspaceFiles={files} /></div>
     </div>
   )
 }

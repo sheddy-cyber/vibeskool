@@ -1,97 +1,49 @@
 import React, { useState } from 'react'
 import IDEWorkspace from '@/components/terminal/IDEWorkspace'
 import styles from './LabPage.module.css'
-import { FadeUp, SlideIn, RevealOnScroll } from '@/components/ui/Motion'
 
-const QUICK_REFS = [
-  { cmd: 'greetUser("name")',    desc: 'Call a function with an argument' },
-  { cmd: 'let x = "value"',     desc: 'Create a variable' },
-  { cmd: 'console.log("text")', desc: 'Print something to the terminal' },
-  { cmd: 'add(3, 4)',           desc: 'Call a function with two arguments' },
-  { cmd: 'shout("hello")',      desc: 'Transform a string' },
-  { cmd: 'reverseString("abc")',desc: 'Reverse a string' },
-  { cmd: 'isEven(7)',           desc: 'Check a condition' },
-  { cmd: 'git status',          desc: 'See how git commands look' },
-  { cmd: 'npm install axios',   desc: 'See how npm commands look' },
-  { cmd: 'help',                desc: 'See all available commands' },
-  { cmd: 'clear',               desc: 'Clear the terminal' },
+const PROTOCOL = [
+  ['01', 'Observe', 'Run the existing file before changing it. Record what the system actually does.'],
+  ['02', 'Change one thing', 'Make the smallest meaningful edit. A small change is easier to explain and test.'],
+  ['03', 'Verify the boundary', 'Run it again and describe the evidence that the result is safe or correct.'],
+]
+
+const COMMANDS = [
+  ['node workspace.js', 'Run the file currently designed for execution.'],
+  ['git status', 'Inspect what has changed before calling work complete.'],
+  ['npm test', 'Ask the simulated test runner for a verification record.'],
+  ['help', 'See the controlled commands available in this practice space.'],
 ]
 
 export default function LabPage() {
-  const [copiedCmd, setCopiedCmd] = useState(null)
-
-  const handleCopy = (cmd) => {
-    navigator.clipboard?.writeText(cmd)
-    setCopiedCmd(cmd)
-    setTimeout(() => setCopiedCmd(null), 1500)
+  const [copied, setCopied] = useState('')
+  const copy = command => {
+    navigator.clipboard?.writeText(command)
+    setCopied(command)
+    window.setTimeout(() => setCopied(''), 1500)
   }
 
   return (
     <div className={styles.page}>
-      {/* Header */}
-      <FadeUp delay={0}>
-        <div className={styles.header}>
-          <div>
-            <h1 className={styles.title}>The Lab</h1>
-            <p className={styles.sub}>
-              A safe sandbox environment. Nothing you type here can break anything.
-              Experiment freely in our virtual editor and terminal VM.
-            </p>
-          </div>
-        </div>
-      </FadeUp>
+      <header className={styles.head}>
+        <div><p className={styles.eyebrow}>Practice studio / controlled environment</p><h1>Make the change.<br /><em>Keep the reasoning.</em></h1></div>
+        <aside><span>[ studio note ]</span><p>This workspace simulates a local project. It never reaches your device, files, accounts, or network.</p></aside>
+      </header>
 
-      {/* Main layout */}
-      <div className={styles.layout}>
-        
-        {/* IDE Workspace Terminal */}
-        <SlideIn delay={80} x={-16} className={styles.terminalWrap}>
-          <IDEWorkspace />
-        </SlideIn>
+      <section className={styles.protocol} aria-labelledby="protocol-title">
+        <div><p className={styles.eyebrow}>Today&apos;s protocol</p><h2 id="protocol-title">Run, inspect,<br />then explain.</h2></div>
+        <ol>{PROTOCOL.map(([number, title, text]) => <li key={number}><span>{number}</span><div><h3>{title}</h3><p>{text}</p></div></li>)}</ol>
+      </section>
 
-        {/* Quick reference sidebar */}
-        <RevealOnScroll delay={120} y={12}>
-          <div className={styles.refPanel}>
-            <h2 className={styles.refTitle}>Quick Reference</h2>
-            <p className={styles.refSub}>Click any command to copy it to clipboard.</p>
-            
-            <div className={styles.refList}>
-              {QUICK_REFS.map((r) => (
-                <div 
-                  key={r.cmd} 
-                  className={styles.refRow} 
-                  onClick={() => handleCopy(r.cmd)}
-                  title="Click to copy"
-                >
-                  <div className={styles.cmdRow}>
-                    <code className={styles.refCmd}>{r.cmd}</code>
-                    {copiedCmd === r.cmd && <span className={styles.copyCheck}>✓</span>}
-                  </div>
-                  <span className={styles.refDesc}>{r.desc}</span>
-                </div>
-              ))}
-            </div>
+      <section className={styles.workspace} aria-label="Interactive coding workspace">
+        <div className={styles.workspaceHead}><span>LAB / 01</span><p>Input boundaries and execution evidence</p><span>Saved locally for this session</span></div>
+        <IDEWorkspace />
+      </section>
 
-            <div className={styles.tipBox}>
-              <span className={styles.tipLabel}>Pro tip</span>
-              <p className={styles.tipText}>
-                Use ↑ and ↓ arrow keys in the terminal input to cycle through your command history.
-              </p>
-            </div>
-
-            <div className={styles.safeBox}>
-              <span className={styles.safeIcon}>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--green)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-                </svg>
-              </span>
-              <p className={styles.safeText}>
-                Destructive actions like <code>rm -rf</code> are blocked. You are in a sandboxed client container.
-              </p>
-            </div>
-          </div>
-        </RevealOnScroll>
-      </div>
+      <section className={styles.support}>
+        <div className={styles.commandSheet}><p className={styles.eyebrow}>Controlled commands</p><h2>Use a command<br />on purpose.</h2><p className={styles.supportCopy}>Commands copy to your clipboard; paste one into the terminal when you can predict what it will tell you.</p><div className={styles.commandList}>{COMMANDS.map(([command, description]) => <button key={command} onClick={() => copy(command)}><code>{command}</code><span>{copied === command ? 'Copied' : description}</span></button>)}</div></div>
+        <aside className={styles.safety}><span>[ safety condition ]</span><h2>Safe to try.<br />Not pretend-safe.</h2><p>Destructive shell patterns, filesystem access, network access, and dynamic code execution are blocked. The terminal remains useful because its feedback explains the command rather than merely approving it.</p><p className={styles.warning}><b>Before you leave:</b> save a short note in the ledger beside the editor. “It worked” is not an explanation.</p></aside>
+      </section>
     </div>
   )
 }
