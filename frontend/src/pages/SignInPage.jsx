@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
+import React, { useEffect, useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/lib/auth'
 import styles from './SignInPage.module.css'
 
@@ -11,129 +11,83 @@ export default function SignInPage() {
 
   useEffect(() => {
     if (currentUser) navigate('/app/dashboard', { replace: true })
-  }, [currentUser])
-
-  function handleSubmit(e) {
-    e?.preventDefault()
-    signIn(form)
-  }
-
-  function handleDemoLogin() {
-    signIn({ email: 'architect@vibeskool.edu', password: 'demo-password-123' })
-  }
+  }, [currentUser, navigate])
 
   function set(field) {
-    return e => {
+    return event => {
       clearError()
-      setForm(f => ({ ...f, [field]: e.target.value }))
+      setForm(current => ({ ...current, [field]: event.target.value }))
     }
   }
 
   return (
-    <div className={styles.page}>
-      {/* Left Showcase Panel */}
-      <div className={styles.leftShowcase}>
-        <Link to="/" className={styles.brandLink}>
-          <div style={{ width: 32, height: 32, borderRadius: 8, background: 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, color: '#08090C' }}>
-            VS
-          </div>
-          <span style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 17, color: '#F8FAFC' }}>
-            VibeSkool Academy
-          </span>
+    <main className={styles.page}>
+      <header className={styles.masthead}>
+        <Link to="/" className={styles.wordmark} aria-label="VibeSkool home">
+          <span className={styles.mark}>VS</span>
+          <span>VibeSkool <i>Coursework</i></span>
         </Link>
+        <p className={styles.mastheadNote}>A 16-week practice in web development</p>
+      </header>
 
-        <div className={styles.terminalCard}>
-          <div style={{ color: 'var(--text-tertiary)', marginBottom: 8, fontSize: 11 }}>
-            $ node audit_guardrails.js --check
-          </div>
-          <div style={{ color: 'var(--green-text)' }}>
-            ✓ Verified MEK Standards: Active<br />
-            ✓ Threat Vector Linter: 0 vulnerabilities<br />
-            ✓ Student Auth Gateway: Ready
-          </div>
-        </div>
-
-        <div className={styles.quoteBlock}>
-          <p className={styles.quoteText}>
-            "Talk is cheap. Show me the code. Or better yet: direct the AI to show you audited, resilient code."
+      <section className={styles.ledger} aria-labelledby="access-title">
+        <div className={styles.ledgerNumber} aria-hidden="true">01</div>
+        <div>
+          <p className={styles.eyebrow}>Student record / access</p>
+          <h1 id="access-title">Return to the work.</h1>
+          <p className={styles.introduction}>
+            Your course record holds the explanations, experiments, and verified exercises that make up your study.
           </p>
-          <span className={styles.quoteAuthor}>— Linus Torvalds × VibeSkool Philosophy</span>
         </div>
-      </div>
 
-      {/* Right Form Container */}
-      <div className={styles.rightForm}>
-        <div className={styles.formCard}>
-          <div className={styles.formHead}>
-            <h1 className={styles.formTitle}>Welcome back, Architect</h1>
-            <p className={styles.formSub}>Sign in to continue your deliberate practice.</p>
+        <dl className={styles.courseFacts}>
+          <div><dt>Programme</dt><dd>Full-stack web development</dd></div>
+          <div><dt>Term</dt><dd>Sixteen weeks</dd></div>
+          <div><dt>Method</dt><dd>Explain before you ship</dd></div>
+        </dl>
+
+        <p className={styles.marginNote}>
+          <span>Note</span>
+          This is a workspace, not a feed. Pick up exactly where your reasoning stopped.
+        </p>
+      </section>
+
+      <section className={styles.entry} aria-label="Sign in">
+        <div className={styles.entryHead}>
+          <p className={styles.eyebrow}>Identity check</p>
+          <h2>Sign in</h2>
+          <p>Use the email connected to your course record.</p>
+        </div>
+
+        <form className={styles.form} onSubmit={event => { event.preventDefault(); signIn(form) }}>
+          <div className={styles.field}>
+            <label htmlFor="signin-email">Email address</label>
+            <input id="signin-email" type="email" placeholder="you@example.com" value={form.email} onChange={set('email')} autoComplete="email" required />
           </div>
-
-          {/* 1-Click Recruiter / Evaluator Login */}
-          <button className={styles.demoBtn} onClick={handleDemoLogin} type="button">
-            <span>⚡</span> 1-Click Recruiter & Demo Login
+          <div className={styles.field}>
+            <div className={styles.labelRow}>
+              <label htmlFor="signin-password">Password</label>
+              <button type="button" className={styles.textButton} onClick={() => setShowPass(value => !value)} aria-pressed={showPass}>
+                {showPass ? 'Conceal' : 'Reveal'}
+              </button>
+            </div>
+            <input id="signin-password" type={showPass ? 'text' : 'password'} placeholder="Enter your password" value={form.password} onChange={set('password')} autoComplete="current-password" required />
+          </div>
+          {authError && <p className={styles.error} role="alert">{authError}</p>}
+          <button className={styles.submit} type="submit" disabled={authLoading}>
+            {authLoading ? 'Checking record…' : 'Enter coursework →'}
           </button>
+        </form>
 
-          <div className={styles.divider}>Or Sign In With Email</div>
-
-          <form className={styles.form} onSubmit={handleSubmit}>
-            <div className={styles.field}>
-              <label className={styles.label}>Academic Email</label>
-              <input
-                className={styles.input}
-                type="email"
-                placeholder="you@vibeskool.edu"
-                value={form.email}
-                onChange={set('email')}
-                autoComplete="email"
-                required
-              />
-            </div>
-
-            <div className={styles.field}>
-              <label className={styles.label}>Password</label>
-              <div className={styles.inputWrap}>
-                <input
-                  className={styles.input}
-                  type={showPass ? 'text' : 'password'}
-                  placeholder="••••••••"
-                  value={form.password}
-                  onChange={set('password')}
-                  autoComplete="current-password"
-                  required
-                />
-                <button
-                  type="button"
-                  className={styles.showPassBtn}
-                  onClick={() => setShowPass(s => !s)}
-                >
-                  {showPass ? 'Hide' : 'Show'}
-                </button>
-              </div>
-            </div>
-
-            {authError && (
-              <div className={styles.errorBanner}>{authError}</div>
-            )}
-
-            <button
-              type="submit"
-              className="btn btn-primary btn-md"
-              style={{ width: '100%', marginTop: 8 }}
-              disabled={authLoading}
-            >
-              {authLoading ? 'Authenticating...' : 'Sign in to Classroom →'}
-            </button>
-          </form>
-
-          <p className={styles.footerText}>
-            Don't have an account?{' '}
-            <Link to="/signup" className={styles.footerLink}>
-              Enroll Free →
-            </Link>
-          </p>
+        <div className={styles.alternate}>
+          <p>Not yet enrolled?</p>
+          <Link to="/signup">Create a student record <span aria-hidden="true">→</span></Link>
         </div>
-      </div>
-    </div>
+
+        <button type="button" className={styles.demo} onClick={() => signIn({ email: 'architect@vibeskool.edu', password: 'demo-password-123' })}>
+          View the demonstration record <span aria-hidden="true">→</span>
+        </button>
+      </section>
+    </main>
   )
 }
