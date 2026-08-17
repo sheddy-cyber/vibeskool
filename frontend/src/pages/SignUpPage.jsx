@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '@/lib/auth'
+import { FadeUp, ScaleIn } from '@/components/ui/Motion'
 import styles from './SignInPage.module.css'
 
 export default function SignUpPage() {
   const navigate = useNavigate()
-  const { signUp, currentUser, authError, authLoading, clearError, signIn } = useAuth()
+  const { signUp, currentUser, authError, authLoading, clearError } = useAuth()
   const [form, setForm] = useState({ name: '', email: '', password: '' })
   const [showPass, setShowPass] = useState(false)
 
@@ -13,13 +14,15 @@ export default function SignUpPage() {
     if (currentUser) navigate('/app/dashboard', { replace: true })
   }, [currentUser])
 
-  function handleSubmit(e) {
-    e?.preventDefault()
-    signUp(form)
-  }
+  // Force dark theme for the auth pages
+  useEffect(() => {
+    document.body.setAttribute('data-theme', 'dark');
+    return () => document.body.removeAttribute('data-theme');
+  }, []);
 
-  function handleDemoLogin() {
-    signIn({ email: 'architect@vibeskool.edu', password: 'demo-password-123' })
+  function handleSubmit(e) {
+    e.preventDefault()
+    signUp(form)
   }
 
   function setField(field) {
@@ -31,121 +34,112 @@ export default function SignUpPage() {
 
   return (
     <div className={styles.page}>
-      {/* Left Showcase Panel */}
-      <div className={styles.leftShowcase}>
-        <Link to="/" className={styles.brandLink}>
-          <div style={{ width: 32, height: 32, borderRadius: 8, background: 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, color: '#08090C' }}>
-            VS
-          </div>
-          <span style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 17, color: '#F8FAFC' }}>
-            VibeSkool Academy
-          </span>
-        </Link>
-
-        <div className={styles.terminalCard}>
-          <div style={{ color: 'var(--text-tertiary)', marginBottom: 8, fontSize: 11 }}>
-            $ git commit -m "feat: student enrollment"
-          </div>
-          <div style={{ color: 'var(--green-text)' }}>
-            ✓ Academic Syllabus: Unlocked<br />
-            ✓ Interactive Lab VM: Provisioned<br />
-            ✓ Verified MEK Diploma: Registered
-          </div>
-        </div>
-
-        <div className={styles.quoteBlock}>
-          <p className={styles.quoteText}>
-            "The future of programming is not typing syntax. It is understanding architecture, testing boundaries, and leading intelligent models."
-          </p>
-          <span className={styles.quoteAuthor}>— Andrej Karpathy × VibeSkool Vision</span>
-        </div>
+      {/* ── Background Mesh ── */}
+      <div className={styles.meshBackground}>
+        <div className={`${styles.glowOrb} ${styles.orb1}`} />
+        <div className={`${styles.glowOrb} ${styles.orb2}`} />
       </div>
 
-      {/* Right Form Container */}
-      <div className={styles.rightForm}>
-        <div className={styles.formCard}>
-          <div className={styles.formHead}>
-            <h1 className={styles.formTitle}>Enroll in the Academy</h1>
-            <p className={styles.formSub}>Free enrollment. No credit card required. Start building in 60s.</p>
-          </div>
+      <div className={styles.inner}>
+        <FadeUp delay={0}>
+          <Link to="/" className={styles.logo}>
+            <div className={styles.logoMark}>VS</div>
+            <span className={styles.logoName}>VibeSkool</span>
+          </Link>
+        </FadeUp>
 
-          {/* 1-Click Recruiter Demo Login */}
-          <button className={styles.demoBtn} onClick={handleDemoLogin} type="button">
-            <span>⚡</span> 1-Click Recruiter & Demo Login
-          </button>
-
-          <div className={styles.divider}>Or Create New Academic Profile</div>
-
-          <form className={styles.form} onSubmit={handleSubmit}>
-            <div className={styles.field}>
-              <label className={styles.label}>Your Name</label>
-              <input
-                className={styles.input}
-                type="text"
-                placeholder="e.g. Ada Lovelace"
-                value={form.name}
-                onChange={setField('name')}
-                autoComplete="name"
-                required
-              />
-            </div>
-
-            <div className={styles.field}>
-              <label className={styles.label}>Academic Email</label>
-              <input
-                className={styles.input}
-                type="email"
-                placeholder="you@vibeskool.edu"
-                value={form.email}
-                onChange={setField('email')}
-                autoComplete="email"
-                required
-              />
-            </div>
-
-            <div className={styles.field}>
-              <label className={styles.label}>Password (min 6 characters)</label>
-              <div className={styles.inputWrap}>
-                <input
-                  className={styles.input}
-                  type={showPass ? 'text' : 'password'}
-                  placeholder="••••••••"
-                  value={form.password}
-                  onChange={setField('password')}
-                  autoComplete="new-password"
-                  required
-                />
-                <button
-                  type="button"
-                  className={styles.showPassBtn}
-                  onClick={() => setShowPass(s => !s)}
-                >
-                  {showPass ? 'Hide' : 'Show'}
-                </button>
+        <ScaleIn delay={60}>
+          <div className={styles.card}>
+            <FadeUp delay={120}>
+              <div className={styles.cardHead}>
+                <h1 className={styles.title}>Create your account</h1>
+                <p className={styles.sub}>Free. No credit card. Start learning in 60 seconds.</p>
               </div>
-            </div>
+            </FadeUp>
 
-            {authError && (
-              <div className={styles.errorBanner}>{authError}</div>
-            )}
+            <form className={styles.form} onSubmit={handleSubmit}>
+              <FadeUp delay={160}>
+                <div className={styles.field}>
+                  <label className={styles.label}>Your name</label>
+                  <input
+                    className={styles.input}
+                    type="text"
+                    placeholder="Shedrach"
+                    value={form.name}
+                    onChange={setField('name')}
+                    autoComplete="name"
+                    autoFocus
+                  />
+                </div>
+              </FadeUp>
 
-            <button
-              type="submit"
-              className="btn btn-primary btn-md"
-              style={{ width: '100%', marginTop: 8 }}
-              disabled={authLoading}
-            >
-              {authLoading ? 'Provisioning Student Profile...' : 'Complete Free Enrollment →'}
-            </button>
-          </form>
+              <FadeUp delay={210}>
+                <div className={styles.field}>
+                  <label className={styles.label}>Email</label>
+                  <input
+                    className={styles.input}
+                    type="email"
+                    placeholder="you@example.com"
+                    value={form.email}
+                    onChange={setField('email')}
+                    autoComplete="email"
+                  />
+                </div>
+              </FadeUp>
 
-          <p className={styles.footerText}>
-            Already enrolled?{' '}
-            <Link to="/signin" className={styles.footerLink}>
-              Sign in →
-            </Link>
-          </p>
-        </div>
+              <FadeUp delay={260}>
+                <div className={styles.field}>
+                  <label className={styles.label}>Password <span className={styles.labelHint}>(min. 6 characters)</span></label>
+                  <div className={styles.inputWrap}>
+                    <input
+                      className={styles.input}
+                      type={showPass ? 'text' : 'password'}
+                      placeholder="••••••••"
+                      value={form.password}
+                      onChange={setField('password')}
+                      autoComplete="new-password"
+                    />
+                    <button
+                      type="button"
+                      className={styles.showPass}
+                      onClick={() => setShowPass(v => !v)}
+                    >
+                      {showPass
+                        ? <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                        : <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                      }
+                    </button>
+                  </div>
+                </div>
+              </FadeUp>
+
+              {authError && (
+                <FadeUp delay={0}>
+                  <div className={styles.error}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                    {authError}
+                  </div>
+                </FadeUp>
+              )}
+
+              <FadeUp delay={310}>
+                <button className={styles.submit} type="submit" disabled={authLoading}>
+                  {authLoading
+                    ? <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" style={{animation:'spin 0.7s linear infinite'}}><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+                    : 'Create account →'
+                  }
+                </button>
+              </FadeUp>
+            </form>
+
+            <FadeUp delay={360}>
+              <div className={styles.footer}>
+                <span>Already have an account?</span>
+                <Link to="/signin" className={styles.link}>Sign in</Link>
+              </div>
+            </FadeUp>
+          </div>
+        </ScaleIn>
       </div>
     </div>
   )

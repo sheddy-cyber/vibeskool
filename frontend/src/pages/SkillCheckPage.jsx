@@ -1,74 +1,225 @@
-import React, { useEffect, useState } from 'react'
-import { useParams, useNavigate, Link } from 'react-router-dom'
+import React, { useState, useEffect } from 'react'
+import { useParams, useNavigate } from 'react-router-dom'
+import { Button } from '@/components/ui'
 import { useStore, PATHS } from '@/lib/store'
 import { useAuth } from '@/lib/auth'
 import { QUIZ_QUESTIONS } from '@/lib/quiz_questions'
 import styles from './SkillCheckPage.module.css'
-
-const LETTERS = ['A', 'B', 'C', 'D', 'E']
+import { FadeUp, ScaleIn } from '@/components/ui/Motion'
 
 export default function SkillCheckPage() {
   const { moduleId } = useParams()
   const navigate = useNavigate()
-  const { currentUser, passModule: passAuthenticatedModule } = useAuth()
-  const { passModule: passStoredModule, user: storedUser } = useStore()
-  const questions = QUIZ_QUESTIONS[moduleId] || []
-  const course = PATHS[0]
-  const module = course.modules?.find(item => item.id === moduleId)
-  const [current, setCurrent] = useState(0)
+  const { currentUser, passModule: authPassModule } = useAuth()
+  const { passModule: storePassModule } = useStore()
+
+  const QUESTIONS = QUIZ_QUESTIONS[moduleId] || []
+
+  const [current, setCurrent]   = useState(0)
   const [selected, setSelected] = useState(null)
   const [answered, setAnswered] = useState(false)
-  const [responses, setResponses] = useState([])
-  const [score, setScore] = useState(0)
-  const [finalScore, setFinalScore] = useState(null)
+  const [score, setScore]       = useState(0)
+  const [done, setDone]         = useState(false)
+  const [answers, setAnswers]   = useState([])
 
+  // Reset state if moduleId changes
   useEffect(() => {
-    setCurrent(0); setSelected(null); setAnswered(false); setResponses([]); setScore(0); setFinalScore(null)
+    setCurrent(0)
+    setSelected(null)
+    setAnswered(false)
+    setScore(0)
+    setDone(false)
+    setAnswers([])
   }, [moduleId])
 
-  if (!questions.length) return <div className={styles.page}><section className={styles.empty}><p className={styles.eyebrow}>Assessment unavailable</p><h1>This module has no review questions yet.</h1><p>Return to the course sequence and continue with the published study entries.</p><Link to="/app/paths">Back to course catalogue <span>→</span></Link></section></div>
+  if (!QUESTIONS.length) {
+    return (
+      <div className={styles.page}>
+        <div className={styles.notFound}>
+          <h2>Test Coming Soon</h2>
+          <p>No quiz found for module ID "{moduleId}".</p>
+          <Button onClick={() => navigate('/app/paths')}>← Back to Paths</Button>
+        </div>
+      </div>
+    )
+  }
 
-  const question = questions[current]
-  const resultPercent = finalScore === null ? 0 : Math.round((finalScore / questions.length) * 100)
-  const passed = resultPercent >= 70
-  const studentName = currentUser?.name || storedUser?.name || 'Student'
-  const select = index => {
+  const q = QUESTIONS[current]
+
+  function answer(opt, idx) {
     if (answered) return
-    const correct = Boolean(question.options[index]?.correct)
-    setSelected(index); setAnswered(true)
-    if (correct) setScore(value => value + 1)
+    setSelected(idx)
+    setAnswered(true)
+    const correct = opt.correct
+    if (correct) setScore(s => s + 1)
+    setAnswers(prev => [...prev, { question: q.topic, correct }])
   }
-  const next = () => {
-    const correct = Boolean(question.options[selected]?.correct)
-    const nextResponses = [...responses, { topic: question.topic, correct }]
-    if (current + 1 === questions.length) {
-      const totalScore = score + (correct ? 1 : 0)
-      setResponses(nextResponses)
-      setFinalScore(totalScore)
-      if (Math.round((totalScore / questions.length) * 100) >= 70) {
-        passStoredModule(moduleId)
-        if (currentUser) passAuthenticatedModule(moduleId)
-      }
-      return
-    }
-    setResponses(nextResponses)
-    setCurrent(value => value + 1); setSelected(null); setAnswered(false)
-  }
-  const restart = () => { setCurrent(0); setSelected(null); setAnswered(false); setResponses([]); setScore(0); setFinalScore(null) }
 
-  if (finalScore !== null) {
-    const reviewTopics = responses.filter(item => !item.correct).map(item => item.topic)
-    return <div className={styles.page}><section className={styles.result}><p className={styles.eyebrow}>Module review / complete</p><h1>{passed ? 'Assessment record updated.' : 'Further study is recommended.'}</h1><p className={styles.resultLead}>{passed ? `${studentName} demonstrated the required understanding for ${module?.title || moduleId.toUpperCase()}. The module assessment is now recorded in the course transcript.` : `You answered ${resultPercent}% correctly. Return to the relevant study entries, test the examples again, then retake this review when the reasoning is clearer.`}</p><div className={styles.resultScore}><strong>{resultPercent}</strong><span>percent correct</span><p>{finalScore} of {questions.length} questions</p></div><div className={styles.resultRecord}><span>Record</span><p>{passed ? 'Assessment passed · reflected in your transcript' : 'No assessment record added · review remains available'}</p><span>Standard</span><p>70% correct, with each answer explained after selection</p></div>{!passed && reviewTopics.length > 0 && <div className={styles.review}><h2>Return to these concepts</h2><ul>{[...new Set(reviewTopics)].slice(0, 6).map(topic => <li key={topic}>{topic}</li>)}</ul></div>}<footer><button onClick={restart}>Retake this review <span>↺</span></button><Link to="/app/paths">Return to course catalogue <span>→</span></Link></footer></section></div>
+  function next() {
+    if (current + 1 >= QUESTIONS.length) {
+      setDone(true)
+      const finalScore = score + (q.options[selected]?.correct ? 1 : 0)
+      const pct = Math.round((finalScore / QUESTIONS.length) * 100)
+      if (pct >= 70) {
+        storePassModule(moduleId)
+        if (currentUser) {
+          authPassModule(moduleId)
+        }
+      }
+    } else {
+      setCurrent(c => c + 1)
+      setSelected(null)
+      setAnswered(false)
+    }
+  }
+
+  function restart() {
+    setCurrent(0)
+    setSelected(null)
+    setAnswered(false)
+    setScore(0)
+    setDone(false)
+    setAnswers([])
+  }
+
+  const pct = Math.round((score / QUESTIONS.length) * 100)
+  const passed = pct >= 70
+
+  const path = PATHS.find(p => p.id === 'full-stack-web')
+  const currentModule = path?.modules.find(m => m.id === moduleId)
+  const currentModIdx = path?.modules.findIndex(m => m.id === moduleId) ?? -1
+  const nextMod = path?.modules[currentModIdx + 1]
+  const nextModLessons = nextMod ? path.lessons_data.filter(l => l.part?.startsWith(nextMod.id.replace('m', 'M') + ':')) : []
+  const nextLessonId = nextModLessons[0]?.id
+
+  if (done) {
+    return (
+      <div className={styles.page}>
+        <ScaleIn delay={0}><div className={styles.results}>
+          <div className={styles.resultIcon} style={{
+            background: passed ? 'var(--green-dim)' : 'var(--red-dim)',
+            border: `1px solid ${passed ? 'var(--green-border)' : 'var(--red-border)'}`,
+          }}>
+            {passed
+              ? <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--green)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+              : <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--red)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            }
+          </div>
+          <h1 className={styles.resultTitle}>
+            {passed ? 'Module unlocked!' : 'Keep reviewing — you\'re close.'}
+          </h1>
+          <div className={styles.scoreCircle} data-passed={passed} style={{ borderColor: passed ? 'var(--green)' : 'var(--red)' }}>
+            <span className={styles.scoreNum} style={{ color: passed ? 'var(--green)' : 'var(--red)' }}>{pct}%</span>
+            <span className={styles.scoreLabel}>{score}/{QUESTIONS.length} correct</span>
+          </div>
+          <p className={styles.resultSub}>
+            {passed
+              ? `Congratulations! You scored ${pct}% and earned +10 MEK points! You have unlocked the next module's curriculum.`
+              : `You got ${QUESTIONS.length - score} questions wrong (requires 70% or 14/20 to pass). Review the lessons in this module and try again.`}
+          </p>
+          <div className={styles.answerSummary}>
+            {answers.map((a, i) => (
+              <div key={i} className={`${styles.answerRow} ${a.correct ? styles.correct : styles.wrong}`}>
+                <span style={{display:'flex',alignItems:'center'}}>
+                  {a.correct
+                    ? <svg width="13" height="13" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><polyline points="2,6 5,9 10,3"/></svg>
+                    : <svg width="13" height="13" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="3" x2="9" y2="9"/><line x1="9" y1="3" x2="3" y2="9"/></svg>
+                  }
+                </span>
+                <span>{a.question}</span>
+              </div>
+            ))}
+          </div>
+          <div className={styles.resultActions}>
+            {passed ? (
+              nextLessonId ? (
+                <Button onClick={() => navigate(`/app/lesson/${nextLessonId}`)} variant="primary">
+                  Start Module {nextMod.id.replace('m', '')} →
+                </Button>
+              ) : (
+                <Button onClick={() => navigate('/app/paths')} variant="teal">
+                  Back to Paths ✓
+                </Button>
+              )
+            ) : (
+              <>
+                <Button onClick={restart} variant="secondary">Try again</Button>
+                <Button onClick={() => navigate('/app/paths')} variant="secondary">
+                  Back to Paths
+                </Button>
+              </>
+            )}
+          </div>
+        </div></ScaleIn>
+      </div>
+    )
   }
 
   return (
     <div className={styles.page}>
-      <header className={styles.head}><div><p className={styles.eyebrow}>Module assessment / {moduleId.toUpperCase()}</p><h1>{module?.title || 'Module review'}</h1><p>Choose the answer you can defend. Feedback appears after each response so that this remains a study assessment, not a memory game.</p></div><div className={styles.standard}><span>Assessment standard</span><b>70% correct</b><p>{questions.length} questions · explained feedback</p></div></header>
+      {/* Header */}
+      <FadeUp delay={0}><div className={styles.header}>
+        <div>
+          <span className={styles.moduleTag}>Module {moduleId.replace('m', '')} Test</span>
+          <h1 className={styles.title}>{currentModule?.title || 'Skill Check'}</h1>
+          <p className={styles.sub}>20 questions. Score 70% (14/20) or higher to unlock the next module.</p>
+        </div>
+        <div className={styles.progress}>
+          <span className={styles.progressNum}>{current + 1} / {QUESTIONS.length}</span>
+          <div className={styles.progressTrack}>
+            <div
+              className={styles.progressFill}
+              style={{ width: `${((current) / QUESTIONS.length) * 100}%` }}
+            />
+          </div>
+        </div>
+      </div></FadeUp>
 
-      <div className={styles.assessment}>
-        <aside className={styles.trace}><p className={styles.eyebrow}>Question trace</p><ol>{questions.map((item, index) => { const response = index < responses.length ? responses[index] : null; return <li key={item.id} className={`${index === current ? styles.traceCurrent : ''} ${response?.correct ? styles.traceCorrect : response ? styles.traceIncorrect : ''}`} aria-current={index === current ? 'step' : undefined}>{String(index + 1).padStart(2, '0')}</li> })}</ol><p>{current + 1} of {questions.length}</p></aside>
-        <section className={styles.questionSheet}><header><span>{question.topic || 'Core concept'}</span><span>{question.difficulty || 'Study review'}</span></header><h2>{question.question}</h2>{question.code && <pre><code>{question.code}</code></pre>}<div className={styles.options}>{question.options.map((option, index) => { const correct = option.correct; const chosen = selected === index; const state = answered ? correct ? styles.correct : chosen ? styles.incorrect : '' : ''; return <button key={option.text} className={`${styles.option} ${state}`} onClick={() => select(index)} disabled={answered}><span>{LETTERS[index]}</span><p>{option.text}</p>{answered && correct && <i>Correct</i>}</button> })}</div>{answered && <div className={styles.feedback}><span>{question.options[selected]?.correct ? 'Reasoning holds' : 'Reconsider the boundary'}</span><p>{question.explanation || 'Return to the associated study entry and identify the rule that changes this answer.'}</p></div>}<footer>{answered ? <button onClick={next}>{current + 1 === questions.length ? 'Finish assessment' : 'Continue to next question'} <span>→</span></button> : <p>Select the answer you would be prepared to explain to another student.</p>}</footer></section>
-      </div>
+      {/* Question card */}
+      <ScaleIn delay={60} key={current}><div className={styles.questionCard}>
+        <div className={styles.topicBadge}>{q.topic}</div>
+        <p className={styles.question}>{q.question.split('\n\n')[0]}</p>
+        {q.code && (
+          <pre className={styles.questionCode}>{q.code}</pre>
+        )}
+
+        <div className={styles.options}>
+          {q.options.map((opt, i) => {
+            let cls = styles.option
+            if (answered) {
+              if (opt.correct)          cls += ` ${styles.optCorrect}`
+              else if (i === selected)  cls += ` ${styles.optWrong}`
+              else                      cls += ` ${styles.optDim}`
+            }
+            return (
+              <button key={i} className={cls} onClick={() => answer(opt, i)} disabled={answered}>
+                <span className={styles.optLetter}>{String.fromCharCode(65 + i)}</span>
+                <span>{opt.text}</span>
+              </button>
+            )
+          })}
+        </div>
+
+        {answered && (
+          <div className={`${styles.explanation} ${q.options[selected]?.correct ? styles.expCorrect : styles.expWrong}`}>
+            <span className={styles.expIcon}>
+              {q.options[selected]?.correct
+                ? <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><polyline points="2,6 5,9 10,3"/></svg>
+                : <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="3" x2="9" y2="9"/><line x1="9" y1="3" x2="3" y2="9"/></svg>
+              }
+            </span>
+            <p>{q.explanation}</p>
+          </div>
+        )}
+
+        {answered && (
+          <div className={styles.nextRow}>
+            <Button onClick={next} variant={current + 1 >= QUESTIONS.length ? 'teal' : 'primary'}>
+              {current + 1 >= QUESTIONS.length ? 'See results →' : 'Next question →'}
+            </Button>
+          </div>
+        )}
+      </div></ScaleIn>
     </div>
   )
 }

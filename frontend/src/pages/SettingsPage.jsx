@@ -1,43 +1,146 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { useStore } from '@/lib/store'
 import { useAuth } from '@/lib/auth'
 import styles from './SettingsPage.module.css'
+import { FadeUp, RevealOnScroll } from '@/components/ui/Motion'
 
-const SIZES = [
-  { id: 'sm', label: 'Compact', sample: 'A a', detail: '13 px base text' },
-  { id: 'md', label: 'Standard', sample: 'A a', detail: '14 px base text' },
-  { id: 'lg', label: 'Spacious', sample: 'A a', detail: '16 px base text' }
+const FONT_SIZES = [
+  { id: 'sm', label: 'Small',  size: '13.5px' },
+  { id: 'md', label: 'Medium', size: '14.5px' },
+  { id: 'lg', label: 'Large',  size: '16.5px' },
 ]
 
+function ToggleRow({ label, description, value, onChange }) {
+  return (
+    <div className={styles.toggleRow}>
+      <div>
+        <span className={styles.toggleLabel}>{label}</span>
+        {description && <p className={styles.toggleDesc}>{description}</p>}
+      </div>
+      <button
+        className={`${styles.toggle} ${value ? styles.toggleOn : ''}`}
+        onClick={() => onChange(!value)}
+        aria-label={label}
+      >
+        <span className={styles.toggleThumb} />
+      </button>
+    </div>
+  )
+}
+
 export default function SettingsPage() {
-  const { settings: storedSettings, updateSettings } = useStore()
+  const { settings: storeSettings, updateSettings } = useStore()
   const { currentUser, updateUserSettings } = useAuth()
-  const settings = currentUser?.settings || storedSettings
-  const update = patch => {
+  // Use persisted user settings when available
+  const settings = currentUser?.settings || storeSettings
+  function updateAllSettings(patch) {
     updateSettings(patch)
     updateUserSettings(patch)
   }
-  const reset = () => update({ fontSize: 'md', reduceMotion: false })
+
+  function setFontSize(id) {
+    const found = FONT_SIZES.find(f => f.id === id)
+    if (found) document.documentElement.style.setProperty('--font-size-base', found.size)
+    updateAllSettings({ fontSize: id })
+  }
 
   return (
     <div className={styles.page}>
-      <header className={styles.head}>
-        <div><p className={styles.eyebrow}>Student workspace / preferences</p><h1>Set up a space<br />for close reading.</h1></div>
-        <p>These controls affect this browser only. The course interface has one visual identity; preferences make that identity more comfortable to use.</p>
-      </header>
+      <FadeUp delay={0}><div className={styles.header}>
+        <h1 className={styles.title}>Settings</h1>
+        <p className={styles.sub}>Customise your VibeSkool experience.</p>
+      </div></FadeUp>
 
-      <section className={styles.sheet} aria-labelledby="reading-title">
-        <header><p className={styles.eyebrow}>01 / Reading</p><h2 id="reading-title">How the course is set on the page.</h2></header>
-        <div className={styles.preference}><div><h3>Text scale</h3><p>Set the base size for course prose, annotations, and interface labels. Code remains intentionally compact.</p></div><div className={styles.sizeChoices} role="group" aria-label="Text scale">{SIZES.map(size => <button key={size.id} aria-pressed={(settings.fontSize || 'md') === size.id} className={(settings.fontSize || 'md') === size.id ? styles.sizeActive : ''} onClick={() => update({ fontSize: size.id })}><span className={styles.sample}>{size.sample}</span><b>{size.label}</b><small>{size.detail}</small></button>)}</div></div>
-        <div className={styles.preference}><div><h3>Movement</h3><p>Reduce transitions and entrance effects. This preference works alongside your operating system’s reduced-motion setting.</p></div><button className={`${styles.switch} ${settings.reduceMotion ? styles.switchOn : ''}`} onClick={() => update({ reduceMotion: !settings.reduceMotion })} aria-pressed={Boolean(settings.reduceMotion)}><span>{settings.reduceMotion ? 'Reduced' : 'Standard'}</span><i /></button></div>
-      </section>
+      <RevealOnScroll delay={40} y={14}><section className={styles.section}>
+        <h2 className={styles.sectionTitle}>Appearance</h2>
 
-      <section className={styles.sheet} aria-labelledby="record-title">
-        <header><p className={styles.eyebrow}>02 / Record keeping</p><h2 id="record-title">A clear account of what stays here.</h2></header>
-        <dl className={styles.record}><div><dt>Course progress</dt><dd>Stored with your signed-in student record and used to continue the syllabus in sequence.</dd></div><div><dt>Studio annotations</dt><dd>Held only for the current browser session. They are prompts for your lesson review, not submitted work.</dd></div><div><dt>Display preferences</dt><dd>Stored locally on this device and applied when you return to the workspace.</dd></div></dl>
-      </section>
+        <div className={styles.settingRow}>
+          <span className={styles.settingRowLabel}>Font size</span>
+          <span className={styles.settingRowSub}>Affects lesson content and the Lab</span>
+          <div className={styles.fontSizeRow}>
+            {FONT_SIZES.map((f) => (
+              <button
+                key={f.id}
+                className={`${styles.fontSizeBtn} ${settings.fontSize === f.id ? styles.fontSizeBtnActive : ''}`}
+                onClick={() => setFontSize(f.id)}
+                style={{ fontSize: f.size }}
+              >
+                Aa — {f.label}
+              </button>
+            ))}
+          </div>
+        </div>
 
-      <footer className={styles.footer}><p>Resetting restores the standard reading scale and movement setting. It does not alter your transcript or lesson progress.</p><button onClick={reset}>Restore standard preferences <span>→</span></button></footer>
+        <ToggleRow
+          label="Dark mode"
+          description="Use the dark architectural theme"
+          value={settings.theme === 'dark'}
+          onChange={(v) => updateAllSettings({ theme: v ? 'dark' : 'light' })}
+        />
+      </section></RevealOnScroll>
+
+      <RevealOnScroll delay={0} y={14}><section className={styles.section}>
+        <h2 className={styles.sectionTitle}>Learning preferences</h2>
+        <ToggleRow
+          label="Show MEK progress bar"
+          description="Display your Minimum Effective Knowledge score on lesson pages"
+          value={settings.showMekBar}
+          onChange={(v) => updateAllSettings({ showMekBar: v })}
+        />
+        <ToggleRow
+          label="Compact sidebar"
+          description="Show only icons in the sidebar — more space for content"
+          value={settings.compactSidebar}
+          onChange={(v) => updateAllSettings({ compactSidebar: v })}
+        />
+        <ToggleRow
+          label="Terminal typing sounds"
+          description="Subtle click sound when typing in the Lab"
+          value={settings.terminalSound}
+          onChange={(v) => updateAllSettings({ terminalSound: v })}
+        />
+      </section></RevealOnScroll>
+
+      <RevealOnScroll delay={0} y={14}><section className={styles.section}>
+        <h2 className={styles.sectionTitle}>Developer API Keys</h2>
+        <div className={styles.inputRow}>
+          <div className={styles.inputMeta}>
+            <span className={styles.inputLabel}>Anthropic API Key</span>
+            <p className={styles.inputDesc}>
+              Powers the AI Tutor with Claude. Stored securely in your browser's local state.
+            </p>
+          </div>
+          <div className={styles.inputWrapper}>
+            <input
+              type="password"
+              className={styles.apiKeyInput}
+              value={settings.anthropicKey || ''}
+              onChange={(e) => updateAllSettings({ anthropicKey: e.target.value })}
+              placeholder="sk-ant-api03-..."
+            />
+          </div>
+        </div>
+      </section></RevealOnScroll>
+
+      <RevealOnScroll delay={0} y={14}><section className={styles.section}>
+        <h2 className={styles.sectionTitle}>About</h2>
+        <div className={styles.aboutRow}>
+          <span className={styles.aboutLabel}>Platform</span>
+          <span className={styles.aboutValue}>VibeSkool</span>
+        </div>
+        <div className={styles.aboutRow}>
+          <span className={styles.aboutLabel}>Version</span>
+          <span className={styles.aboutValue}>0.1.0 — MVP</span>
+        </div>
+        <div className={styles.aboutRow}>
+          <span className={styles.aboutLabel}>Stack</span>
+          <span className={styles.aboutValue}>React + Vite + Node.js + Socket.IO</span>
+        </div>
+        <div className={styles.aboutRow}>
+          <span className={styles.aboutLabel}>Philosophy</span>
+          <span className={styles.aboutValue}>Minimum Effective Knowledge</span>
+        </div>
+      </section></RevealOnScroll>
     </div>
   )
 }

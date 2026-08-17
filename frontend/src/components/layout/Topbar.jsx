@@ -4,31 +4,80 @@ import { useAuth } from '@/lib/auth'
 import { useStore } from '@/lib/store'
 import styles from './Topbar.module.css'
 
-export default function Topbar({ onOpenCommandPalette }) {
+export default function Topbar() {
   const { currentUser, signOut } = useAuth()
-  const sidebarOpen = useStore(state => state.sidebarOpen)
   const navigate = useNavigate()
 
-  function toggleSyllabus() {
-    useStore.setState(state => ({ sidebarOpen: !state.sidebarOpen }))
-  }
+  const mekScore = currentUser?.mekScore ?? 0
 
   function handleSignOut() {
     signOut()
     navigate('/', { replace: true })
   }
 
+  function handleToggle() {
+    if (window.innerWidth > 768) {
+      useStore.setState(s => ({
+        settings: { ...s.settings, compactSidebar: !s.settings.compactSidebar }
+      }))
+    } else {
+      useStore.setState(s => ({ sidebarOpen: !s.sidebarOpen }))
+    }
+  }
+
   return (
     <header className={styles.topbar}>
-      <button className={styles.syllabusButton} onClick={toggleSyllabus} aria-label="Open course syllabus" aria-controls="course-index" aria-expanded={sidebarOpen}>Syllabus <span>{sidebarOpen ? '−' : '+'}</span></button>
-      <div className={styles.location}><span>Full stack web development</span><b>Student workspace</b></div>
-      <div className={styles.actions}>
-        <button className={styles.search} onClick={onOpenCommandPalette}>Find in course <kbd>Ctrl K</kbd></button>
-        <Link className={styles.transcript} to="/app/profile">Transcript</Link>
-        <details className={styles.account}>
-          <summary aria-label="Open student account menu">{currentUser?.avatar || 'VS'}</summary>
-          <div className={styles.menu}><p><b>{currentUser?.name || 'Student'}</b><span>{currentUser?.email || 'student@vibeskool.edu'}</span></p><Link to="/app/settings">Reading settings</Link><button onClick={handleSignOut}>Sign out</button></div>
-        </details>
+      <button className={styles.menuBtn} onClick={handleToggle} aria-label="Toggle Sidebar">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+          <line x1="3" y1="12" x2="21" y2="12" />
+          <line x1="3" y1="6" x2="21" y2="6" />
+          <line x1="3" y1="18" x2="21" y2="18" />
+        </svg>
+      </button>
+
+      <Link to="/app/dashboard" className={styles.logo}>
+        <div className={styles.logoMark}>VS</div>
+        <span className={styles.logoText}>VibeSkool</span>
+      </Link>
+
+      <div className={styles.right}>
+        <div className={styles.mekPill}>
+          <span className={styles.mekLabel}>MEK</span>
+          <div className={styles.mekTrack}>
+            <div className={styles.mekFill} style={{ width: `${mekScore}%` }} />
+          </div>
+          <span className={styles.mekValue}>{mekScore}%</span>
+        </div>
+
+        {/* Avatar dropdown */}
+        <div className={styles.avatarWrap}>
+          <Link to="/app/profile" className={styles.avatar} title={currentUser?.name}>
+            {currentUser?.avatar || '?'}
+          </Link>
+          <div className={styles.dropdown}>
+            <div className={styles.dropdownInner}>
+            <div className={styles.dropHead}>
+              <span className={styles.dropName}>{currentUser?.name}</span>
+              <span className={styles.dropEmail}>{currentUser?.email}</span>
+              {currentUser?.role === 'admin' && (
+                <span className={styles.adminBadge}>Admin</span>
+              )}
+            </div>
+            <div className={styles.dropDivider} />
+            <Link to="/app/profile"  className={styles.dropItem}>Profile</Link>
+            <Link to="/app/settings" className={styles.dropItem}>Settings</Link>
+            {currentUser?.role === 'admin' && (
+              <Link to="/app/admin/cms" className={styles.dropItem}>
+                Content Management
+              </Link>
+            )}
+            <div className={styles.dropDivider} />
+            <button className={styles.dropSignOut} onClick={handleSignOut}>
+              Sign out
+            </button>
+            </div>
+          </div>
+        </div>
       </div>
     </header>
   )

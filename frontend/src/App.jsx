@@ -3,8 +3,8 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import AppLayout      from '@/components/layout/AppLayout'
 import ScrollToTop    from '@/components/layout/ScrollToTop'
 import { ProtectedRoute, AdminRoute } from '@/components/layout/ProtectedRoute'
-import { useStore } from '@/lib/store'
-import { useAuth } from '@/lib/auth'
+import { useStore }   from '@/lib/store'
+import { useAuth }    from '@/lib/auth'
 
 import LandingPage    from '@/pages/LandingPage'
 import SignInPage     from '@/pages/SignInPage'
@@ -19,15 +19,13 @@ import SettingsPage   from '@/pages/SettingsPage'
 import AdminCMSPage   from '@/pages/AdminCMSPage'
 
 export default function App() {
-  const storeSettings = useStore(state => state.settings)
+  const { settings: storeSettings } = useStore()
   const { currentUser } = useAuth()
   const settings = currentUser?.settings || storeSettings
 
   useEffect(() => {
-    const sizes = { sm: '13px', md: '14px', lg: '16px' }
-    document.documentElement.style.setProperty('--font-size-base', sizes[settings.fontSize] || sizes.md)
-    document.documentElement.dataset.motion = settings.reduceMotion ? 'reduced' : 'full'
-  }, [settings.fontSize, settings.reduceMotion])
+    document.documentElement.setAttribute('data-theme', settings.theme || 'light')
+  }, [settings.theme])
 
   return (
     <BrowserRouter>

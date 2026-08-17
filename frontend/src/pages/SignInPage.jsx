@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '@/lib/auth'
+import { FadeUp, ScaleIn } from '@/components/ui/Motion'
+
 import styles from './SignInPage.module.css'
 
 export default function SignInPage() {
@@ -13,13 +15,15 @@ export default function SignInPage() {
     if (currentUser) navigate('/app/dashboard', { replace: true })
   }, [currentUser])
 
-  function handleSubmit(e) {
-    e?.preventDefault()
-    signIn(form)
-  }
+  // Force dark theme for the auth pages
+  useEffect(() => {
+    document.body.setAttribute('data-theme', 'dark');
+    return () => document.body.removeAttribute('data-theme');
+  }, []);
 
-  function handleDemoLogin() {
-    signIn({ email: 'architect@vibeskool.edu', password: 'demo-password-123' })
+  function handleSubmit(e) {
+    e.preventDefault()
+    signIn(form)
   }
 
   function set(field) {
@@ -31,109 +35,133 @@ export default function SignInPage() {
 
   return (
     <div className={styles.page}>
-      {/* Left Showcase Panel */}
-      <div className={styles.leftShowcase}>
-        <Link to="/" className={styles.brandLink}>
-          <div style={{ width: 32, height: 32, borderRadius: 8, background: 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, color: '#08090C' }}>
-            VS
-          </div>
-          <span style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 17, color: '#F8FAFC' }}>
-            VibeSkool Academy
-          </span>
-        </Link>
-
-        <div className={styles.terminalCard}>
-          <div style={{ color: 'var(--text-tertiary)', marginBottom: 8, fontSize: 11 }}>
-            $ node audit_guardrails.js --check
-          </div>
-          <div style={{ color: 'var(--green-text)' }}>
-            ✓ Verified MEK Standards: Active<br />
-            ✓ Threat Vector Linter: 0 vulnerabilities<br />
-            ✓ Student Auth Gateway: Ready
-          </div>
-        </div>
-
-        <div className={styles.quoteBlock}>
-          <p className={styles.quoteText}>
-            "Talk is cheap. Show me the code. Or better yet: direct the AI to show you audited, resilient code."
-          </p>
-          <span className={styles.quoteAuthor}>— Linus Torvalds × VibeSkool Philosophy</span>
-        </div>
+      {/* ── Background Mesh ── */}
+      <div className={styles.meshBackground}>
+        <div className={`${styles.glowOrb} ${styles.orb1}`} />
+        <div className={`${styles.glowOrb} ${styles.orb2}`} />
       </div>
+      <div className={styles.inner}>
+        {/* Logo */}
+        <FadeUp delay={0}>
+          <Link to="/" className={styles.logo}>
+            <div className={styles.logoMark}>VS</div>
+            <span className={styles.logoName}>VibeSkool</span>
+          </Link>
+        </FadeUp>
 
-      {/* Right Form Container */}
-      <div className={styles.rightForm}>
-        <div className={styles.formCard}>
-          <div className={styles.formHead}>
-            <h1 className={styles.formTitle}>Welcome back, Architect</h1>
-            <p className={styles.formSub}>Sign in to continue your deliberate practice.</p>
-          </div>
-
-          {/* 1-Click Recruiter / Evaluator Login */}
-          <button className={styles.demoBtn} onClick={handleDemoLogin} type="button">
-            <span>⚡</span> 1-Click Recruiter & Demo Login
-          </button>
-
-          <div className={styles.divider}>Or Sign In With Email</div>
-
-          <form className={styles.form} onSubmit={handleSubmit}>
-            <div className={styles.field}>
-              <label className={styles.label}>Academic Email</label>
-              <input
-                className={styles.input}
-                type="email"
-                placeholder="you@vibeskool.edu"
-                value={form.email}
-                onChange={set('email')}
-                autoComplete="email"
-                required
-              />
-            </div>
-
-            <div className={styles.field}>
-              <label className={styles.label}>Password</label>
-              <div className={styles.inputWrap}>
-                <input
-                  className={styles.input}
-                  type={showPass ? 'text' : 'password'}
-                  placeholder="••••••••"
-                  value={form.password}
-                  onChange={set('password')}
-                  autoComplete="current-password"
-                  required
-                />
-                <button
-                  type="button"
-                  className={styles.showPassBtn}
-                  onClick={() => setShowPass(s => !s)}
-                >
-                  {showPass ? 'Hide' : 'Show'}
-                </button>
+        <ScaleIn delay={60}>
+          <div className={styles.card}>
+            <FadeUp delay={120}>
+              <div className={styles.cardHead}>
+                <h1 className={styles.title}>Welcome back</h1>
+                <p className={styles.sub}>Sign in to continue your learning path.</p>
               </div>
-            </div>
+            </FadeUp>
 
-            {authError && (
-              <div className={styles.errorBanner}>{authError}</div>
-            )}
+            <form className={styles.form} onSubmit={handleSubmit}>
+              <FadeUp delay={180}>
+                <div className={styles.field}>
+                  <label className={styles.label}>Email</label>
+                  <input
+                    className={styles.input}
+                    type="email"
+                    placeholder="you@example.com"
+                    value={form.email}
+                    onChange={set('email')}
+                    autoComplete="email"
+                    autoFocus
+                  />
+                </div>
+              </FadeUp>
 
-            <button
-              type="submit"
-              className="btn btn-primary btn-md"
-              style={{ width: '100%', marginTop: 8 }}
-              disabled={authLoading}
-            >
-              {authLoading ? 'Authenticating...' : 'Sign in to Classroom →'}
-            </button>
-          </form>
+              <FadeUp delay={230}>
+                <div className={styles.field}>
+                  <label className={styles.label}>Password</label>
+                  <div className={styles.inputWrap}>
+                    <input
+                      className={styles.input}
+                      type={showPass ? 'text' : 'password'}
+                      placeholder="••••••••"
+                      value={form.password}
+                      onChange={set('password')}
+                      autoComplete="current-password"
+                    />
+                    <button
+                      type="button"
+                      className={styles.showPass}
+                      onClick={() => setShowPass(v => !v)}
+                    >
+                      {showPass ? <EyeOffIcon /> : <EyeIcon />}
+                    </button>
+                  </div>
+                </div>
+              </FadeUp>
 
-          <p className={styles.footerText}>
-            Don't have an account?{' '}
-            <Link to="/signup" className={styles.footerLink}>
-              Enroll Free →
-            </Link>
-          </p>
-        </div>
+              {authError && (
+                <FadeUp delay={0}>
+                  <div className={styles.error}>
+                    <ErrorIcon />
+                    {authError}
+                  </div>
+                </FadeUp>
+              )}
+
+              <FadeUp delay={280}>
+                <button
+                  className={styles.submit}
+                  type="submit"
+                  disabled={authLoading}
+                >
+                  {authLoading ? <Spinner /> : 'Sign in →'}
+                </button>
+              </FadeUp>
+            </form>
+
+            <FadeUp delay={340}>
+              <div className={styles.footer}>
+                <span>Don't have an account?</span>
+                <Link to="/signup" className={styles.link}>Create one free</Link>
+              </div>
+
+              <div className={styles.adminHint}>
+                <span className={styles.adminHintLabel}>Admin demo</span>
+                <code>{`admin@vibeskool.com`}</code>
+                <code>{`vibeskool2025`}</code>
+              </div>
+            </FadeUp>
+          </div>
+        </ScaleIn>
       </div>
     </div>
+  )
+}
+
+// ── Icons ─────────────────────────────────────────────────────────────────────
+function EyeIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+    </svg>
+  )
+}
+function EyeOffIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>
+    </svg>
+  )
+}
+function ErrorIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+    </svg>
+  )
+}
+function Spinner() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" style={{animation:'spin 0.7s linear infinite'}}>
+      <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+    </svg>
   )
 }
