@@ -70,13 +70,6 @@ export default function SettingsPage() {
             ))}
           </div>
         </div>
-
-        <ToggleRow
-          label="Dark mode"
-          description="Use the dark architectural theme"
-          value={settings.theme === 'dark'}
-          onChange={(v) => updateAllSettings({ theme: v ? 'dark' : 'light' })}
-        />
       </section></RevealOnScroll>
 
       <RevealOnScroll delay={0} y={14}><section className={styles.section}>

@@ -92,7 +92,7 @@ export const useAuth = create((set, get) => {
         progress:         {},
         passedModules:    [],
         settings: {
-          theme: 'dark', fontSize: 'md',
+          fontSize: 'md',
           terminalSound: false, showMekBar: true, compactSidebar: false,
         },
       }

@@ -1,10 +1,9 @@
-import React, { useEffect } from 'react'
+import React from 'react'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import AppLayout      from '@/components/layout/AppLayout'
 import ScrollToTop    from '@/components/layout/ScrollToTop'
+import SmoothScroll   from '@/components/layout/SmoothScroll'
 import { ProtectedRoute, AdminRoute } from '@/components/layout/ProtectedRoute'
-import { useStore }   from '@/lib/store'
-import { useAuth }    from '@/lib/auth'
 
 import LandingPage    from '@/pages/LandingPage'
 import SignInPage     from '@/pages/SignInPage'
@@ -19,18 +18,11 @@ import SettingsPage   from '@/pages/SettingsPage'
 import AdminCMSPage   from '@/pages/AdminCMSPage'
 
 export default function App() {
-  const { settings: storeSettings } = useStore()
-  const { currentUser } = useAuth()
-  const settings = currentUser?.settings || storeSettings
-
-  useEffect(() => {
-    document.documentElement.setAttribute('data-theme', settings.theme || 'light')
-  }, [settings.theme])
-
   return (
     <BrowserRouter>
-      <ScrollToTop />
-      <Routes>
+      <SmoothScroll>
+        <ScrollToTop />
+        <Routes>
         {/* Public */}
         <Route path="/"       element={<LandingPage />} />
         <Route path="/signin" element={<SignInPage />}  />
@@ -61,6 +53,7 @@ export default function App() {
 
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
+      </SmoothScroll>
     </BrowserRouter>
   )
 }

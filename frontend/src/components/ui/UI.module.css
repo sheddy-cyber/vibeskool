@@ -135,11 +135,11 @@
   tab-size: 2;
   box-shadow: none;
 }
-.codeBlock :global(.hl-kw)  { color: #b91c1c; font-weight: 600; }
-.codeBlock :global(.hl-fn)  { color: #1d4ed8; }
-.codeBlock :global(.hl-str) { color: #166534; }
-.codeBlock :global(.hl-cm)  { color: var(--text-tertiary); font-style: italic; }
-.codeBlock :global(.hl-num) { color: #7c3aed; }
+.codeBlock :global(.hl-kw)  { color: var(--code-keyword); font-weight: 600; }
+.codeBlock :global(.hl-fn)  { color: var(--code-func); }
+.codeBlock :global(.hl-str) { color: var(--code-string); }
+.codeBlock :global(.hl-cm)  { color: var(--code-comment); font-style: italic; }
+.codeBlock :global(.hl-num) { color: #F59E0B; }
 
 /* ── Callout ──────────────────────────────────────────────── */
 .callout {

@@ -15,11 +15,6 @@ export default function SignInPage() {
     if (currentUser) navigate('/app/dashboard', { replace: true })
   }, [currentUser])
 
-  // Force dark theme for the auth pages
-  useEffect(() => {
-    document.body.setAttribute('data-theme', 'dark');
-    return () => document.body.removeAttribute('data-theme');
-  }, []);
 
   function handleSubmit(e) {
     e.preventDefault()

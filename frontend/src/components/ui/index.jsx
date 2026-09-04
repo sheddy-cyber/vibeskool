@@ -1,6 +1,7 @@
 import React from 'react'
 import styles from './UI.module.css'
 import clsx from 'clsx'
+export { default as BrandLogo } from './BrandLogo'
 
 // ─── Button ────────────────────────────────────────────────────────────────────
 export function Button({ children, variant = 'primary', size = 'md', onClick, disabled, className, type = 'button', ...rest }) {

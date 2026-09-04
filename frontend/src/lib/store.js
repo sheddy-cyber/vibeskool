@@ -1624,7 +1624,6 @@ export const useStore = create((set) => ({
 
   // Settings
   settings: {
-    theme:          'dark',   // 'dark' | 'warm' | 'dusk' | 'stone' | 'light'
     fontSize:       'md',
     terminalSound:  false,
     showMekBar:     true,

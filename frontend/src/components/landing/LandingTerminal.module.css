@@ -1,0 +1,243 @@
+.wrapper {
+  width: 100%;
+  max-width: 980px;
+  margin: 0 auto;
+  background: #202124;
+  border: 1px solid #DADCE0;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(60, 64, 67, 0.15);
+  display: flex;
+  flex-direction: column;
+  font-family: var(--font-mono);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 11px 18px;
+  background: #2D2F31;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.dot:nth-child(1) { background: #EA4335; }
+.dot:nth-child(2) { background: #FBBC04; }
+.dot:nth-child(3) { background: #34A853; }
+
+.title {
+  margin-left: 10px;
+  font-size: 12px;
+  color: #BDC1C6;
+  font-weight: 500;
+}
+
+.envBadge {
+  font-size: 11px;
+  font-weight: 500;
+  color: #9AA0A6;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  padding: 3px 10px;
+  border-radius: 4px;
+  letter-spacing: 0.03em;
+  font-family: var(--font-mono);
+}
+
+.body {
+  padding: 18px 20px;
+  min-height: 240px;
+  max-height: 380px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 13px;
+  line-height: 1.6;
+  cursor: text;
+}
+
+.line {
+  word-break: break-word;
+}
+
+.line_system {
+  color: var(--text-tertiary);
+  font-size: 12px;
+}
+
+.line_input {
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.line_output {
+  color: var(--text-secondary);
+}
+
+.line_success {
+  color: var(--golden-sand);
+}
+
+.line_accent {
+  color: var(--accent);
+  font-weight: 500;
+}
+
+.line_error {
+  color: var(--light-coral);
+}
+
+.linePromptOut {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.cmdRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cmdText {
+  color: var(--accent);
+}
+
+.outText {
+  color: var(--text-secondary);
+  font-size: 12.5px;
+  padding-left: 14px;
+}
+
+.explainBanner {
+  background: rgba(245, 158, 11, 0.07);
+  border: 1px solid rgba(245, 158, 11, 0.2);
+  border-radius: var(--radius-sm);
+  padding: 8px 12px;
+  margin: 4px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.explainTitle {
+  font-size: 11px;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.explainParts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.explainPart {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.explainPart code {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.inputRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.promptSign {
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.terminalInput {
+  background: transparent;
+  border: none;
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: inherit;
+  outline: none;
+  width: 100%;
+}
+
+.terminalInput::placeholder {
+  color: var(--text-tertiary);
+  opacity: 0.6;
+}
+
+/* ── Footer / Shortcuts ── */
+.footer {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  background: #130D08;
+  border-top: 1px solid var(--border-subtle);
+  overflow-x: auto;
+}
+
+.shortcutLabel {
+  font-size: 11px;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+}
+
+.shortcuts {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  overflow-x: auto;
+}
+
+.shortcutBtn {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all var(--t-fast) var(--ease);
+}
+
+.shortcutBtn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-primary);
+  border-color: var(--border-default);
+}
+
+.shortcutBtnClear {
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--text-tertiary);
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  font-size: 11px;
+  cursor: pointer;
+  transition: color var(--t-fast);
+}
+
+.shortcutBtnClear:hover {
+  color: var(--text-secondary);
+}
