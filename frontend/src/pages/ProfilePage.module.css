@@ -7,12 +7,13 @@
 
 /* ── Profile hero card ──────────────────────────────────────── */
 .profileCard {
-  background: var(--bg-raised);
+  background: var(--bg-surface);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-xl);
   padding: 28px 32px;
   display: flex; align-items: center; gap: 24px;
   position: relative; overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.06);
 }
 /* No decorative streak */
 
@@ -59,9 +60,10 @@
 
 /* ── Overall progress block ──────────────────────────────────── */
 .overallProgress {
-  background: var(--bg-raised); border: 1px solid var(--border-subtle);
+  background: var(--bg-surface); border: 1px solid var(--border-subtle);
   border-radius: var(--radius-xl); padding: 22px 26px;
   display: flex; flex-direction: column; gap: 12px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.06);
 }
 .overallTop { display: flex; align-items: center; justify-content: space-between; }
 .overallLabel { font-size: 13px; color: var(--text-secondary); }

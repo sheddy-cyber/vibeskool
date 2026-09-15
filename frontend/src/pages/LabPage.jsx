@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import IDEWorkspace from '@/components/terminal/IDEWorkspace'
+import { Check, ShieldCheck } from 'lucide-react'
 import styles from './LabPage.module.css'
 import { FadeUp, SlideIn, RevealOnScroll } from '@/components/ui/Motion'
 
@@ -65,7 +66,7 @@ export default function LabPage() {
                 >
                   <div className={styles.cmdRow}>
                     <code className={styles.refCmd}>{r.cmd}</code>
-                    {copiedCmd === r.cmd && <span className={styles.copyCheck}>✓</span>}
+                    {copiedCmd === r.cmd && <span className={styles.copyCheck}><Check size={13} style={{ display: 'inline' }} /></span>}
                   </div>
                   <span className={styles.refDesc}>{r.desc}</span>
                 </div>
@@ -81,9 +82,7 @@ export default function LabPage() {
 
             <div className={styles.safeBox}>
               <span className={styles.safeIcon}>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--green)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-                </svg>
+                <ShieldCheck size={16} style={{ color: 'var(--green)' }} />
               </span>
               <p className={styles.safeText}>
                 Destructive actions like <code>rm -rf</code> are blocked. You are in a sandboxed client container.

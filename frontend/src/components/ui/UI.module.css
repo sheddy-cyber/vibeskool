@@ -1,319 +1,352 @@
 /* ══════════════════════════════════════════════════════════
-   VibeSkool UI — Stoic Light Styling
+   VibeSkool UI — "The Luminous Atelier" Design System
+   Sculpted liquid-light buttons, prism stream meters, porcelain plates
    ══════════════════════════════════════════════════════════ */
 
-/* ── Button ─────────────────────────────────────────────── */
+/* ── Plain Buttons with Animated Border on Hover ──────────── */
 .btn {
-  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
-  border-radius: 0;
-  font-family: var(--font-mono); font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  position: relative;
+  isolation: isolate;
+  --btn-radius: 8px;
+  --btn-inset: 2px;
+  border-radius: var(--btn-radius);
+  font-family: var(--font-display);
+  font-weight: 600;
   cursor: pointer;
-  transition: all var(--t-fast);
-  border: 1px solid var(--border-strong);
-  white-space: nowrap; letter-spacing: 0.05em; line-height: 1;
-  text-transform: uppercase;
+  border: none;
+  white-space: nowrap;
+  letter-spacing: -0.01em;
+  line-height: 1;
+  user-select: none;
+  overflow: hidden;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  transition: color 0.15s ease;
 }
-.btn:disabled { opacity: 0.35; cursor: not-allowed; }
-.btn:active:not(:disabled) { opacity: 0.9; }
 
-.btn-sm { font-size: 11px;   padding: 5px  12px; }
-.btn-md { font-size: 12px; padding: 8px 20px; }
-.btn-lg { font-size: 13.5px;   padding: 11px 26px; }
+.btn:disabled { 
+  opacity: 0.4; 
+  cursor: not-allowed; 
+  box-shadow: none !important;
+  transform: none !important;
+}
 
+.btn:disabled::before {
+  display: none !important;
+}
+
+.btn-sm {
+  --btn-radius: 6px;
+  --btn-inset: 1.5px;
+  font-size: 13px;
+  padding: 7px 16px;
+  min-height: 34px;
+}
+
+.btn-md {
+  --btn-radius: 8px;
+  --btn-inset: 2px;
+  font-size: 14px;
+  padding: 10px 22px;
+  min-height: 42px;
+}
+
+.btn-lg {
+  --btn-radius: 9px;
+  --btn-inset: 2px;
+  font-size: 15px;
+  padding: 13px 28px;
+  min-height: 48px;
+}
+
+/* ── Rotating Brand Palette Animation Around Border on Hover ── */
+.btn::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 400%;
+  min-width: 400px;
+  aspect-ratio: 1 / 1;
+  transform: translate(-50%, -50%) rotate(0deg);
+  background: conic-gradient(
+    from 0deg,
+    #1A73E8 0deg,
+    #34A853 90deg,
+    #F9AB00 180deg,
+    #EA4335 270deg,
+    #1A73E8 360deg
+  );
+  animation: borderSpin 3s linear infinite;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+  z-index: -2;
+  pointer-events: none;
+}
+
+.btn:hover:not(:disabled)::before {
+  opacity: 1;
+}
+
+@keyframes borderSpin {
+  0% {
+    transform: translate(-50%, -50%) rotate(0deg);
+  }
+  100% {
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
+}
+
+/* Inner plate to create a crisp 2px border perimeter */
+.btn::after {
+  content: '';
+  position: absolute;
+  inset: var(--btn-inset);
+  border-radius: calc(var(--btn-radius) - var(--btn-inset));
+  background: var(--btn-bg, #1A73E8);
+  z-index: -1;
+  pointer-events: none;
+  transition: background 0.15s ease;
+}
+
+/* Primary Key — Plain Solid Classroom Blue */
 .btn-primary {
-  background: var(--accent);
-  color: var(--text-inverse);
-  border-color: var(--accent);
+  background: #1A73E8;
+  color: #FFFFFF;
+  --btn-bg: #1A73E8;
 }
-.btn-primary:hover:not(:disabled) {
-  background: var(--text-primary);
-  border-color: var(--text-primary);
-  color: var(--bg-base);
+.btn-primary:hover:not(:disabled)::after {
+  background: #1557B0;
+}
+.btn-primary:active:not(:disabled)::after {
+  background: #104896;
 }
 
+/* Secondary Key — Plain Solid Surface with Light Gray Rest Border */
 .btn-secondary {
-  background: var(--bg-surface);
-  color: var(--text-secondary);
-  border-color: var(--border-default);
+  background: var(--border-default, #DADCE0);
+  color: var(--text-primary, #202124);
+  --btn-bg: var(--bg-surface, #FFFFFF);
 }
-.btn-secondary:hover:not(:disabled) {
-  color: var(--text-primary);
-  border-color: var(--border-strong);
-  background: var(--bg-overlay);
+.btn-secondary:hover:not(:disabled)::after {
+  background: var(--bg-surface, #FFFFFF);
+}
+.btn-secondary:active:not(:disabled)::after {
+  background: var(--bg-raised, #F8F9FA);
 }
 
+/* Teal / Emerald Key — Plain Solid Green */
+.btn-teal {
+  background: #1E8E3E;
+  color: #FFFFFF;
+  --btn-bg: #1E8E3E;
+}
+.btn-teal:hover:not(:disabled)::after {
+  background: #137333;
+}
+.btn-teal:active:not(:disabled)::after {
+  background: #0D5D26;
+}
+
+/* Danger Key — Plain Solid Red */
+.btn-danger {
+  background: #D93025;
+  color: #FFFFFF;
+  --btn-bg: #D93025;
+}
+.btn-danger:hover:not(:disabled)::after {
+  background: #C5221F;
+}
+.btn-danger:active:not(:disabled)::after {
+  background: #A51D1A;
+}
+
+/* Ghost Key — Plain Text without animated border */
 .btn-ghost {
-  background: transparent; color: var(--text-secondary); border-color: transparent;
+  background: transparent; 
+  color: var(--text-secondary); 
+  box-shadow: none;
+}
+.btn-ghost::before,
+.btn-ghost::after {
+  display: none !important;
 }
 .btn-ghost:hover:not(:disabled) {
-  background: var(--accent-dim);
-  color: var(--text-primary);
+  background: rgba(15, 23, 42, 0.06);
+  color: #202124;
 }
 
-.btn-teal {
-  background: var(--sage-dim); color: var(--sage-text); border-color: var(--sage-border);
-  box-shadow: none;
-}
-.btn-teal:hover:not(:disabled) {
-  background: var(--sage-border);
-  color: var(--text-primary);
+.btnLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
 
-/* ── Badge ─────────────────────────────────────────────────── */
-.badge {
-  display: inline-flex; align-items: center;
-  font-size: 9px; font-weight: 700; font-family: var(--font-mono);
-  padding: 2px 8px; border-radius: 0;
-  border: 1px solid var(--border-default); letter-spacing: 0.05em;
-  text-transform: uppercase; white-space: nowrap;
-}
-.badge-violet { background: var(--bg-surface); color: var(--accent); border-color: var(--border-default); }
-.badge-teal   { background: var(--bg-surface);   color: var(--text-secondary);   border-color: var(--border-default); }
-.badge-amber  { background: var(--amber-dim);  color: var(--amber-text);  border-color: var(--amber-border); }
-.badge-red    { background: var(--red-dim);    color: var(--red-text);    border-color: var(--red-border); }
-
-/* ── Card ─────────────────────────────────────────────────── */
+/* ── Sculpted Cards ──────────────────────────────────────── */
 .card {
-  background: var(--bg-raised);
+  background: var(--bg-surface);
   border: 1px solid var(--border-default);
-  border-radius: var(--radius-lg); position: relative; overflow: hidden;
+  border-radius: 16px;
+  position: relative;
+  box-shadow: var(--shadow-md);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  overflow: hidden;
 }
-.cardClickable { cursor: pointer; transition: all var(--t-fast); }
+.cardClickable { 
+  cursor: pointer; 
+}
 .cardClickable:hover {
-  border-color: var(--accent);
+  transform: translateY(-2.5px);
+  box-shadow: var(--shadow-hover);
+  border-color: var(--accent-border);
 }
 
-.card-accent-violet::before { content:''; position:absolute; top:0; left:0; right:0; height:3px; background: var(--accent); }
-.card-accent-teal::before   { content:''; position:absolute; top:0; left:0; right:0; height:3px; background: var(--sage); }
-.card-accent-amber::before  { content:''; position:absolute; top:0; left:0; right:0; height:3px; background: var(--amber); }
-.card-accent-red::before    { content:''; position:absolute; top:0; left:0; right:0; height:3px; background: var(--red); }
+.card-accent-violet::before { content:''; position:absolute; top:0; left:0; right:0; height:3px; background: linear-gradient(90deg, #3B82F6, #8B5CF6); }
+.card-accent-teal::before   { content:''; position:absolute; top:0; left:0; right:0; height:3px; background: linear-gradient(90deg, #10B981, #059669); }
+.card-accent-amber::before  { content:''; position:absolute; top:0; left:0; right:0; height:3px; background: linear-gradient(90deg, #F59E0B, #D97706); }
+.card-accent-red::before    { content:''; position:absolute; top:0; left:0; right:0; height:3px; background: linear-gradient(90deg, #EF4444, #DC2626); }
 
-/* ── ProgressBar ─────────────────────────────────────────── */
-.progressTrack { width:100%; background: var(--bg-surface); border-radius:0; overflow:hidden; }
-.progressFill  { height:100%; background:var(--accent); border-radius:0; transition:width 0.5s ease; }
+/* ── Prism Stream Progress Meters ────────────────────────── */
+.vernierMeter {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.vernierHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-family: var(--font-sans);
+}
+.vernierLabel {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.vernierValue {
+  font-size: 13px;
+  font-weight: 700;
+  font-family: var(--font-display);
+  color: var(--accent);
+}
 
-/* ── StatCard ─────────────────────────────────────────────── */
-.statCard {
+.vernierTrack {
+  width: 100%;
   background: var(--bg-raised);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-lg); padding: 20px;
+  border-radius: 9999px;
+  position: relative;
+  overflow: hidden;
+  height: 8px;
+}
+.vernierFill {
+  height: 100%;
+  background: linear-gradient(90deg, #38BDF8 0%, #3B82F6 50%, #6366F1 100%);
+  border-radius: 9999px;
+  transition: width 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 0 10px rgba(59, 130, 246, 0.35);
+}
+
+/* ── Refined Jewel Badges ────────────────────────────────── */
+.badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 11px; font-weight: 600; font-family: var(--font-sans);
+  padding: 4px 12px; border-radius: 9999px;
+  border: 1px solid transparent;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+}
+.badge-violet { background: rgba(37, 99, 235, 0.08); color: #2563EB; border-color: rgba(37, 99, 235, 0.18); }
+.badge-teal   { background: rgba(16, 185, 129, 0.08); color: #059669; border-color: rgba(16, 185, 129, 0.2); }
+.badge-amber  { background: rgba(245, 158, 11, 0.08); color: #D97706; border-color: rgba(245, 158, 11, 0.2); }
+.badge-red    { background: rgba(239, 68, 68, 0.08); color: #DC2626; border-color: rgba(239, 68, 68, 0.2); }
+
+/* ── Stat Card (Daylight Porcelain Block) ─────────────────── */
+.statCard {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: 16px; 
+  padding: 22px 24px;
   display: flex; flex-direction: column; gap: 8px;
   position: relative; overflow: hidden;
-  transition: all var(--t-fast);
-  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  box-shadow: var(--shadow-sm);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .statCard:hover {
-  border-color: var(--border-default);
-  box-shadow: 0 6px 16px rgba(0,0,0,0.1);
   transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--border-strong);
 }
-
 .statLabel {
-  font-size: 10px; font-weight: 500; font-family: var(--font-mono);
-  color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.1em;
+  font-size: 12.5px; font-weight: 600;
+  color: var(--text-secondary); letter-spacing: 0.02em;
 }
 .statValue {
-  font-family: var(--font-mono); font-size: 32px; font-weight: 700;
+  font-family: var(--font-display); font-size: 36px; font-weight: 800;
   line-height: 1; color: var(--text-primary);
 }
-.statSub { font-size: 11px; color: var(--text-secondary); font-family: var(--font-mono); }
+.statSub { font-size: 13px; color: var(--text-secondary); font-family: var(--font-sans); }
 
-/* ── SectionTitle ─────────────────────────────────────────── */
+/* ── Section Title ────────────────────────────────────────── */
 .sectionTitle {
-  font-family: var(--font-mono); font-size: 14.5px; font-weight: 700;
-  letter-spacing: -0.01em; color: var(--text-primary);
+  font-family: var(--font-display); font-size: 18px; font-weight: 800;
+  letter-spacing: -0.02em; color: var(--text-primary);
 }
 
-/* ── CodeBlock ────────────────────────────────────────────── */
+/* ── CodeBlock (Midnight Glass Plate) ─────────────────────── */
 .codeBlock {
-  background: var(--bg-surface);
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-md);
-  padding: 20px;
+  background: #090A0F;
+  color: #F8FAFC;
+  border: 1px solid var(--border-subtle);
+  border-radius: 14px;
+  padding: 22px;
   font-family: var(--font-mono); font-size: 13.5px;
-  line-height: 1.8; color: var(--text-primary); overflow-x: auto; white-space: pre;
+  line-height: 1.8; overflow-x: auto; white-space: pre;
   tab-size: 2;
-  box-shadow: none;
+  box-shadow: var(--shadow-lg);
 }
-.codeBlock :global(.hl-kw)  { color: var(--code-keyword); font-weight: 600; }
-.codeBlock :global(.hl-fn)  { color: var(--code-func); }
-.codeBlock :global(.hl-str) { color: var(--code-string); }
-.codeBlock :global(.hl-cm)  { color: var(--code-comment); font-style: italic; }
-.codeBlock :global(.hl-num) { color: #F59E0B; }
+.codeBlock :global(.hl-kw)  { color: #7DD3FC; font-weight: 600; }
+.codeBlock :global(.hl-fn)  { color: #C084FC; }
+.codeBlock :global(.hl-str) { color: #86EFAC; }
+.codeBlock :global(.hl-cm)  { color: #64748B; font-style: italic; }
+.codeBlock :global(.hl-num) { color: #FDBA74; }
 
-/* ── Callout ──────────────────────────────────────────────── */
+.codeLine { display: flex; gap: 16px; }
+.lineNum { color: #475569; user-select: none; min-width: 24px; text-align: right; }
+.lineContent { flex: 1; }
+
+/* ── Callout (Frosted Glass Note) ─────────────────────────── */
 .callout {
-  border-radius: var(--radius-md); padding: 16px 20px;
-  font-size: 14px; line-height: 1.7; border-left: 4px solid;
+  border-radius: 12px; padding: 18px 22px;
+  font-size: 14.5px; line-height: 1.7;
+  border: 1px solid var(--border-default);
+  background: var(--bg-raised);
+  box-shadow: var(--shadow-sm);
 }
 .callout-violet {
-  background: var(--accent-dim); border-color: var(--accent); color: var(--accent-text);
+  border-left: 4px solid #3B82F6;
+  background: rgba(37, 99, 235, 0.04);
 }
 .callout-teal {
-  background: var(--sage-dim); border-color: var(--sage); color: var(--sage-text);
+  border-left: 4px solid #10B981;
+  background: rgba(16, 185, 129, 0.04);
 }
 .callout-amber {
-  background: var(--amber-dim); border-color: var(--amber); color: var(--amber-text);
+  border-left: 4px solid #F59E0B;
+  background: rgba(245, 158, 11, 0.04);
 }
 
-/* ── AiPromptBox ──────────────────────────────────────────── */
-.aiBox {
-  background: var(--bg-raised); border: 1px solid var(--border-default);
-  border-radius: var(--radius-lg); overflow: hidden;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
-}
-.aiBoxHeader {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 12px 20px; border-bottom: 1px solid var(--border-subtle);
-  background: var(--bg-surface);
-}
-.aiBoxLabel {
-  font-size: 11px; font-weight: 700; font-family: var(--font-mono);
-  color: var(--sage-text); text-transform: uppercase; letter-spacing: 0.12em;
-}
-.copyBtn {
-  font-size: 12px; font-weight: 600; color: var(--text-secondary);
-  background: transparent; border: 1px solid var(--border-default);
-  border-radius: var(--radius-sm); padding: 4px 12px; cursor: pointer;
-  font-family: var(--font-sans); transition: border-color 150ms ease, color 150ms ease;
-}
-.copyBtn:hover { border-color: var(--border-strong); color: var(--text-primary); }
-
-.aiBoxText {
-  padding: 18px 20px; font-size: 13.5px; font-family: var(--font-mono);
-  color: var(--text-secondary); line-height: 1.7; background: var(--bg-surface);
-  border-bottom-left-radius: var(--radius-lg);
-  border-bottom-right-radius: var(--radius-lg);
-}
-
-/* ── MEKBar ───────────────────────────────────────────────── */
-.mekBar {
-  background: var(--bg-surface); border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-lg); padding: 14px 20px;
-  display: flex; align-items: center; gap: 16px;
-  position: relative; overflow: hidden;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-}
-
-.mekLabel {
-  font-size: 10px; font-weight: 500; font-family: var(--font-mono);
-  color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.1em;
-  white-space: nowrap; flex-shrink: 0;
-}
-.mekTrack {
-  flex: 1; height: 4px; background: var(--bg-surface);
-  border-radius: 0; overflow: hidden; max-width: 240px;
-}
-.mekFill {
-  height: 100%;
-  background: var(--accent);
-  border-radius: 0; transition: width 0.5s ease;
-}
-.mekValue {
-  font-size: 12px; font-family: var(--font-mono); font-weight: 700;
-  color: var(--accent); white-space: nowrap; flex-shrink: 0;
-}
-
-/* ── EmptyState ───────────────────────────────────────────── */
+/* ── Empty State ──────────────────────────────────────────── */
 .emptyState {
   display: flex; flex-direction: column; align-items: center;
   justify-content: center; gap: 16px; padding: 60px 24px; text-align: center;
-}
-.emptyIcon { font-size: 40px; }
-.emptyTitle { font-family: var(--font-display); font-size: 18px; font-weight: 800; color: var(--text-primary); }
-.emptyBody { font-size: 14px; color: var(--text-secondary); max-width: 320px; line-height: 1.6; }
-
-/* ── GoalWidget ───────────────────────────────────────────── */
-.goalWidget {
-  background: var(--bg-raised);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-lg);
-  padding: 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  position: relative;
-  overflow: hidden;
-}
-.goalHeader {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-.goalTitleRow {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-.goalIcon {
-  font-size: 20px;
-}
-.goalTitle {
-  font-family: var(--font-mono);
-  font-size: 14px;
-  font-weight: 700;
-  color: var(--text-primary);
-}
-.goalSub {
-  font-size: 11px;
-  color: var(--text-secondary);
-}
-.goalTargetSelector {
-  display: flex;
-  gap: 4px;
+  border: 1.5px dashed var(--border-default);
+  border-radius: 16px;
   background: var(--bg-surface);
-  padding: 2px;
-  border-radius: var(--radius-md);
-  border: 1px solid var(--border-faint);
 }
-.targetBtn {
-  background: transparent;
-  border: none;
-  color: var(--text-secondary);
-  font-size: 10px;
-  font-weight: 600;
-  font-family: var(--font-sans);
-  padding: 4px 8px;
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-  transition: all var(--t-fast);
-}
-.targetBtn:hover {
-  color: var(--text-primary);
-  background: var(--bg-overlay);
-}
-.targetBtnActive {
-  background: var(--accent);
-  color: var(--text-inverse);
-}
-.goalBody {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-.goalProgressInfo {
-  display: flex;
-  justify-content: space-between;
-  font-size: 10.5px;
-  font-family: var(--font-mono);
-}
-.goalProgressLabel {
-  color: var(--text-secondary);
-}
-.goalProgressPct {
-  color: var(--accent);
-  font-weight: 700;
-}
-.goalTrack {
-  width: 100%;
-  height: 6px;
-  background: var(--bg-surface);
-  border-radius: var(--radius-pill);
-  overflow: hidden;
-}
-.goalFill {
-  height: 100%;
-  background: var(--accent);
-  border-radius: var(--radius-pill);
-  transition: width 0.5s ease;
-}
+.emptyIcon { font-size: 36px; color: var(--text-tertiary); }
+.emptyTitle { font-family: var(--font-display); font-size: 20px; font-weight: 800; color: var(--text-primary); }
+.emptyBody { font-size: 14px; color: var(--text-secondary); max-width: 360px; line-height: 1.7; }

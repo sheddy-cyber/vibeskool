@@ -1,6 +1,8 @@
 import React, { useState } from 'react'
-import { PATHS, LESSONS_CONTENT } from '@/lib/store'
+import { useStore } from '@/lib/store'
+import { contentApi } from '@/lib/api'
 import { CodeBlock } from '@/components/ui'
+import { Plus, Edit3, Trash2, Eye, ArrowLeft, Save, Copy, Check } from 'lucide-react'
 import styles from './AdminCMSPage.module.css'
 import { FadeUp, StaggerGroup } from '@/components/ui/Motion'
 
@@ -22,7 +24,9 @@ function SectionEditor({ section, idx, onChange, onRemove }) {
     <div className={styles.sectionCard}>
       <div className={styles.sectionTop}>
         <span className={styles.sectionNum}>Section {idx + 1}</span>
-        <button className={styles.removeBtn} onClick={() => onRemove(idx)}>Remove</button>
+        <button className={styles.removeBtn} onClick={() => onRemove(idx)}>
+          <Trash2 size={13} /> Remove
+        </button>
       </div>
       <label className={styles.fieldLabel}>Heading</label>
       <input
@@ -90,8 +94,25 @@ export default function AdminCMSPage() {
   const [lessonId, setLessonId]       = useState('')
   const [editingExisting, setEditing] = useState(false)
   const [copied, setCopied]           = useState(false)
+  const [saving, setSaving]           = useState(false)
 
-  const allLessonIds = Object.keys(LESSONS_CONTENT)
+  const { paths, fetchPaths } = useStore()
+  
+  React.useEffect(() => {
+    if (paths.length === 0) fetchPaths()
+  }, [paths.length, fetchPaths])
+
+  const allLessonIds = paths.flatMap(p => p.lessons_data?.map(l => l.id) || [])
+
+  const output = toStoreEntry(lessonId || 'lesson-id', lesson)
+
+  function copyOutput() {
+    if (typeof navigator !== 'undefined' && navigator.clipboard) {
+      navigator.clipboard.writeText(output)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    }
+  }
 
   function newLesson() {
     setLesson(BLANK_LESSON())
@@ -100,8 +121,9 @@ export default function AdminCMSPage() {
     setMode('edit')
   }
 
-  function editLesson(id) {
-    const l = LESSONS_CONTENT[id]
+  async function editLesson(id) {
+    const data = await contentApi.getLesson(id)
+    const l = data?.lesson
     if (!l) return
     setLessonId(id)
     setLesson({
@@ -149,29 +171,100 @@ export default function AdminCMSPage() {
     }))
   }
 
-  const output = toStoreEntry(lessonId || 'lesson-id', lesson)
+  async function handleSave() {
+    if (!lessonId || !lesson.pathId || !lesson.title) {
+      alert("Lesson ID, Path ID, and Title are required.")
+      return
+    }
+    
+    try {
+      setSaving(true)
+      
+      const cleanSections = lesson.sections
+        .filter(s => s.heading || s.body || s.code || s.callout)
+        .map(s => {
+          const obj = {}
+          if (s.heading) obj.heading = s.heading
+          if (s.body)    obj.body    = s.body
+          if (s.callout) obj.callout = s.callout
+          if (s.code)    obj.code    = s.code
+          return obj
+        })
 
-  function copyOutput() {
-    navigator.clipboard?.writeText(output)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
+      const payload = {
+        id: lessonId,
+        pathId: lesson.pathId,
+        title: lesson.title,
+        duration: lesson.duration,
+        part: lesson.part,
+        mekLabel: lesson.mekLabel,
+        sections: cleanSections,
+        aiPrompt: lesson.aiPrompt,
+        terminalMission: lesson.terminalMission
+      }
+
+      if (editingExisting) {
+        await contentApi.updateLesson(lessonId, payload)
+        alert('Lesson updated successfully!')
+      } else {
+        await contentApi.createLesson(payload)
+        alert('Lesson created successfully!')
+      }
+      
+      // Refresh paths to update the UI
+      fetchPaths()
+      setMode('list')
+    } catch (err) {
+      console.error(err)
+      alert(err.message || 'Failed to save lesson.')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  if (mode === 'preview') {
+    return (
+      <div className={styles.page}>
+        <div className={styles.header}>
+          <h2>Preview: {lesson.title || 'Untitled Lesson'}</h2>
+          <button className={styles.backBtn} onClick={() => setMode('edit')}>
+            <ArrowLeft size={14} /> Back to Edit
+          </button>
+        </div>
+        {/* Simplified preview */}
+        <div className={styles.previewContainer}>
+          {lesson.sections.map((s, i) => (
+            <div key={i} style={{ marginBottom: '20px' }}>
+              {s.heading && <h3>{s.heading}</h3>}
+              {s.body && <p>{s.body}</p>}
+              {s.callout && <div className={styles.callout}>{s.callout}</div>}
+              {s.code && <CodeBlock code={s.code} language="javascript" />}
+            </div>
+          ))}
+        </div>
+      </div>
+    )
   }
 
   // ── List view ──────────────────────────────────────────────────────────────
   if (mode === 'list') {
     return (
       <div className={styles.page}>
-        <FadeUp delay={0}><div className={styles.header}>
-          <div>
-            <h1 className={styles.title}>Content Management</h1>
-            <p className={styles.sub}>Write and edit lesson content. Copy the output into store.js to publish.</p>
+        <FadeUp delay={0}>
+          <div className={styles.header}>
+            <div>
+              <h1 className={styles.title}>Content Management</h1>
+              <p className={styles.sub}>Write and edit lesson content. Save changes to update the database.</p>
+            </div>
+            <button className={styles.primaryBtn} onClick={newLesson}>
+              <Plus size={15} /> New Lesson
+            </button>
           </div>
-          <button className={styles.primaryBtn} onClick={newLesson}>+ New Lesson</button>
-        </div></FadeUp>
+        </FadeUp>
 
         <div className={styles.pathList}>
-          {PATHS.map(path => {
-            const lessons = path.lessons_data
+          {paths.map(path => {
+            const lessons = path.lessons_data || []
             return (
               <div key={path.id} className={styles.pathGroup}>
                 <div className={styles.pathGroupHeader}>
@@ -180,28 +273,30 @@ export default function AdminCMSPage() {
                   <span className={styles.pathGroupCount}>{lessons.length} lessons</span>
                 </div>
                 <div className={styles.lessonList}>
-                  {lessons.map(l => {
-                    const hasContent = !!LESSONS_CONTENT[l.id]
-                    return (
-                      <div key={l.id} className={styles.lessonRow}>
-                        <div className={styles.lessonRowLeft}>
-                          <span className={`${styles.contentDot} ${hasContent ? styles.dotFull : styles.dotEmpty}`} />
-                          <div>
-                            <span className={styles.lessonRowTitle}>{l.title}</span>
-                            <span className={styles.lessonRowMeta}>{l.id} · {l.duration}</span>
-                          </div>
+                  {lessons.map(l => (
+                    <div key={l.id} className={styles.lessonRow}>
+                      <div className={styles.lessonRowLeft}>
+                        <span className={`${styles.contentDot} ${styles.dotFull}`} />
+                        <div>
+                          <span className={styles.lessonRowTitle}>{l.title}</span>
+                          <span className={styles.lessonRowMeta}>{l.id} · {l.duration}</span>
                         </div>
-                        <button
-                          className={styles.editBtn}
-                          onClick={() => editLesson(l.id)}
-                          disabled={!hasContent}
-                          title={hasContent ? 'Edit this lesson' : 'No content yet — create new'}
-                        >
-                          {hasContent ? 'Edit' : 'No content'}
-                        </button>
                       </div>
-                    )
-                  })}
+                      <button
+                        className={styles.editBtn}
+                        onClick={() => editLesson(l.id)}
+                        title="Edit this lesson"
+                      >
+                        <Edit3 size={13} style={{ marginRight: '5px' }} />
+                        Edit
+                      </button>
+                    </div>
+                  ))}
+                  {lessons.length === 0 && (
+                    <div style={{ padding: '16px 20px', color: 'var(--text-tertiary)', fontSize: '13px' }}>
+                      No lessons in this course yet.
+                    </div>
+                  )}
                 </div>
               </div>
             )
@@ -214,16 +309,29 @@ export default function AdminCMSPage() {
   // ── Edit view ──────────────────────────────────────────────────────────────
   return (
     <div className={styles.page}>
-      <FadeUp delay={0}><div className={styles.header}>
-        <div>
-          <h1 className={styles.title}>{editingExisting ? 'Edit Lesson' : 'New Lesson'}</h1>
-          <p className={styles.sub}>Fill in the fields below. Copy the output and paste it into store.js to publish.</p>
+      <FadeUp delay={0}>
+        <div className={styles.header}>
+          <div>
+            <h1 className={styles.title}>{editingExisting ? 'Edit Lesson' : 'New Lesson'}</h1>
+            <p className={styles.sub}>Fill in the fields below. Save directly to update the database.</p>
+          </div>
+          <div className={styles.headerActions}>
+            <button className={styles.backBtn} onClick={() => setMode('list')}>
+              <ArrowLeft size={14} /> Back to List
+            </button>
+            <button className={styles.secondaryBtn} onClick={() => setMode('preview')}>
+              <Eye size={14} /> Preview
+            </button>
+            <button 
+              className={styles.primaryBtn} 
+              onClick={handleSave}
+              disabled={saving}
+            >
+              <Save size={14} /> {saving ? 'Saving...' : (editingExisting ? 'Save Changes' : 'Create Lesson')}
+            </button>
+          </div>
         </div>
-        <div className={styles.headerActions}>
-          <button className={styles.ghostBtn} onClick={() => setMode('list')}>← All lessons</button>
-          <button className={styles.ghostBtn} onClick={() => setMode('preview')}>Preview output</button>
-        </div>
-      </div></FadeUp>
+      </FadeUp>
 
       <div className={styles.editorGrid}>
         {/* Left: form */}
@@ -255,7 +363,7 @@ export default function AdminCMSPage() {
                 <label className={styles.fieldLabel}>Path</label>
                 <select className={styles.select} value={lesson.pathId} onChange={e => setField('pathId', e.target.value)}>
                   <option value="">— select —</option>
-                  {PATHS.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+                  {paths.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
                 </select>
               </div>
               <div>
@@ -286,7 +394,9 @@ export default function AdminCMSPage() {
           <div className={styles.fieldGroup}>
             <div className={styles.groupHeaderRow}>
               <h2 className={styles.groupTitle}>Sections</h2>
-              <button className={styles.addBtn} onClick={addSection}>+ Add section</button>
+              <button className={styles.addBtn} onClick={addSection}>
+                <Plus size={13} /> Add section
+              </button>
             </div>
             {lesson.sections.map((sec, idx) => (
               <SectionEditor
@@ -325,13 +435,13 @@ export default function AdminCMSPage() {
         {/* Right: live output */}
         <div className={styles.outputPanel}>
           <div className={styles.outputHeader}>
-            <span className={styles.outputTitle}>Generated code</span>
+            <span className={styles.outputTitle}>Generated JSON Payload</span>
             <button className={styles.copyBtn} onClick={copyOutput}>
-              {copied ? '✓ Copied' : 'Copy'}
+              {copied ? <><Check size={12} style={{ marginRight: 4 }} /> Copied</> : <><Copy size={12} style={{ marginRight: 4 }} /> Copy</>}
             </button>
           </div>
           <div className={styles.outputInfo}>
-            Paste this into <code>frontend/src/lib/store.js</code> inside the <code>LESSONS_CONTENT</code> object.
+            Save directly via the "Save Changes" button above, or copy the lesson structure below.
           </div>
           <pre className={styles.outputCode}>{output}</pre>
         </div>

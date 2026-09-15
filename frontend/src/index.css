@@ -1,10 +1,17 @@
+@import '@fontsource/outfit/400.css';
+@import '@fontsource/outfit/500.css';
+@import '@fontsource/outfit/600.css';
+@import '@fontsource/outfit/700.css';
+@import '@fontsource/outfit/800.css';
 @import '@fontsource/geist-mono/400.css';
 @import '@fontsource/geist-mono/500.css';
 @import '@fontsource/geist-mono/600.css';
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-:root {
+:root,
+:root[data-theme="light"] {
+  color-scheme: light;
   /* ── Google Classroom & Material Design 3 Palette ──────────── */
   --classroom-blue:   #1A73E8;
   --classroom-green:  #1E8E3E;
@@ -12,18 +19,26 @@
   --classroom-coral:  #D93025;
   --classroom-purple: #9334E6;
 
-  /* ── Canvas & Surfaces (Light, Approachable, Friendly) ─────── */
-  --bg-base:          #FFFFFF; /* Pure crisp white canvas */
-  --bg-surface:       #FFFFFF; /* White card surface */
-  --bg-raised:        #F8F9FA; /* Soft Google off-white / gray 50 */
-  --bg-overlay:       #F1F3F4; /* Google dialog / popover */
+  /* ── Canvas & Surfaces (Pure Crystalline White & Porcelain) ── */
+  --bg-base:          #FFFFFF; /* Pure clean crystalline white canvas */
+  --bg-surface:       #FFFFFF; /* Pure white porcelain surface */
+  --bg-raised:        #F8FAFC; /* Soft luminous porcelain */
+  --bg-overlay:       #F1F5F9; /* Frosted popover overlay */
   --bg-input:         #FFFFFF;
 
-  /* ── Borders & Dividers ───────────────────────────────────── */
-  --border-faint:     #F1F3F4;
-  --border-subtle:    #E8EAED; /* Standard Google divider */
-  --border-default:   #DADCE0; /* Google border default */
-  --border-strong:    #BDC1C6;
+  /* ── Borders & Dividers (Optical Hairlines) ────────────────── */
+  --border-faint:     #F8FAFC;
+  --border-subtle:    #F1F5F9; /* Ultra-fine whisper hairline */
+  --border-default:   #E2E8F0; /* Soft light gray hairline */
+  --border-strong:    #CBD5E1;
+
+  /* ── Luminous & Daylight Shadows (Natural Daylight Diffusion) ── */
+  --shadow-sm:        0 1px 2px rgba(15, 23, 42, 0.04);
+  --shadow-md:        0 4px 16px -2px rgba(15, 23, 42, 0.05), 0 2px 4px -1px rgba(15, 23, 42, 0.03);
+  --shadow-lg:        0 10px 30px -4px rgba(15, 23, 42, 0.06), 0 4px 8px -2px rgba(15, 23, 42, 0.03);
+  --shadow-hover:     0 16px 40px -6px rgba(15, 23, 42, 0.08), 0 6px 12px -2px rgba(15, 23, 42, 0.04);
+  --shadow-glow-blue: 0 4px 20px -2px rgba(37, 99, 235, 0.35);
+  --shadow-glow-blue-lg: 0 8px 28px -2px rgba(37, 99, 235, 0.45);
 
   /* ── Typography (Google Charcoal & Slate) ─────────────────── */
   --text-primary:     #202124; /* Google high-contrast charcoal */
@@ -81,8 +96,8 @@
   --pink-border:      rgba(217, 48, 37, 0.25);
 
   /* ── Typography ───────────────────────────────────────────── */
-  --font-display: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --font-sans:    'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-display: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-sans:    'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
   --font-mono:    'Geist Mono', monospace;
 
   /* ── Radius — Friendly Google rounded corners ──────────────── */
@@ -103,12 +118,98 @@
   --sidebar-w: 260px;
   --topbar-h:  64px;
 
-  /* ── Google Material Shadows ──────────────────────────────── */
-  --shadow-sm: 0 1px 2px 0 rgba(60, 64, 67, 0.3), 0 1px 3px 1px rgba(60, 64, 67, 0.15);
-  --shadow-md: 0 1px 3px 0 rgba(60, 64, 67, 0.3), 0 4px 8px 3px rgba(60, 64, 67, 0.15);
-  --shadow-lg: 0 2px 6px 2px rgba(60, 64, 67, 0.15), 0 8px 24px 6px rgba(60, 64, 67, 0.15);
-  --shadow-xl: 0 4px 12px 3px rgba(60, 64, 67, 0.15), 0 12px 32px 8px rgba(60, 64, 67, 0.18);
+  /* ── Frosted Glass ────────────────────────────────────────── */
+  --glass-bg:         rgba(255, 255, 255, 0.85);
+  --glass-border:     rgba(15, 23, 42, 0.08);
+
+  /* ── Spacing Scale ────────────────────────────────────────── */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-7: 32px;
 }
+
+:root[data-theme="dark"] {
+  /* ── Canvas & Surfaces (Deep Obsidian Nocturne) ────────────── */
+  --bg-base:          #090A0F; /* Deep cosmic obsidian void */
+  --bg-surface:       #12151E; /* Sleek nocturnal glass plate */
+  --bg-raised:        #181C2A; /* Elevated nocturnal layer */
+  --bg-overlay:       #202638; /* Frosted popover overlay */
+  --bg-input:         #12151E; /* Nocturnal input plate */
+
+  /* ── Borders & Dividers (Optical Hairlines in Night) ────────── */
+  --border-faint:     rgba(255, 255, 255, 0.04);
+  --border-subtle:    rgba(255, 255, 255, 0.08); /* Ultra-fine whisper hairline */
+  --border-default:   rgba(255, 255, 255, 0.12); /* Subtle nocturnal border */
+  --border-strong:    rgba(255, 255, 255, 0.22);
+
+  /* ── Luminescence & Ambient Depth ──────────────────────────── */
+  --shadow-sm:        0 1px 2px rgba(0, 0, 0, 0.6);
+  --shadow-md:        0 4px 20px -2px rgba(0, 0, 0, 0.7), 0 2px 6px -1px rgba(0, 0, 0, 0.5);
+  --shadow-lg:        0 12px 36px -4px rgba(0, 0, 0, 0.8), 0 4px 12px -2px rgba(0, 0, 0, 0.6);
+  --shadow-hover:     0 16px 44px -4px rgba(0, 0, 0, 0.9), 0 0 24px -2px rgba(59, 130, 246, 0.25);
+  --shadow-glow-blue: 0 0 24px -2px rgba(59, 130, 246, 0.5);
+  --shadow-glow-blue-lg: 0 0 36px -2px rgba(59, 130, 246, 0.65);
+
+  /* ── Typography (Crystalline Ice White & Slate) ────────────── */
+  --text-primary:     #F8FAFC; /* Crystalline high-clarity ice white */
+  --text-secondary:   #94A3B8; /* Ethereal slate */
+  --text-tertiary:    #64748B; /* Muted celestial stone */
+  --text-inverse:     #090A0F;
+
+  /* ── Accent System (Radiant Electric Sapphire) ──────────────── */
+  --accent:           #3B82F6;
+  --accent-hover:     #60A5FA;
+  --accent-dim:       rgba(59, 130, 246, 0.15);
+  --accent-border:    rgba(59, 130, 246, 0.35);
+  --accent-text:      #60A5FA;
+
+  /* ── Semantic Colors (Bioluminescent Glow) ──────────────────── */
+  --blue:             #3B82F6;
+  --blue-dim:         rgba(59, 130, 246, 0.15);
+  --blue-hover:       #60A5FA;
+
+  --green:            #10B981;
+  --green-dim:        rgba(16, 185, 129, 0.15);
+  --green-border:     rgba(16, 185, 129, 0.3);
+  --green-text:       #34D399;
+
+  --amber:            #F59E0B;
+  --amber-dim:        rgba(245, 158, 11, 0.15);
+  --amber-border:     rgba(245, 158, 11, 0.3);
+  --amber-text:       #FBBF24;
+
+  --red:              #EF4444;
+  --red-dim:          rgba(239, 68, 68, 0.15);
+  --red-border:       rgba(239, 68, 68, 0.3);
+  --red-text:         #F87171;
+
+  /* ── Code Syntax (Deep Obsidian Neon) ──────────────────────── */
+  --code-keyword:     #F87171;
+  --code-func:        #60A5FA;
+  --code-param:       #F8FAFC;
+  --code-string:      #34D399;
+  --code-comment:     #64748B;
+  --code-error:       #F87171;
+
+  /* ── Secondary & Neutral ───────────────────────────────────── */
+  --sage:             #94A3B8;
+  --sage-dim:         rgba(148, 163, 184, 0.12);
+  --sage-border:      rgba(148, 163, 184, 0.2);
+  --sage-text:        #F8FAFC;
+
+  --stone:            #64748B;
+  --stone-dim:        rgba(255, 255, 255, 0.06);
+  --stone-border:     rgba(255, 255, 255, 0.12);
+
+  /* ── Frosted Glass & Surface ───────────────────────────────── */
+  --glass-bg:         rgba(17, 20, 30, 0.85);
+  --glass-border:     rgba(255, 255, 255, 0.08);
+}
+
 
 
 html {
@@ -138,15 +239,19 @@ html, body, #root {
 }
 
 body {
-  background: var(--bg-base);
+  background-color: var(--bg-base);
   color: var(--text-primary);
   font-family: var(--font-sans);
-  font-size: 14.5px;
+  font-size: 15px;
   line-height: 1.65;
   font-weight: 400;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
 }
 
 button { cursor: pointer; font-family: inherit; }
@@ -184,6 +289,23 @@ img    { display: block; max-width: 100%; }
 }
 
 ::selection { background: rgba(26, 115, 232, 0.14); color: var(--text-primary); }
+
+[data-theme="dark"] ::selection {
+  background: rgba(59, 130, 246, 0.35);
+  color: #FFFFFF;
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.16);
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+[data-theme="dark"] * {
+  scrollbar-color: rgba(255, 255, 255, 0.16) transparent;
+}
 
 :focus-visible {
   outline: 1.5px solid var(--accent);

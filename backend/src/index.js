@@ -11,6 +11,13 @@ import pathsRouter    from './routes/paths.js'
 import lessonsRouter  from './routes/lessons.js'
 import progressRouter from './routes/progress.js'
 import healthRouter   from './routes/health.js'
+import classroomsRouter from './routes/classrooms.js'
+import authRouter     from './routes/auth.js'
+import exercisesRouter from './routes/exercises.js'
+import forumsRouter   from './routes/forums.js'
+import projectsRouter from './routes/projects.js'
+import challengesRouter from './routes/challenges.js'
+import aiRouter       from './routes/ai.js'
 import { registerSocketHandlers } from './socket/handlers.js'
 
 const PORT = process.env.PORT || 4000
@@ -37,10 +44,17 @@ const limiter = rateLimit({
 app.use('/api', limiter)
 
 // Routes
+app.use('/api/auth',     authRouter)
 app.use('/api/health',   healthRouter)
 app.use('/api/paths',    pathsRouter)
 app.use('/api/lessons',  lessonsRouter)
 app.use('/api/progress', progressRouter)
+app.use('/api/classrooms', classroomsRouter)
+app.use('/api/exercises', exercisesRouter)
+app.use('/api/ai',       aiRouter)
+app.use('/api/forums',   forumsRouter)
+app.use('/api/projects', projectsRouter)
+app.use('/api/challenges', challengesRouter)
 
 // 404
 app.use((req, res) => {
@@ -72,3 +86,5 @@ httpServer.listen(PORT, () => {
 })
 
 export { io }
+
+// force restart

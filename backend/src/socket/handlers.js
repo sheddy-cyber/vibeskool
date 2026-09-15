@@ -47,6 +47,21 @@ export function registerSocketHandlers(io) {
       socket.to(`lesson:${lessonId}`).emit('lesson:user-left', { userId })
     })
 
+    // --- Multiplayer IDE ---
+    socket.on('workspace:join', ({ studentId, role }) => {
+      const room = `workspace:${studentId}`
+      socket.join(room)
+      console.log(`[workspace] ${role} joined workspace:${studentId}`)
+    })
+
+    socket.on('workspace:code_change', ({ studentId, code }) => {
+      socket.to(`workspace:${studentId}`).emit('workspace:code_update', { code })
+    })
+
+    socket.on('workspace:cursor_move', ({ studentId, position }) => {
+      socket.to(`workspace:${studentId}`).emit('workspace:cursor_update', { position })
+    })
+
     // ── Disconnect ────────────────────────────────────────────────────────────
 
     socket.on('disconnect', (reason) => {

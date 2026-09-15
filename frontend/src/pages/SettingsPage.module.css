@@ -18,8 +18,8 @@
   padding-top: 28px;
 }
 .sectionTitle {
-  font-size: 10.5px; font-weight: 700; font-family: var(--font-mono);
-  color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.1em;
+  font-size: 12px; font-weight: 600;
+  color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.06em;
   margin-bottom: 20px;
 }
 
@@ -29,21 +29,101 @@
   padding: 0 0 20px;
 }
 .settingRowLabel {
-  font-size: 13.5px; font-weight: 600; letter-spacing: -0.01em; color: var(--text-primary);
+  font-size: 14px; font-weight: 600; letter-spacing: -0.01em; color: var(--text-primary);
 }
-.settingRowSub { font-size: 12.5px; color: var(--text-secondary); }
+.settingRowSub { font-size: 13px; color: var(--text-secondary); }
 
+/* Theme Grid */
+.themeGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-top: 10px;
+  margin-bottom: 8px;
+}
+
+.themeCard {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 16px;
+  border-radius: 14px;
+  border: 1.5px solid var(--border-default);
+  background: var(--bg-surface);
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  overflow: hidden;
+  font-family: var(--font-sans);
+}
+
+.themeCard:hover {
+  border-color: var(--accent-border);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.themeCardActive {
+  border-color: var(--accent) !important;
+  background: var(--accent-dim) !important;
+  box-shadow: 0 0 0 1px var(--accent), var(--shadow-glow-blue);
+}
+
+.themeIconWrap {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-raised);
+  color: var(--text-secondary);
+  transition: all 0.2s ease;
+}
+
+.themeCardActive .themeIconWrap {
+  background: var(--accent);
+  color: #FFFFFF;
+  box-shadow: 0 2px 10px rgba(37, 99, 235, 0.35);
+}
+
+.themeMeta {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.themeTitle {
+  font-family: var(--font-display);
+  font-size: 14.5px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.themeDesc {
+  font-size: 11.5px;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+@media (max-width: 640px) {
+  .themeGrid {
+    grid-template-columns: 1fr;
+  }
+}
 
 /* Font size */
 .fontSizeRow { display: flex; gap: 10px; margin-bottom: 8px; }
 .fontSizeBtn {
-  flex: 1; padding: 10px 8px; border-radius: var(--radius-md);
-  border: 1px solid var(--border-subtle); background: var(--bg-overlay);
+  flex: 1; padding: 10px 8px; border-radius: 10px;
+  border: 1.5px solid var(--border-subtle); background: var(--bg-surface);
   color: var(--text-secondary); cursor: pointer; font-family: var(--font-sans);
-  transition: all var(--t-fast); letter-spacing: -0.01em;
+  transition: all 0.15s ease; letter-spacing: -0.01em;
 }
 .fontSizeBtn:hover { border-color: var(--border-default); color: var(--text-primary); }
-.fontSizeBtnActive { border-color: var(--accent-border) !important; background: var(--accent-dim); color: var(--accent-text); }
+.fontSizeBtnActive { border-color: var(--accent) !important; background: var(--accent-dim); color: var(--accent-text); }
 
 /* Toggle rows */
 .toggleRow {
@@ -68,7 +148,7 @@
   background: var(--text-secondary);
   transition: transform var(--t-fast), background var(--t-fast);
 }
-.toggleOn .toggleThumb { transform: translateX(16px); background: var(--bg-base); }
+.toggleOn .toggleThumb { transform: translateX(16px); background: --bg-canvas; }
 
 
 
@@ -115,17 +195,18 @@
 }
 .apiKeyInput {
   background: var(--bg-input);
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-sm);
-  padding: 10px 14px;
+  border: 1.5px solid var(--border-default);
+  border-radius: 10px;
+  padding: 12px 14px;
   color: var(--text-primary);
   font-family: var(--font-mono);
   font-size: 13px;
   width: 100%;
   outline: none;
-  transition: border-color var(--t-fast);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 .apiKeyInput:focus {
-  border-color: var(--accent-border);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-dim);
 }
 

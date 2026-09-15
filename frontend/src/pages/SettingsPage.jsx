@@ -3,6 +3,28 @@ import { useStore } from '@/lib/store'
 import { useAuth } from '@/lib/auth'
 import styles from './SettingsPage.module.css'
 import { FadeUp, RevealOnScroll } from '@/components/ui/Motion'
+import { Sun, Moon, Monitor } from 'lucide-react'
+
+const THEMES = [
+  {
+    id: 'light',
+    label: 'Light',
+    desc: 'The Luminous Atelier — pure white canvas & daylight diffusion',
+    icon: Sun,
+  },
+  {
+    id: 'dark',
+    label: 'Dark',
+    desc: 'The Obsidian Nocturne — deep cosmic void & bioluminescent glow',
+    icon: Moon,
+  },
+  {
+    id: 'system',
+    label: 'System',
+    desc: 'Dynamic Sync — mirrors your operating system color scheme',
+    icon: Monitor,
+  },
+]
 
 const FONT_SIZES = [
   { id: 'sm', label: 'Small',  size: '13.5px' },
@@ -44,6 +66,8 @@ export default function SettingsPage() {
     updateAllSettings({ fontSize: id })
   }
 
+  const currentTheme = settings.theme || 'light'
+
   return (
     <div className={styles.page}>
       <FadeUp delay={0}><div className={styles.header}>
@@ -53,6 +77,33 @@ export default function SettingsPage() {
 
       <RevealOnScroll delay={40} y={14}><section className={styles.section}>
         <h2 className={styles.sectionTitle}>Appearance</h2>
+
+        <div className={styles.settingRow}>
+          <span className={styles.settingRowLabel}>Interface Theme</span>
+          <span className={styles.settingRowSub}>Select how VibeSkool illuminates your workstation</span>
+          <div className={styles.themeGrid}>
+            {THEMES.map((t) => {
+              const Icon = t.icon
+              const isActive = currentTheme === t.id
+              return (
+                <button
+                  key={t.id}
+                  type="button"
+                  className={`${styles.themeCard} ${isActive ? styles.themeCardActive : ''}`}
+                  onClick={() => updateAllSettings({ theme: t.id })}
+                >
+                  <div className={styles.themeIconWrap}>
+                    <Icon size={18} />
+                  </div>
+                  <div className={styles.themeMeta}>
+                    <span className={styles.themeTitle}>{t.label}</span>
+                    <span className={styles.themeDesc}>{t.desc}</span>
+                  </div>
+                </button>
+              )
+            })}
+          </div>
+        </div>
 
         <div className={styles.settingRow}>
           <span className={styles.settingRowLabel}>Font size</span>

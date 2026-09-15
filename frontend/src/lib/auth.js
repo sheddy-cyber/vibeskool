@@ -1,212 +1,172 @@
-/**
- * VibeSkool Auth Store
- * localStorage-persisted auth with role support.
- * In production this would validate against a real API.
- * For now: demo users in localStorage, password hashed client-side with btoa.
- */
 import { create } from 'zustand'
+import { authApi, setToken, getToken, clearToken } from '@/lib/api'
 
-// ─── Seed admin account (bootstrapped on first load) ─────────────────────────
-const ADMIN_EMAIL    = 'admin@vibeskool.com'
-const ADMIN_PASSWORD = 'vibeskool2025'
-
-function seedAdminIfNeeded() {
-  const existing = JSON.parse(localStorage.getItem('vs_users') || '[]')
-  if (!existing.find(u => u.email === ADMIN_EMAIL)) {
-    existing.push({
-      id:        'admin-001',
-      email:     ADMIN_EMAIL,
-      password:  btoa(ADMIN_PASSWORD),
-      name:      'Admin',
-      role:      'admin',
-      avatar:    'A',
-      mekScore:  100,
-      lessonsCompleted: 47,
-      buildsUnlocked:   5,
-      joinedAt:  new Date().toISOString(),
-      progress:  {},
-      passedModules: ['m0', 'm1', 'm2', 'm3', 'm4', 'm5', 'm6', 'm7', 'm8'],
-    })
-    localStorage.setItem('vs_users', JSON.stringify(existing))
+function mapUser(backendUser, extras = {}) {
+  return {
+    id: backendUser.id,
+    email: backendUser.email,
+    name: backendUser.display_name,
+    role: backendUser.role,
+    avatar: backendUser.avatar_url || backendUser.display_name?.trim().split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2) || '?',
+    settings: backendUser.settings || {},
+    joinedAt: backendUser.created_at,
+    mekScore: extras.mekScore ?? 0,
+    xp: backendUser.xp ?? 0,
+    badges: backendUser.badges ?? [],
+    lessonsCompleted: extras.lessonsCompleted ?? 0,
+    passedModules: extras.passedModules ?? [],
+    currentStreak: extras.currentStreak ?? 0,
+    longestStreak: extras.longestStreak ?? 0,
+    progress: extras.progress ?? {},
+    ...extras,
   }
 }
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-function getUsers() {
-  return JSON.parse(localStorage.getItem('vs_users') || '[]')
-}
-function saveUsers(users) {
-  localStorage.setItem('vs_users', JSON.stringify(users))
-}
-function getSession() {
-  try { return JSON.parse(localStorage.getItem('vs_session') || 'null') }
-  catch { return null }
-}
-function saveSession(user) {
-  localStorage.setItem('vs_session', JSON.stringify(user))
-}
-function clearSession() {
-  localStorage.removeItem('vs_session')
-}
-function makeAvatar(name) {
-  return name?.trim().split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2) || '?'
-}
-
-// ─── Auth store ───────────────────────────────────────────────────────────────
 export const useAuth = create((set, get) => {
-  seedAdminIfNeeded()
-  const session = getSession()
+  // Initialize user if token exists
+  const token = getToken()
+  if (token) {
+    authApi.getMe()
+      .then((data) => {
+        set({ currentUser: mapUser(data.user, data) })
+      })
+      .catch(() => {
+        clearToken()
+        set({ currentUser: null })
+      })
+  }
 
   return {
-    currentUser: session || null,
-    authError:   null,
+    currentUser: null,
+    authError: null,
     authLoading: false,
 
-    // ── Sign up ────────────────────────────────────────────────────────────────
-    signUp: ({ name, email, password }) => {
+    signUp: async ({ name, displayName, email, password, role }) => {
       set({ authLoading: true, authError: null })
+      try {
+        const resolvedName = (displayName || name || '').trim()
+        if (!resolvedName || !email?.trim() || !password?.trim()) {
+          throw new Error('Please fill in all fields.')
+        }
+        if (password.length < 6) {
+          throw new Error('Password must be at least 6 characters.')
+        }
 
-      if (!name?.trim() || !email?.trim() || !password?.trim()) {
-        return set({ authError: 'Please fill in all fields.', authLoading: false })
+        const data = await authApi.signup({
+          email: email.toLowerCase().trim(),
+          password,
+          displayName: resolvedName,
+          role: role || 'student',
+        })
+        
+        setToken(data.token)
+        set({ currentUser: mapUser(data.user), authLoading: false })
+      } catch (err) {
+        set({ 
+          authError: err.response?.data?.error || err.message || 'Sign up failed.', 
+          authLoading: false 
+        })
       }
-      if (password.length < 6) {
-        return set({ authError: 'Password must be at least 6 characters.', authLoading: false })
-      }
-
-      const users = getUsers()
-      if (users.find(u => u.email.toLowerCase() === email.toLowerCase())) {
-        return set({ authError: 'An account with this email already exists.', authLoading: false })
-      }
-
-      const newUser = {
-        id:               `user-${Date.now()}`,
-        email:            email.toLowerCase().trim(),
-        password:         btoa(password),
-        name:             name.trim(),
-        role:             'student',
-        avatar:           makeAvatar(name),
-        mekScore:         0,
-        lessonsCompleted: 0,
-        buildsUnlocked:   0,
-        joinedAt:         new Date().toISOString(),
-        progress:         {},
-        passedModules:    [],
-        settings: {
-          fontSize: 'md',
-          terminalSound: false, showMekBar: true, compactSidebar: false,
-        },
-      }
-      users.push(newUser)
-      saveUsers(users)
-
-      const { password: _, ...safeUser } = newUser
-      saveSession(safeUser)
-      set({ currentUser: safeUser, authLoading: false, authError: null })
     },
 
-    // ── Sign in ────────────────────────────────────────────────────────────────
-    signIn: ({ email, password }) => {
+    signIn: async ({ email, password }) => {
       set({ authLoading: true, authError: null })
+      try {
+        if (!email?.trim() || !password?.trim()) {
+          throw new Error('Please enter your email and password.')
+        }
 
-      if (!email?.trim() || !password?.trim()) {
-        return set({ authError: 'Please enter your email and password.', authLoading: false })
+        const data = await authApi.login({
+          email: email.toLowerCase().trim(),
+          password,
+        })
+        
+        setToken(data.token)
+        // Note: the login endpoint might not return full progress data
+        // For a full app, you might await authApi.getMe() here as well,
+        // but falling back to data.user and defaults for now.
+        set({ currentUser: mapUser(data.user), authLoading: false })
+      } catch (err) {
+        set({ 
+          authError: err.response?.data?.error || err.message || 'Sign in failed.', 
+          authLoading: false 
+        })
       }
-
-      const users = getUsers()
-      const user  = users.find(u => u.email.toLowerCase() === email.toLowerCase().trim())
-
-      if (!user || user.password !== btoa(password)) {
-        return set({ authError: 'Incorrect email or password.', authLoading: false })
-      }
-
-      const { password: _, ...safeUser } = user
-      saveSession(safeUser)
-      set({ currentUser: safeUser, authLoading: false, authError: null })
     },
 
-    // ── Sign out ───────────────────────────────────────────────────────────────
     signOut: () => {
-      clearSession()
+      clearToken()
       set({ currentUser: null })
     },
 
-    // ── Update progress (persisted) ────────────────────────────────────────────
+    refreshUser: async () => {
+      try {
+        const data = await authApi.getMe()
+        set({ currentUser: mapUser(data.user, data) })
+      } catch (err) {
+        clearToken()
+        set({ currentUser: null })
+      }
+    },
+
     updateProgress: (pathId) => {
+      // Local state update since progress backend isn't fully migrated yet
       const { currentUser } = get()
       if (!currentUser) return
 
-      const users = getUsers()
-      const idx   = users.findIndex(u => u.id === currentUser.id)
-      if (idx === -1) return
-
-      const user     = users[idx]
-      const progress = { ...user.progress }
+      const progress = { ...currentUser.progress }
       progress[pathId] = (progress[pathId] || 0) + 1
 
       const updated = {
-        ...user,
+        ...currentUser,
         progress,
-        lessonsCompleted: user.lessonsCompleted + 1,
-        mekScore: Math.min(100, user.mekScore + 3),
+        lessonsCompleted: currentUser.lessonsCompleted + 1,
+        mekScore: Math.min(100, currentUser.mekScore + 3),
+        xp: currentUser.xp + 10,
       }
-      users[idx] = updated
-      saveUsers(users)
-
-      const { password: _, ...safeUser } = updated
-      saveSession(safeUser)
-      set({ currentUser: safeUser })
+      
+      set({ currentUser: updated })
     },
 
     passModule: (moduleId) => {
+      // Local state update since progress backend isn't fully migrated yet
       const { currentUser } = get()
       if (!currentUser) return
 
-      const users = getUsers()
-      const idx   = users.findIndex(u => u.id === currentUser.id)
-      if (idx === -1) return
-
-      const user = users[idx]
-      const passedModules = [...(user.passedModules || [])]
+      const passedModules = [...(currentUser.passedModules || [])]
       if (!passedModules.includes(moduleId)) {
         passedModules.push(moduleId)
       }
 
       const updated = {
-        ...user,
+        ...currentUser,
         passedModules,
-        mekScore: Math.min(100, user.mekScore + 10),
+        mekScore: Math.min(100, currentUser.mekScore + 10),
+        xp: currentUser.xp + 50,
       }
-      users[idx] = updated
-      saveUsers(users)
-
-      const { password: _, ...safeUser } = updated
-      saveSession(safeUser)
-      set({ currentUser: safeUser })
+      
+      set({ currentUser: updated })
     },
 
-    // ── Update settings (persisted) ────────────────────────────────────────────
-    updateUserSettings: (patch) => {
+    updateUserSettings: async (patch) => {
       const { currentUser } = get()
       if (!currentUser) return
 
-      const users = getUsers()
-      const idx   = users.findIndex(u => u.id === currentUser.id)
-      if (idx === -1) return
+      // Optimistic update
+      const newSettings = { ...currentUser.settings, ...patch }
+      set({ currentUser: { ...currentUser, settings: newSettings } })
 
-      const updated = {
-        ...users[idx],
-        settings: { ...users[idx].settings, ...patch },
+      try {
+        await authApi.updateProfile({ settings: newSettings })
+      } catch (err) {
+        console.error('Failed to update settings remotely', err)
+        // In a strict environment, we might revert the optimistic update here.
       }
-      users[idx] = updated
-      saveUsers(users)
-
-      const { password: _, ...safeUser } = updated
-      saveSession(safeUser)
-      set({ currentUser: safeUser })
     },
 
     clearError: () => set({ authError: null }),
 
     isAdmin: () => get().currentUser?.role === 'admin',
+    isTeacher: () => get().currentUser?.role === 'teacher',
   }
 })

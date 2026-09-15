@@ -3,31 +3,32 @@ import styles from './UI.module.css'
 import clsx from 'clsx'
 export { default as BrandLogo } from './BrandLogo'
 
-// ─── Button ────────────────────────────────────────────────────────────────────
-export function Button({ children, variant = 'primary', size = 'md', onClick, disabled, className, type = 'button', ...rest }) {
+// ─── Button (Sculpted Liquid-Light) ───────────────────────────────────────────
+export function Button({ children, variant = 'primary', size = 'md', icon, onClick, disabled, className, type = 'button', ...rest }) {
   return (
     <button
       type={type}
       onClick={onClick}
       disabled={disabled}
-      className={clsx(styles.btn, styles[`btn-${variant}`], styles[`btn-${size}`], className)}
+      className={clsx(styles.btn, styles['btn-' + variant], styles['btn-' + size], className)}
       {...rest}
     >
-      {children}
+      {icon && <span style={{ display: 'inline-flex', alignItems: 'center' }}>{icon}</span>}
+      <span className={styles.btnLabel}>{children}</span>
     </button>
   )
 }
 
-// ─── Badge ────────────────────────────────────────────────────────────────────
+// ─── Badge (Jewel Pill) ───────────────────────────────────────────────────────
 export function Badge({ children, color = 'violet' }) {
-  return <span className={clsx(styles.badge, styles[`badge-${color}`])}>{children}</span>
+  return <span className={clsx(styles.badge, styles['badge-' + color])}>{children}</span>
 }
 
-// ─── Card ─────────────────────────────────────────────────────────────────────
+// ─── Card (Sculpted Porcelain Plate) ──────────────────────────────────────────
 export function Card({ children, className, accent, onClick, ...rest }) {
   return (
     <div
-      className={clsx(styles.card, accent && styles[`card-accent-${accent}`], onClick && styles.cardClickable, className)}
+      className={clsx(styles.card, accent && styles['card-accent-' + accent], onClick && styles.cardClickable, className)}
       onClick={onClick}
       {...rest}
     >
@@ -36,21 +37,30 @@ export function Card({ children, className, accent, onClick, ...rest }) {
   )
 }
 
-// ─── ProgressBar ──────────────────────────────────────────────────────────────
-export function ProgressBar({ value, max = 100, color = 'violet', height = 4 }) {
-  const pct = Math.min(100, Math.max(0, (value / max) * 100))
+// ─── ProgressBar (Prism Stream Meter) ─────────────────────────────────────────
+export function ProgressBar({ value, progress, max = 100, color = 'violet', height = 8, label }) {
+  const effectiveVal = value !== undefined ? value : (progress !== undefined ? progress : 0)
+  const pct = Math.min(100, Math.max(0, (effectiveVal / max) * 100))
   const colors = {
-    violet: 'var(--accent)',
-    teal:   'var(--green)',
-    amber:  'var(--amber)',
-    red:    'var(--red)',
+    violet: 'linear-gradient(90deg, #38BDF8 0%, #3B82F6 50%, #6366F1 100%)',
+    teal:   'linear-gradient(90deg, #34D399 0%, #10B981 100%)',
+    amber:  'linear-gradient(90deg, #FBBF24 0%, #F59E0B 100%)',
+    red:    'linear-gradient(90deg, #F87171 0%, #EF4444 100%)',
   }
   return (
-    <div className={styles.progressTrack} style={{ height }}>
-      <div
-        className={styles.progressFill}
-        style={{ width: `${pct}%`, background: colors[color] || colors.violet }}
-      />
+    <div className={styles.vernierMeter}>
+      {label && (
+        <div className={styles.vernierHeader}>
+          <span className={styles.vernierLabel}>{label}</span>
+          <span className={styles.vernierValue}>{Math.round(pct)}%</span>
+        </div>
+      )}
+      <div className={styles.vernierTrack} style={{ height }}>
+        <div
+          className={styles.vernierFill}
+          style={{ width: `${pct}%`, background: colors[color] || colors.violet }}
+        />
+      </div>
     </div>
   )
 }
@@ -79,6 +89,7 @@ export function SectionTitle({ children }) {
 
 // ─── CodeBlock ────────────────────────────────────────────────────────────────
 export function CodeBlock({ code }) {
+  if (!code) return null;
   const lines = code.split('\n')
   const kw = new Set(['function','return','const','let','var','if','else','for','while','async','await','import','export','default','class','new','this','from','of','in','typeof','instanceof'])
 
@@ -86,123 +97,45 @@ export function CodeBlock({ code }) {
     if (/^\s*\/\//.test(line)) {
       return <span className="hl-cm">{line}</span>
     }
-    const parts = line.split(/(\/\/.*)/)
-    if (parts.length === 1) return <>{tokenize(line, kw)}</>
-    return <>{tokenize(parts[0], kw)}<span className="hl-cm">{parts[1]}</span></>
+    const parts = line.split(/(\s+|[(),.{}[\];:+\-*\/=%<>!&|?]+)/)
+    return parts.map((part, i) => {
+      if (kw.has(part)) return <span key={i} className="hl-kw">{part}</span>
+      if (/^".*"$|^'.*'$|^\`.*\`$/.test(part)) return <span key={i} className="hl-str">{part}</span>
+      if (/^\d+$/.test(part)) return <span key={i} className="hl-num">{part}</span>
+      return part
+    })
   }
 
   return (
     <pre className={styles.codeBlock}>
-      {lines.map((line, i) => <div key={i}>{highlightLine(line)}</div>)}
+      <code>
+        {lines.map((line, i) => (
+          <div key={i} className={styles.codeLine}>
+            <span className={styles.lineNum}>{i + 1}</span>
+            <span className={styles.lineContent}>{highlightLine(line)}</span>
+          </div>
+        ))}
+      </code>
     </pre>
   )
 }
 
-function tokenize(text, kw) {
-  const tokens = text.split(/(\b(?:[A-Z][a-zA-Z0-9_]*)(?=\s*\()|\b(const|let|var|function|return|if|else|for|while|async|await|import|export|default|class|new|this|from|of|in|typeof|instanceof)\b|("[^"]*"|'[^']*'|`[^`]*`))/)
-  return tokens.filter(Boolean).map((t, i) => {
-    if (kw.has(t)) return <span key={i} className="hl-kw">{t}</span>
-    if (/^[A-Z][a-zA-Z0-9_]*$/.test(t)) return <span key={i} className="hl-fn">{t}</span>
-    if (/^["'`]/.test(t)) return <span key={i} className="hl-str">{t}</span>
-    return t
-  })
-}
-
 // ─── Callout ──────────────────────────────────────────────────────────────────
 export function Callout({ children, color = 'violet' }) {
-  return <div className={clsx(styles.callout, styles[`callout-${color}`])}>{children}</div>
-}
-
-// ─── AiPromptBox ──────────────────────────────────────────────────────────────
-export function AiPromptBox({ prompt }) {
-  const [copied, setCopied] = React.useState(false)
-
-  function copy() {
-    navigator.clipboard?.writeText(prompt)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
-  }
-
   return (
-    <div className={styles.aiBox}>
-      <div className={styles.aiBoxHeader}>
-        <span className={styles.aiBoxLabel}>Take this prompt to Claude →</span>
-        <button className={styles.copyBtn} onClick={copy}>
-          {copied ? '✓ Copied' : 'Copy'}
-        </button>
-      </div>
-      <p className={styles.aiBoxText}>{prompt}</p>
-    </div>
-  )
-}
-
-// ─── MEKBar ───────────────────────────────────────────────────────────────────
-export function MEKBar({ score, label }) {
-  return (
-    <div className={styles.mekBar}>
-      <span className={styles.mekLabel}>MEK Progress</span>
-      <div className={styles.mekTrack}>
-        <div className={styles.mekFill} style={{ width: `${score}%` }} />
-      </div>
-      <span className={styles.mekValue}>{score}% — {label}</span>
+    <div className={clsx(styles.callout, styles['callout-' + color])}>
+      {children}
     </div>
   )
 }
 
 // ─── EmptyState ───────────────────────────────────────────────────────────────
-export function EmptyState({ icon, title, body, action }) {
+export function EmptyState({ title, message, action }) {
   return (
     <div className={styles.emptyState}>
-      {icon && <div className={styles.emptyIcon}>{icon}</div>}
-      <h3 className={styles.emptyTitle}>{title}</h3>
-      {body && <p className={styles.emptyBody}>{body}</p>}
+      <h3>{title}</h3>
+      <p>{message}</p>
       {action}
-    </div>
-  )
-}
-
-// ─── GoalWidget ───────────────────────────────────────────────────────────────
-import { useStore } from '@/lib/store'
-
-export function GoalWidget() {
-  const { settings, updateSettings, user } = useStore()
-  const goal = settings.dailyGoal || 2
-  // Simulate completed today based on completed count.
-  const completedToday = Math.min(goal, user.lessonsCompleted % (goal + 1))
-  const streak = 3 // simulated streak
-
-  return (
-    <div className={styles.goalWidget}>
-      <div className={styles.goalHeader}>
-        <div className={styles.goalTitleRow}>
-          <span className={styles.goalIcon}>🔥</span>
-          <div>
-            <h4 className={styles.goalTitle}>{streak} Day Streak!</h4>
-            <p className={styles.goalSub}>Keep the momentum going</p>
-          </div>
-        </div>
-        <div className={styles.goalTargetSelector}>
-          {[1, 2, 3].map(t => (
-            <button
-              key={t}
-              className={clsx(styles.targetBtn, goal === t && styles.targetBtnActive)}
-              onClick={() => updateSettings({ dailyGoal: t })}
-              title={`Set daily target to ${t} lessons`}
-            >
-              {t}
-            </button>
-          ))}
-        </div>
-      </div>
-      <div className={styles.goalBody}>
-        <div className={styles.goalProgressInfo}>
-          <span className={styles.goalProgressLabel}>Daily Target: {completedToday} / {goal} Lessons</span>
-          <span className={styles.goalProgressPct}>{Math.round((completedToday / goal) * 100)}%</span>
-        </div>
-        <div className={styles.goalTrack}>
-          <div className={styles.goalFill} style={{ width: `${(completedToday / goal) * 100}%` }} />
-        </div>
-      </div>
     </div>
   )
 }

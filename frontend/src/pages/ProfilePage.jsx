@@ -1,7 +1,7 @@
 import React from "react";
-import { useStore, PATHS } from "@/lib/store";
+import { useStore } from "@/lib/store";
 import { useAuth } from "@/lib/auth";
-import { ProgressBar, MEKBar } from "@/components/ui";
+import { ProgressBar } from "@/components/ui";
 import styles from "./ProfilePage.module.css";
 import { FadeUp, RevealOnScroll, StaggerGroup } from "@/components/ui/Motion";
 
@@ -239,21 +239,23 @@ const PATH_ICONS = {
 };
 
 export default function ProfilePage() {
-  const { user: storeUser, progress } = useStore();
+  const { progress, paths, fetchPaths } = useStore();
   const { currentUser } = useAuth();
-  const user = currentUser
-    ? {
-        name: currentUser.name,
-        avatar: currentUser.avatar,
-        mekScore: currentUser.mekScore ?? 0,
-        lessonsCompleted: currentUser.lessonsCompleted ?? 0,
-        buildsUnlocked: currentUser.buildsUnlocked ?? 0,
-      }
-    : storeUser;
+  
+  React.useEffect(() => {
+    if (paths.length === 0) fetchPaths()
+  }, [paths.length, fetchPaths])
 
-  const totalLessons = PATHS.reduce((sum, p) => sum + p.lessons_data.length, 0);
+  const user = currentUser || {
+    name: 'Student',
+    avatar: 'S',
+    lessonsCompleted: 0,
+    buildsUnlocked: 0,
+  };
+
+  const totalLessons = paths.reduce((sum, p) => sum + (p.lessons_data?.length || 0), 0);
   const doneLessons = Object.values(progress).reduce((a, b) => a + b, 0);
-  const overallPct = Math.round((doneLessons / totalLessons) * 100);
+  const overallPct = totalLessons > 0 ? Math.round((doneLessons / totalLessons) * 100) : 0;
 
   return (
     <div className={styles.page}>
@@ -298,16 +300,6 @@ export default function ProfilePage() {
         </div>
       </FadeUp>
 
-      {/* MEK bar */}
-      <FadeUp delay={80}>
-        <div>
-          <MEKBar
-            score={user.mekScore}
-            label="enough to build a full landing page with AI"
-          />
-        </div>
-      </FadeUp>
-
       {/* Overall progress */}
       <div className={styles.section}>
         <h2 className={styles.sectionTitle}>Overall Progress</h2>
@@ -332,9 +324,9 @@ export default function ProfilePage() {
       <div className={styles.section}>
         <h2 className={styles.sectionTitle}>Path Breakdown</h2>
         <div className={styles.pathsBreakdown}>
-          {PATHS.map((path) => {
+          {paths.map((path) => {
             const done = progress[path.id] || 0;
-            const total = path.lessons_data.length;
+            const total = path.lessons_data?.length || 1;
             const pct = Math.round((done / total) * 100);
             return (
               <div key={path.id} className={styles.pathRow}>

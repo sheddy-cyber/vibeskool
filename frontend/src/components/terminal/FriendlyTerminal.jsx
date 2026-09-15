@@ -92,19 +92,17 @@ export default function FriendlyTerminal({ mission, mode: initialMode = 'guided'
     resetSandbox()
     const welcomeLines = mode === 'guided'
       ? [
-          { type: 'success', text: '✓ Lab ready — guided mode active.' },
-          { type: 'output',  text: 'Complete the mission below step by step.' },
+          { type: 'success', text: '✓ Terminal ready.' },
           { type: 'mission', text: `Mission ${missionIdx + 1}: ${mission || GUIDED_MISSIONS[0].prompt}` },
-          { type: 'output',  text: 'Try typing a command, or pick one from the builder above.' },
+          { type: 'output',  text: 'Try typing a command, or click a chip above to fill it in.' },
         ]
       : [
-          { type: 'success', text: '✓ Free sandbox loaded.' },
+          { type: 'success', text: '✓ Playground ready.' },
           { type: 'output',  text: "You're safe here — nothing you do can break anything." },
           { type: 'output',  text: 'Type help to see available commands.' },
-          { type: 'output',  text: 'To run files from the editor, use command: node workspace.js' },
         ]
     setLines(welcomeLines)
-  }, [mode])
+  }, [mode, mission, missionIdx])
 
   // Auto-scroll
   useEffect(() => {

@@ -1,0 +1,21 @@
+.page {
+  padding: 24px;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+.sub {
+  color: var(--text-secondary);
+  margin-bottom: 24px;
+}
+.editorWrap {
+  border: 1px solid var(--border-subtle, #E8EAED);
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+}
