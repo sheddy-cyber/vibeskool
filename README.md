@@ -1,70 +1,134 @@
 # VibeSkool 🎓
 
-> **Learn enough. Build anything.**
+> **The Modern Collaborative Coding Classroom for Learners & Mentors.**
 
-The AI-native learning platform. VibeSkool teaches you the Minimum Effective Knowledge (MEK) to direct AI tools effectively — not a full curriculum, just enough to be dangerous.
-
----
+Execute code instantly in the browser, progress through hands-on test-driven curriculum tracks, and pair live with mentors with zero local environment configuration or setup drag.
 
 ---
 
-## BB Casual Pro font
+## ✨ Key Platform Features
 
-BB Casual Pro is a commercial typeface and is not included in this repo.
-To activate it:
+### 👨‍💻 For Learners
+- **In-Browser IDE & Sandboxed Execution**: Code in Python and JavaScript directly in your browser with real-time test evaluations and syntax highlighting via CodeMirror.
+- **Hands-On Curriculum Tracks**:
+  - *Python Foundations & Algorithms*: Control flow, data structures, and algorithmic problem solving.
+  - *Web Systems & Modern JavaScript*: DOM APIs, async event loops, state architecture, and REST patterns.
+  - *Software Design & Engineering Patterns*: Clean architecture, TDD with automated unit tests, and concurrency.
+- **Immediate Feedback Loop**: Automatic unit-test scoring, instant execution durations, and interactive skill-check quizzes after each chapter.
+- **Code Lab & Playground**: Standalone scratchpad (`/app/lab`) for experimental programming and browser-safe command evaluation.
+- **Community Hub**: Showcase student milestone projects (`/app/showcase`) and participate in community discussions (`/app/community/forum`).
 
-1. Purchase or license BB Casual Pro from its foundry
-2. Export `bbcasualpro-regular.woff2` and `bbcasualpro-medium.woff2`
-3. Place both files in `frontend/public/fonts/`
+### 👩‍🏫 For Educators & Tutors
+- **Live Classroom Telemetry**: Real-time visibility into student code and test statuses across active cohorts. Spot exactly which test case a student is struggling with before they have to ask for help.
+- **Multiplayer 1-on-1 Code Pairing**: One-click live pairing directly in the browser editor powered by Socket.IO real-time synchronization.
+- **Cohort Management (`/app/teacher/classrooms`)**: Generate shareable cohort invite codes (e.g. `CS-104-ALGO`), manage student rosters, and monitor completion rates.
+- **Content & Exercise Builder (`/app/teacher/cms`, `/app/teacher/exercises`)**: Create custom coding challenges, specify starter code, author unit test suites, and deploy custom lesson paths.
 
-Until the files are present, the site falls back to **Nunito** (loaded from Google Fonts),
-which shares BB Casual Pro's rounded, friendly character. The UI looks great either way.
+---
 
+## 🎨 Design System & UI Architecture
 
-## What's in this project
+- **Human-Crafted Developer Aesthetic**: Monochromatic elevation, crisp 1px borders, high-density telemetry tables, and authentic editor windows inspired by Linear, Stripe, and Vercel.
+- **VibeSkool Logo Brand Color Palette**:
+  - 🔵 **Blue (`#1A73E8`)**: Hero workspace, primary actions, and brand identity.
+  - 🟢 **Green (`#34A853`)**: Classroom Telemetry and mentor pairing hub.
+  - 🟡 **Amber (`#F9AB00`)**: Dynamic ambient energy waves and live status alerts.
+  - 🔴 **Crimson (`#EA4335`)**: Structured Curriculum Tracks and test assertions.
+- **Absorbed Porcelain Glassmorphic Cards**: Cards in colored sections feature semi-translucent porcelain surfaces with chromatic diffusion shadows that organically merge with their canvas.
+- **Plain Solid Buttons with Animated Hover Borders**:
+  - *At rest*: Flat, solid, clean buttons without heavy gradients, drop-shadows, or 3D jumps.
+  - *On hover*: Dynamic multi-color conic gradient sweeps continuously around the 1.5px–2px perimeter rim while keeping button text and icons crisp and unobstructed.
+- **Fluid Wave Section Transition**: A multi-layered SVG junction blending the green telemetry section into the red curriculum section, complete with an animated luminous crest beam.
+- **Lenis Smooth Gliding Scroll**: Scoped exclusively to the landing page with automatic lifecycle disposal upon navigating to internal app pages.
+
+---
+
+## 🛠️ Tech Stack
+
+| Layer | Technology |
+|-------|------------|
+| **Frontend Framework** | React 18 (Vite SPA) |
+| **Routing** | React Router DOM v6 |
+| **State Management** | Zustand |
+| **Code Editor** | CodeMirror 6 (`@uiw/react-codemirror`) with Python, JavaScript, and HTML extensions |
+| **Smooth Scrolling** | Lenis (`lenis` v1.3.26) |
+| **Icons & Typography** | Lucide React, Outfit (`@fontsource/outfit`), Geist Mono (`@fontsource/geist-mono`) |
+| **Styling** | Scoped CSS Modules with custom CSS design tokens |
+| **Backend Framework** | Node.js + Express |
+| **Real-Time Communication** | Socket.IO |
+| **Database & Persistence** | PostgreSQL (`pg`) with automatic in-memory fallback for zero-config local development |
+| **Authentication** | JWT (`jsonwebtoken`), bcrypt password hashing, role-based access control (Student / Teacher / Admin) |
+
+---
+
+## 📁 Project Structure
 
 ```
 vibeskool/
-├── frontend/          # React + Vite app
-│   └── src/
-│       ├── components/
-│       │   ├── layout/        # AppLayout, Topbar, Sidebar
-│       │   ├── terminal/      # FriendlyTerminal (the signature feature)
-│       │   └── ui/            # Shared components (Button, Card, etc.)
-│       ├── lib/
-│       │   ├── store.js        # Zustand global state
-│       │   └── terminalEval.js # Sandboxed terminal evaluator
-│       └── pages/
-│           ├── LandingPage      # Public marketing page
-│           ├── DashboardPage    # Home after login
-│           ├── PathsPage        # Browse all skill paths
-│           ├── LessonPage       # The lesson + terminal view
-│           ├── LabPage          # Standalone terminal sandbox
-│           ├── SkillCheckPage   # Quiz system
-│           └── ProfilePage      # User progress overview
+├── frontend/
+│   ├── src/
+│   │   ├── components/
+│   │   │   ├── ide/            # StudentIDE in-browser code workspace
+│   │   │   ├── layout/         # AppLayout, Topbar, Sidebar, ProtectedRoute, SmoothScroll
+│   │   │   ├── terminal/       # FriendlyTerminal sandboxed evaluator
+│   │   │   └── ui/             # Reusable UI system (Button, Card, Badge, BrandLogo, ProgressBar)
+│   │   ├── lib/
+│   │   │   ├── api.js          # Unified REST API client
+│   │   │   ├── auth.js         # useAuth context & JWT session storage
+│   │   │   ├── socket.js       # Socket.IO client instance
+│   │   │   ├── store.js        # Global Zustand state (paths, lessons, classrooms)
+│   │   │   └── theme.js        # App theme persistence & management
+│   │   └── pages/
+│   │       ├── LandingPage     # Public high-end landing page with Lenis smooth scroll
+│   │       ├── SignInPage      # Authentication sign-in
+│   │       ├── SignUpPage      # Multi-role sign-up (Student / Instructor)
+│   │       ├── DashboardPage   # Student command dashboard & recent progress
+│   │       ├── PathsPage       # Interactive course curriculum tracks
+│   │       ├── LessonPage      # Single-column reading view with slide-out practice drawer
+│   │       ├── LabPage         # Standalone coding sandbox
+│   │       ├── SkillCheckPage  # Automated quiz & skill assessment
+│   │       ├── JoinClassroom   # Cohort code entry portal
+│   │       ├── ProfilePage     # Learning achievements & statistics
+│   │       ├── SettingsPage    # Account preferences & theme switcher
+│   │       ├── community/      # Student project showcase & forums
+│   │       └── teacher/        # Teacher dashboard, classroom manager, multiplayer IDE, exercise builder
+│   └── package.json
 │
-└── backend/           # Node.js + Express + Socket.IO API
-    └── src/
-        ├── routes/    # REST API routes
-        ├── data/      # Lesson & path content
-        └── socket/    # Socket.IO event handlers
+├── backend/
+│   ├── src/
+│   │   ├── db/                 # PostgreSQL connection pool, schema, and seed scripts
+│   │   ├── middleware/         # JWT authentication & role-verification middleware
+│   │   ├── routes/             # REST endpoints (auth, paths, lessons, classrooms, exercises, forums)
+│   │   ├── socket/             # Socket.IO handlers for multiplayer code pairing & telemetry
+│   │   └── index.js            # Express server initialization
+│   └── package.json
+│
+├── package.json                # Root package for concurrent development scripts
+└── README.md
 ```
 
 ---
 
-## Quick start
+## 🚀 Quick Start
 
 ### Prerequisites
-- Node.js 18+
-- npm 9+
+- **Node.js**: v18.0.0 or higher
+- **npm**: v9.0.0 or higher
+- **PostgreSQL** *(Optional)*: If no database is configured, the backend automatically runs in local memory mode for immediate zero-config testing.
 
-### 1. Install all dependencies
+### 1. Clone & Install Dependencies
 
 ```bash
+git clone https://github.com/sheddy-cyber/vibeskool.git
+cd vibeskool
+
+# Install root, frontend, and backend dependencies concurrently
 npm run install:all
 ```
 
-### 2. Set up environment variables
+### 2. Environment Variables
+
+Create `.env` files in both `frontend` and `backend`:
 
 ```bash
 # Frontend
@@ -74,156 +138,104 @@ cp frontend/.env.example frontend/.env
 cp backend/.env.example backend/.env
 ```
 
-### 3. Run both servers
+Default frontend configuration (`frontend/.env`):
+```env
+VITE_API_URL=http://localhost:4000/api
+VITE_SOCKET_URL=http://localhost:4000
+```
+
+Default backend configuration (`backend/.env`):
+```env
+PORT=4000
+JWT_SECRET=supersecret_dev_jwt_key_vibeskool_2026
+CLIENT_ORIGIN=http://localhost:5173
+# Optional: DATABASE_URL=postgres://postgres:postgres@localhost:5432/vibeskool
+```
+
+### 3. Run Development Servers
+
+Start both frontend and backend concurrently:
 
 ```bash
 npm run dev
 ```
 
-This starts:
-- **Frontend** at `http://localhost:5173`
-- **Backend API** at `http://localhost:4000`
+- **Frontend Client**: [http://localhost:5173](http://localhost:5173)
+- **Backend API**: [http://localhost:4000/api](http://localhost:4000/api)
 
-Or run them separately:
-
+Or run each service individually:
 ```bash
+# Run frontend only
 npm run dev:frontend
+
+# Run backend only
 npm run dev:backend
 ```
 
 ---
 
-## Pages & features
+## 🗺️ Application Routes
 
-| Route | What it does |
-|-------|-------------|
-| `/` | Landing page |
-| `/app/dashboard` | MEK score, stats, skill paths overview |
-| `/app/paths` | Browse and expand all skill paths |
-| `/app/lesson/:id` | Lesson content + The Lab terminal side by side |
-| `/app/lab` | Standalone free-mode terminal sandbox |
-| `/app/skillcheck` | 5-question quiz with explanations |
-| `/app/profile` | Progress breakdown, builds unlocked |
-
----
-
-## The Lab (Friendly Terminal)
-
-The terminal is the platform's signature feature. It runs entirely in the browser (no server execution needed for the MVP). Available commands:
-
-```
-greetUser("name")       call a function with an argument
-let x = "value"         create a variable
-console.log("text")     print output
-add(3, 4)               arithmetic function
-shout("hello")          string transformer
-reverseString("abc")    reverse a string
-isEven(7)               check a condition
-git status              simulated git command
-npm install axios       simulated npm command
-help                    list all commands
-clear                   clear the terminal
-```
-
-Destructive commands (`rm -rf`, `format`, etc.) are automatically blocked with a friendly message.
+| Route | Role / Access | Description |
+|-------|---------------|-------------|
+| `/` | Public | High-end developer marketing landing page with Lenis smooth scroll |
+| `/signin` | Public | Account authentication & login |
+| `/signup` | Public | Account registration with role selection (`Student` or `Instructor`) |
+| `/app/dashboard` | Student / All | Welcome hub, active course progress, daily streak, and course overview |
+| `/app/paths` | Student / All | Browse and expand structured engineering curriculum tracks |
+| `/app/paths/:pathId/lessons/:lessonId` | Student / All | Full lesson reading pane with slide-out practice IDE & terminal |
+| `/app/paths/:pathId/modules/:moduleId/skill-check` | Student / All | Interactive chapter comprehension quiz |
+| `/app/lab` | Student / All | Standalone coding sandbox and browser terminal |
+| `/app/classrooms` | Student | Active classroom cohorts & join classroom portal |
+| `/app/showcase` | Student / All | Community student project gallery |
+| `/app/profile` | Student / All | User profile, learning stats, and completed milestones |
+| `/app/settings` | Student / All | Account preferences and UI theme options |
+| `/app/teacher/dashboard` | Instructor / Admin | Educator command center & cohort health statistics |
+| `/app/teacher/classrooms` | Instructor / Admin | Classroom cohort manager & invite code generator |
+| `/app/teacher/cms` | Instructor / Admin | Curriculum authoring & module editor |
+| `/app/teacher/exercises` | Instructor / Admin | Challenge builder & automated test suite creator |
 
 ---
 
-## Backend API
+## 🔌 Backend API Reference
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/health` | Health check |
-| GET | `/api/paths` | All skill paths |
-| GET | `/api/paths/:id` | Single path + lessons |
-| GET | `/api/lessons` | All lessons (lightweight) |
-| GET | `/api/lessons/:id` | Full lesson content |
-| GET | `/api/progress/:userId` | User progress |
-| POST | `/api/progress/:userId/complete` | Mark lesson complete |
+### Authentication (`/api/auth`)
+- `POST /api/auth/signup` — Create user account (`name`, `email`, `password`, `role`).
+- `POST /api/auth/login` — Sign in and receive JWT token.
+- `GET /api/auth/me` — Verify session and retrieve current user object.
 
----
+### Curriculum & Progress (`/api/paths`, `/api/lessons`, `/api/progress`)
+- `GET /api/paths` — List all published curriculum tracks and modules.
+- `GET /api/paths/:id` — Fetch complete syllabus for a path.
+- `GET /api/lessons/:id` — Fetch interactive lesson sections and challenges.
+- `POST /api/progress/:userId/complete` — Mark lesson completed and update user streak.
 
-## Stack
-
-| Layer | Technology |
-|-------|-----------|
-| Frontend | React 18 + Vite |
-| Routing | React Router v6 |
-| State | Zustand |
-| Styling | CSS Modules |
-| Backend | Node.js + Express |
-| Real-time | Socket.IO |
-| Database (ready) | PostgreSQL via `pg` |
-| Fonts | Plus Jakarta Sans + Geist Mono |
+### Classrooms & Multiplayer Pairing (`/api/classrooms`)
+- `GET /api/classrooms` — List user's active classrooms.
+- `POST /api/classrooms` — Create classroom cohort and generate unique invite code.
+- `POST /api/classrooms/join` — Join cohort via invite code (e.g. `CS-104-ALGO`).
+- `GET /api/classrooms/:id/telemetry` — Retrieve live student progress and test statuses.
 
 ---
 
-## Adding more lessons
+## 🚢 Production Deployment
 
-Lesson content lives in two places:
+### Frontend (Vercel / Netlify)
+The frontend is a standard Vite Single Page Application (SPA):
+1. Connect the repository to your host.
+2. Set **Root Directory** to `frontend`.
+3. Set **Build Command** to `npm run build`.
+4. Set **Output Directory** to `dist`.
+5. Set `VITE_API_URL` and `VITE_SOCKET_URL` environment variables pointing to your backend service.
 
-1. **Frontend** — `frontend/src/lib/store.js` → `LESSONS_CONTENT` object
-2. **Backend** — `backend/src/data/content.js` → `LESSONS` object
-
-Both use the same schema:
-
-```js
-{
-  id: 'lesson-id',
-  pathId: 'web-basics',
-  title: 'Lesson Title',
-  duration: '9 min',
-  mekLabel: 'enough to do X with AI',
-  sections: [
-    { heading: 'Section heading', body: 'Explanation text' },
-    { heading: 'Code example',   code: 'function example() {}' },
-    { heading: 'Key insight',    body: '...', callout: 'The thing to remember.' },
-  ],
-  aiPrompt: 'The ready-made prompt users copy into Claude/ChatGPT',
-  terminalMission: 'What to try in the Lab',
-}
-```
+### Backend (Render / Railway / Docker)
+1. Deploy from the `backend/` root directory.
+2. Set **Start Command** to `node src/index.js`.
+3. Supply production environment variables (`JWT_SECRET`, `CLIENT_ORIGIN`, `DATABASE_URL`).
+4. Execute `node src/db/migrate.js` to initialize PostgreSQL tables.
 
 ---
 
+## 📄 License
 
----
-
-## Deploying to Vercel or Netlify
-
-The frontend is a standard Vite SPA. Both hosting files are already included.
-
-### Vercel
-1. Import the repo into Vercel
-2. Set **Root Directory** to `frontend`
-3. Framework preset: **Vite**
-4. Build command: `npm run build`
-5. Output directory: `dist`
-6. Deploy — the `vercel.json` handles SPA routing automatically
-
-### Netlify
-1. Connect repo to Netlify
-2. Set **Base directory** to `frontend`
-3. Build command: `npm run build`
-4. Publish directory: `dist`
-5. Deploy — the `public/_redirects` file handles SPA routing automatically
-
-No environment variables are required for the frontend-only deployment.
-The backend is a separate service and is not required for the frontend to run.
-
-## Roadmap (next things to build)
-
-- [ ] Authentication (NextAuth or Supabase)
-- [ ] PostgreSQL progress persistence
-- [ ] Real Docker sandboxes for server-side code execution
-- [ ] "Start from your idea" onboarding flow
-- [ ] More lesson content across all 4 paths
-- [ ] AI-powered "Explain this code" feature (Claude API)
-- [ ] Community builds showcase
-- [ ] Mobile responsive layout
-
----
-
-## License
-
-MIT — build freely.
+Distributed under the MIT License. Built with passion for modern engineering education.
