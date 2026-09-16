@@ -24,6 +24,8 @@ import ClassroomManager from '@/pages/teacher/ClassroomManager'
 import ExerciseBuilder from '@/pages/teacher/ExerciseBuilder'
 import MultiplayerIDE from '@/pages/teacher/MultiplayerIDE'
 import AdminCMSPage from '@/pages/AdminCMSPage'
+import PrivacyPage from '@/pages/PrivacyPage'
+import TermsPage from '@/pages/TermsPage'
 import NotFoundPage from '@/pages/NotFoundPage'
 
 export default function App() {
@@ -37,6 +39,8 @@ export default function App() {
           <Route path="/signin" element={<SignInPage />} />
           <Route path="/login" element={<Navigate to="/signin" replace />} />
           <Route path="/signup" element={<SignUpPage />} />
+          <Route path="/privacy" element={<PrivacyPage />} />
+          <Route path="/terms" element={<TermsPage />} />
 
           {/* Protected app shell */}
           <Route

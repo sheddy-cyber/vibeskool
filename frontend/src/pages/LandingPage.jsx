@@ -775,6 +775,12 @@ export default function LandingPage() {
               <Link to="/app/dashboard" className={styles.footerLink}>Student Dashboard</Link>
               <Link to="/app/teacher/dashboard" className={styles.footerLink}>Instructor Cockpit</Link>
             </div>
+
+            <div className={styles.footerCol}>
+              <span className={styles.footerColTitle}>Legal</span>
+              <Link to="/privacy" className={styles.footerLink}>Privacy Policy</Link>
+              <Link to="/terms" className={styles.footerLink}>Terms of Service</Link>
+            </div>
           </div>
         </div>
       </footer>
