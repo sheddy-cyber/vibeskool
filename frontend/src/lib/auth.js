@@ -94,6 +94,30 @@ export const useAuth = create((set, get) => {
       }
     },
 
+    signInWithGoogle: async ({ credential, role }) => {
+      set({ authLoading: true, authError: null })
+      try {
+        if (!credential) {
+          throw new Error('Google credential token is required.')
+        }
+
+        const data = await authApi.googleAuth({ credential, role })
+        setToken(data.token)
+        
+        try {
+          const meData = await authApi.getMe()
+          set({ currentUser: mapUser(meData.user, meData), authLoading: false })
+        } catch {
+          set({ currentUser: mapUser(data.user), authLoading: false })
+        }
+      } catch (err) {
+        set({
+          authError: err.data?.error || err.response?.data?.error || err.message || 'Google authentication failed.',
+          authLoading: false
+        })
+      }
+    },
+
     signOut: () => {
       clearToken()
       set({ currentUser: null })

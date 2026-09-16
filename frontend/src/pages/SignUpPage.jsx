@@ -3,6 +3,7 @@ import { useNavigate, Link, useSearchParams } from 'react-router-dom'
 import { useAuth } from '@/lib/auth'
 import { Button, BrandLogo } from '@/components/ui'
 import { GraduationCap, BookOpenCheck } from 'lucide-react'
+import GoogleAuthButton from '@/components/auth/GoogleAuthButton'
 import styles from './SignUpPage.module.css'
 
 export default function SignUpPage() {
@@ -48,28 +49,31 @@ export default function SignUpPage() {
         
         {authError && <div className={styles.error}>{authError}</div>}
 
-        <form className={styles.form} onSubmit={handleSubmit}>
-          <div className={styles.field}>
-            <label className={styles.label}>I am joining as a</label>
-            <div className={styles.roleSelector}>
-              <button
-                type="button"
-                className={`${styles.roleBtn} ${form.role === 'student' ? styles.roleBtnActive : ''}`}
-                onClick={() => setForm(f => ({ ...f, role: 'student' }))}
-              >
-                <GraduationCap size={18} />
-                <span>Learner</span>
-              </button>
-              <button
-                type="button"
-                className={`${styles.roleBtn} ${form.role === 'teacher' ? styles.roleBtnActive : ''}`}
-                onClick={() => setForm(f => ({ ...f, role: 'teacher' }))}
-              >
-                <BookOpenCheck size={18} />
-                <span>Tutor</span>
-              </button>
-            </div>
+        <div className={styles.field} style={{ marginBottom: '16px' }}>
+          <label className={styles.label}>I am joining as a</label>
+          <div className={styles.roleSelector}>
+            <button
+              type="button"
+              className={`${styles.roleBtn} ${form.role === 'student' ? styles.roleBtnActive : ''}`}
+              onClick={() => setForm(f => ({ ...f, role: 'student' }))}
+            >
+              <GraduationCap size={18} />
+              <span>Learner</span>
+            </button>
+            <button
+              type="button"
+              className={`${styles.roleBtn} ${form.role === 'teacher' ? styles.roleBtnActive : ''}`}
+              onClick={() => setForm(f => ({ ...f, role: 'teacher' }))}
+            >
+              <BookOpenCheck size={18} />
+              <span>Tutor</span>
+            </button>
           </div>
+        </div>
+
+        <GoogleAuthButton isSignUp={true} role={form.role} />
+
+        <form className={styles.form} onSubmit={handleSubmit}>
 
           <div className={styles.field}>
             <label className={styles.label}>Name</label>

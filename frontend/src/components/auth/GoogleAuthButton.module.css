@@ -1,0 +1,68 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+.googleBtnWrapper {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  min-height: 44px;
+}
+
+/* Ensure Google iframe centers and takes full available width within bounds */
+.googleBtnWrapper > div {
+  width: 100% !important;
+  display: flex !important;
+  justify-content: center !important;
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  margin-top: 20px;
+  margin-bottom: 4px;
+  gap: 12px;
+}
+
+.dividerLine {
+  flex: 1;
+  height: 1px;
+  background: var(--border-default);
+}
+
+.dividerText {
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-tertiary);
+  white-space: nowrap;
+}
+
+.devNotice {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: rgba(249, 171, 0, 0.08);
+  border: 1px solid rgba(249, 171, 0, 0.3);
+  color: #B45309;
+  font-size: 12px;
+  line-height: 1.5;
+  text-align: center;
+}
+
+.devNoticeCode {
+  display: block;
+  font-family: var(--font-mono);
+  background: rgba(0, 0, 0, 0.06);
+  padding: 3px 6px;
+  border-radius: 4px;
+  font-size: 11px;
+  margin-top: 6px;
+  word-break: break-all;
+}

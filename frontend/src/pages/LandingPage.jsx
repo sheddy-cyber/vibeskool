@@ -642,58 +642,95 @@ export default function LandingPage() {
               </p>
             </div>
 
-            <div className={styles.ctaCardGrid}>
-              {/* Learner Portal */}
-              <div className={styles.ctaBox}>
-                <div className={styles.ctaBoxHeader}>
-                  <span className={styles.ctaAudience}>FOR INDIVIDUAL LEARNERS</span>
-                  <h3 className={styles.ctaBoxTitle}>Start building your engineering portfolio.</h3>
-                  <p className={styles.ctaBoxDesc}>
-                    Gain immediate access to all core learning tracks, in-browser execution sandboxes,
-                    and automated test-driven challenges. Free forever for individuals.
-                  </p>
-                </div>
-                <ul className={styles.ctaFeatureList}>
-                  <li><CheckCircle2 size={14} className={styles.featureCheck} /> In-browser development container</li>
-                  <li><CheckCircle2 size={14} className={styles.featureCheck} /> Automated unit-test grading &amp; feedback</li>
-                  <li><CheckCircle2 size={14} className={styles.featureCheck} /> Free access to all foundational paths</li>
-                </ul>
-                <div className={styles.ctaBoxAction}>
-                  <Button 
-                    variant="primary" 
-                    size="lg" 
-                    onClick={() => navigate(currentUser ? "/app/dashboard" : "/signup?role=student")}
-                    icon={<ArrowRight size={16} />}
-                  >
-                    Create Free Account
-                  </Button>
-                </div>
-              </div>
+            <div className={styles.openBookContainer}>
+              {/* Silk Ribbon Bookmark */}
+              <div className={styles.bookRibbon} aria-hidden="true" />
 
-              {/* Educator & Institution Portal */}
-              <div className={styles.ctaBox}>
-                <div className={styles.ctaBoxHeader}>
-                  <span className={`${styles.ctaAudience} ${styles.audienceAmber}`}>FOR TUTORS &amp; INSTRUCTORS</span>
-                  <h3 className={styles.ctaBoxTitle}>Lead classes with zero infrastructure drag.</h3>
-                  <p className={styles.ctaBoxDesc}>
-                    Deploy student cohorts in seconds. Observe live progress, build custom auto-graded coding challenges,
-                    and pair with students directly in their browser editor.
-                  </p>
+              <div className={styles.bookSpread}>
+                {/* Left Page: Learner */}
+                <div className={`${styles.bookPage} ${styles.bookPageLeft}`}>
+                  <div className={styles.folioHeader}>
+                    <span className={styles.folioPageNum}>PAGE 01</span>
+                    <span className={styles.folioRule} />
+                    <span className={styles.folioChapter}>LEARNER SYLLABUS</span>
+                  </div>
+
+                  <div className={styles.ctaBoxHeader}>
+                    <span className={styles.ctaAudience}>FOR INDIVIDUAL LEARNERS</span>
+                    <h3 className={styles.ctaBoxTitle}>Start building your engineering portfolio.</h3>
+                    <p className={styles.ctaBoxDesc}>
+                      Gain immediate access to all core learning tracks, in-browser execution sandboxes,
+                      and automated test-driven challenges. Free forever for individuals.
+                    </p>
+                  </div>
+
+                  <ul className={styles.ctaFeatureList}>
+                    <li><CheckCircle2 size={14} className={styles.featureCheck} /> In-browser development container</li>
+                    <li><CheckCircle2 size={14} className={styles.featureCheck} /> Automated unit-test grading &amp; feedback</li>
+                    <li><CheckCircle2 size={14} className={styles.featureCheck} /> Free access to all foundational paths</li>
+                  </ul>
+
+                  <div className={styles.ctaBoxAction}>
+                    <Button 
+                      variant="primary" 
+                      size="lg" 
+                      onClick={() => navigate(currentUser ? "/app/dashboard" : "/signup?role=student")}
+                      icon={<ArrowRight size={16} />}
+                    >
+                      Create Free Account
+                    </Button>
+                  </div>
+
+                  <div className={styles.folioFooter}>
+                    <span>VIBESKOOL CORE</span>
+                    <span>01</span>
+                  </div>
                 </div>
-                <ul className={styles.ctaFeatureList}>
-                  <li><CheckCircle2 size={14} className={styles.featureCheck} /> Unlimited student classrooms &amp; cohorts</li>
-                  <li><CheckCircle2 size={14} className={styles.featureCheck} /> 1-click multiplayer editor pairing</li>
-                  <li><CheckCircle2 size={14} className={styles.featureCheck} /> Custom exercise &amp; test suite authoring</li>
-                </ul>
-                <div className={styles.ctaBoxAction}>
-                  <Button 
-                    variant="secondary" 
-                    size="lg" 
-                    onClick={() => navigate(currentUser ? "/app/dashboard" : "/signup?role=teacher")}
-                    icon={<Users size={16} />}
-                  >
-                    Create Tutor Account
-                  </Button>
+
+                {/* Center Spine Crease */}
+                <div className={styles.bookSpine} aria-hidden="true">
+                  <div className={styles.spineGutter} />
+                  <div className={styles.spineSeam} />
+                </div>
+
+                {/* Right Page: Instructor */}
+                <div className={`${styles.bookPage} ${styles.bookPageRight}`}>
+                  <div className={styles.folioHeader}>
+                    <span className={styles.folioPageNum}>PAGE 02</span>
+                    <span className={styles.folioRule} />
+                    <span className={styles.folioChapter}>INSTRUCTOR PROTOCOL</span>
+                  </div>
+
+                  <div className={styles.ctaBoxHeader}>
+                    <span className={`${styles.ctaAudience} ${styles.audienceAmber}`}>FOR TUTORS &amp; INSTRUCTORS</span>
+                    <h3 className={styles.ctaBoxTitle}>Lead classes with zero infrastructure drag.</h3>
+                    <p className={styles.ctaBoxDesc}>
+                      Deploy student cohorts in seconds. Observe live progress, build custom auto-graded coding challenges,
+                      and pair with students directly in their browser editor.
+                    </p>
+                  </div>
+
+                  <ul className={styles.ctaFeatureList}>
+                    <li><CheckCircle2 size={14} className={styles.featureCheck} /> Unlimited student classrooms &amp; cohorts</li>
+                    <li><CheckCircle2 size={14} className={styles.featureCheck} /> 1-click multiplayer editor pairing</li>
+                    <li><CheckCircle2 size={14} className={styles.featureCheck} /> Custom exercise &amp; test suite authoring</li>
+                  </ul>
+
+                  <div className={styles.ctaBoxAction}>
+                    <Button 
+                      variant="secondary" 
+                      size="lg" 
+                      onClick={() => navigate(currentUser ? "/app/dashboard" : "/signup?role=teacher")}
+                      icon={<Users size={16} />}
+                    >
+                      Create Tutor Account
+                    </Button>
+                  </div>
+
+                  <div className={styles.folioFooter}>
+                    <span>COLLABORATIVE OPS</span>
+                    <span>02</span>
+                  </div>
                 </div>
               </div>
             </div>

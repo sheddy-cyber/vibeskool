@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '@/lib/auth'
 import { Button, BrandLogo } from '@/components/ui'
+import GoogleAuthButton from '@/components/auth/GoogleAuthButton'
 import styles from './SignInPage.module.css'
 
 export default function SignInPage() {
@@ -40,6 +41,8 @@ export default function SignInPage() {
         <h1 className={styles.title}>Welcome back</h1>
         
         {authError && <div className={styles.error}>{authError}</div>}
+
+        <GoogleAuthButton isSignUp={false} />
 
         <form className={styles.form} onSubmit={handleSubmit}>
           <div className={styles.field}>

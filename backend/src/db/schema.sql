@@ -3,10 +3,12 @@
 CREATE TABLE IF NOT EXISTS users (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   email TEXT UNIQUE NOT NULL,
-  password_hash TEXT NOT NULL,
+  password_hash TEXT,
   display_name TEXT NOT NULL,
   avatar_url TEXT,
   role TEXT NOT NULL CHECK (role IN ('student', 'teacher', 'admin')),
+  google_id TEXT UNIQUE,
+  auth_provider TEXT DEFAULT 'local',
   settings JSONB DEFAULT '{}',
   xp INTEGER DEFAULT 0,
   badges JSONB DEFAULT '[]'::jsonb,

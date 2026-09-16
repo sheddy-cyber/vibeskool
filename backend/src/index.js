@@ -28,7 +28,10 @@ const app = express()
 const httpServer = createServer(app)
 
 // Middleware
-app.use(helmet({ contentSecurityPolicy: false }))
+app.use(helmet({ 
+  contentSecurityPolicy: false,
+  crossOriginOpenerPolicy: { policy: 'same-origin-allow-popups' },
+}))
 app.use(cors({ origin: CLIENT_URL, credentials: true }))
 app.use(morgan('dev'))
 app.use(express.json())

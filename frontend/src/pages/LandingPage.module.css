@@ -1247,6 +1247,7 @@
   box-sizing: border-box;
   color: var(--text-primary);
   border-top: 1px solid var(--border-default);
+  overflow: hidden;
 }
 
 .ctaHeader {
@@ -1281,33 +1282,300 @@
   color: var(--text-secondary);
 }
 
-.ctaCardGrid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 24px;
+/* ── Open Book / Engineering Codex Spread (Partially Closed 3D Fold) ── */
+.openBookContainer {
+  position: relative;
+  max-width: 1040px;
+  margin: 0 auto;
+  perspective: 1400px;
+  perspective-origin: 50% 32%; /* Overhead view looking slightly down into the fold */
 }
 
-@media (max-width: 840px) {
-  .ctaCardGrid {
-    grid-template-columns: 1fr;
-  }
+/* Ambient contact shadow on the desk beneath the lifted book pages */
+.openBookContainer::before {
+  content: "";
+  position: absolute;
+  bottom: -22px;
+  left: 6%;
+  right: 6%;
+  height: 44px;
+  background: radial-gradient(ellipse at 50% 50%, rgba(15, 23, 42, 0.22) 0%, rgba(15, 23, 42, 0.06) 55%, transparent 75%);
+  filter: blur(14px);
+  z-index: 0;
+  pointer-events: none;
 }
 
-.ctaBox {
-  background: #FFFFFF;
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-lg);
-  padding: 40px;
+/* Silk Ribbon Bookmark hanging over the central spine */
+.bookRibbon {
+  position: absolute;
+  top: -16px;
+  left: 50%;
+  transform: translateX(-50%) translateZ(12px);
+  width: 24px;
+  height: 62px;
+  background: linear-gradient(180deg, #1557B0 0%, #1A73E8 65%, #2B7DE9 100%);
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 82%, 0 100%);
+  z-index: 10;
+  filter: drop-shadow(0 4px 10px rgba(15, 23, 42, 0.4));
+  pointer-events: none;
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), filter 0.35s ease;
+}
+
+.bookRibbon::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 12px;
+  left: 50%;
+  width: 2px;
+  transform: translateX(-50%);
+  background: rgba(255, 255, 255, 0.35);
+}
+
+.openBookContainer:hover .bookRibbon {
+  transform: translateX(-50%) translateY(4px) translateZ(18px);
+  filter: drop-shadow(0 8px 16px rgba(26, 115, 232, 0.55));
+}
+
+.bookSpread {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: stretch;
+  background: transparent;
+  transform-style: preserve-3d;
+  transform: rotateX(2.5deg);
+}
+
+.bookPage {
+  flex: 1;
   display: flex;
   flex-direction: column;
-  box-shadow: var(--shadow-sm);
-  color: var(--text-primary);
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  position: relative;
+  backface-visibility: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  transform-style: preserve-3d;
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s ease;
 }
 
-.ctaBox:hover {
-  border-color: var(--accent);
-  box-shadow: var(--shadow-md);
+/* Left Page (Learner Syllabus) - partially closing on the spine */
+.bookPageLeft {
+  padding: 44px 50px 36px 42px;
+  transform-origin: right center;
+  transform: rotateY(10deg);
+  background: linear-gradient(90deg, 
+    #FFFFFF 0%, 
+    #FFFFFF 58%, 
+    #FBFBFC 74%, 
+    #F1F5F9 88%, 
+    #E2E8F0 96%,
+    #CBD5E1 100%
+  );
+  border-radius: 14px 0 0 14px;
+  border: 1px solid #E2E8F0;
+  border-right: none;
+  box-shadow:
+    /* Stacked paper edge (1st sheet rim) */
+    0 3px 0 0 #F1F5F9,
+    -3px 3px 0 0 #E2E8F0,
+    /* Stacked paper edge (2nd sheet rim) */
+    0 6px 0 0 #E2E8F0,
+    -6px 6px 0 0 #CBD5E1,
+    /* Dark Hardcover casing edge */
+    0 9px 0 0 #0F172A,
+    -9px 9px 0 0 #0F172A,
+    /* Lifted page ground shadow */
+    -20px 26px 38px -10px rgba(15, 23, 42, 0.22),
+    /* Deep valley fold crease shadows */
+    inset -38px 0 42px -14px rgba(15, 23, 42, 0.16),
+    inset -12px 0 14px -4px rgba(15, 23, 42, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.95);
+}
+
+.bookPageLeft:hover {
+  transform: rotateY(8deg);
+  box-shadow:
+    0 3px 0 0 #F1F5F9,
+    -3px 3px 0 0 #E2E8F0,
+    0 6px 0 0 #E2E8F0,
+    -6px 6px 0 0 #CBD5E1,
+    0 9px 0 0 #0F172A,
+    -9px 9px 0 0 #0F172A,
+    -24px 30px 44px -8px rgba(15, 23, 42, 0.26),
+    inset -34px 0 38px -14px rgba(15, 23, 42, 0.14),
+    inset -10px 0 12px -4px rgba(15, 23, 42, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.95);
+}
+
+/* Right Page (Instructor Protocol) - partially closing on the spine */
+.bookPageRight {
+  padding: 44px 42px 36px 50px;
+  transform-origin: left center;
+  transform: rotateY(-10deg);
+  background: linear-gradient(90deg, 
+    #CBD5E1 0%, 
+    #E2E8F0 4%, 
+    #F1F5F9 12%, 
+    #FBFBFC 26%, 
+    #FFFFFF 42%, 
+    #FFFFFF 100%
+  );
+  border-radius: 0 14px 14px 0;
+  border: 1px solid #E2E8F0;
+  border-left: none;
+  box-shadow:
+    /* Stacked paper edge (1st sheet rim) */
+    0 3px 0 0 #F1F5F9,
+    3px 3px 0 0 #E2E8F0,
+    /* Stacked paper edge (2nd sheet rim) */
+    0 6px 0 0 #E2E8F0,
+    6px 6px 0 0 #CBD5E1,
+    /* Dark Hardcover casing edge */
+    0 9px 0 0 #0F172A,
+    9px 9px 0 0 #0F172A,
+    /* Lifted page ground shadow */
+    20px 26px 38px -10px rgba(15, 23, 42, 0.22),
+    /* Deep valley fold crease shadows */
+    inset 38px 0 42px -14px rgba(15, 23, 42, 0.16),
+    inset 12px 0 14px -4px rgba(15, 23, 42, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.95);
+}
+
+.bookPageRight:hover {
+  transform: rotateY(-8deg);
+  box-shadow:
+    0 3px 0 0 #F1F5F9,
+    3px 3px 0 0 #E2E8F0,
+    0 6px 0 0 #E2E8F0,
+    6px 6px 0 0 #CBD5E1,
+    0 9px 0 0 #0F172A,
+    9px 9px 0 0 #0F172A,
+    24px 30px 44px -8px rgba(15, 23, 42, 0.26),
+    inset 34px 0 38px -14px rgba(15, 23, 42, 0.14),
+    inset 10px 0 12px -4px rgba(15, 23, 42, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.95);
+}
+
+/* Central Valley Crease & Spine */
+.bookSpine {
+  width: 6px;
+  position: relative;
+  flex-shrink: 0;
+  background: linear-gradient(90deg, 
+    #94A3B8 0%, 
+    #475569 30%, 
+    #1E293B 50%, 
+    #475569 70%, 
+    #94A3B8 100%
+  );
+  border-top: 1px solid #334155;
+  border-bottom: 1px solid #0F172A;
+  z-index: 3;
+}
+
+.spineGutter {
+  position: absolute;
+  inset: 0;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.4), inset 0 -2px 4px rgba(0, 0, 0, 0.4);
+}
+
+.spineSeam {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 1px;
+  transform: translateX(-50%);
+  background: rgba(15, 23, 42, 0.3);
+}
+
+/* Page Folio Headers & Footers */
+.folioHeader {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
+  padding-bottom: 12px;
+  border-bottom: 1px dashed rgba(15, 23, 42, 0.1);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: var(--text-tertiary);
+  user-select: none;
+}
+
+.folioPageNum {
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.folioRule {
+  flex: 1;
+  height: 1px;
+  background: rgba(15, 23, 42, 0.07);
+}
+
+.folioChapter {
+  text-transform: uppercase;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  color: #64748B;
+}
+
+.folioFooter {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 32px;
+  padding-top: 14px;
+  border-top: 1px dashed rgba(15, 23, 42, 0.1);
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.08em;
+  color: #94A3B8;
+  user-select: none;
+}
+
+@media (max-width: 860px) {
+  .openBookContainer {
+    perspective: none;
+  }
+
+  .openBookContainer::before {
+    display: none;
+  }
+
+  .bookSpread {
+    flex-direction: column;
+    gap: 24px;
+    transform: none;
+  }
+
+  .bookSpine {
+    display: none;
+  }
+
+  .bookRibbon {
+    display: none;
+  }
+
+  .bookPageLeft,
+  .bookPageRight {
+    transform: none !important;
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border-default);
+    box-shadow: var(--shadow-sm) !important;
+    background: #FFFFFF !important;
+    padding: 32px 24px !important;
+  }
+
+  .bookPageLeft:hover,
+  .bookPageRight:hover {
+    border-color: var(--accent);
+    box-shadow: var(--shadow-md) !important;
+  }
 }
 
 .ctaBoxHeader {
@@ -1459,8 +1727,8 @@
   .ctaSection {
     padding: 60px 0;
   }
-  .ctaBox {
-    padding: 24px;
+  .bookPage {
+    padding: 28px 20px;
   }
   .footerLinksGrid {
     gap: 36px;

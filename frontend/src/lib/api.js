@@ -84,6 +84,7 @@ const del = (endpoint) => fetchWrapper(endpoint, { method: 'DELETE' });
 export const authApi = {
   signup: ({ email, password, displayName, role }) => post('/api/auth/signup', { email, password, displayName, role }),
   login: ({ email, password }) => post('/api/auth/login', { email, password }),
+  googleAuth: ({ credential, role }) => post('/api/auth/google', { credential, role }),
   getMe: () => get('/api/auth/me'),
   updateProfile: (data) => put('/api/auth/profile', data),
 };
