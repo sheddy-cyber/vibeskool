@@ -2,9 +2,11 @@ import React from 'react'
 import { Link } from 'react-router-dom'
 import { BrandLogo } from '@/components/ui'
 import { ArrowLeft } from 'lucide-react'
+import { useEnforceLightTheme } from '@/lib/theme'
 import styles from './LegalPage.module.css'
 
 export default function PrivacyPage() {
+  useEnforceLightTheme()
   return (
     <div className={styles.page}>
       <header className={styles.header}>

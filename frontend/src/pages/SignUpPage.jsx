@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate, Link, useSearchParams } from 'react-router-dom'
 import { useAuth } from '@/lib/auth'
+import { useEnforceLightTheme } from '@/lib/theme'
 import { Button, BrandLogo } from '@/components/ui'
 import { GraduationCap, BookOpenCheck } from 'lucide-react'
 import GoogleAuthButton from '@/components/auth/GoogleAuthButton'
 import styles from './SignUpPage.module.css'
 
 export default function SignUpPage() {
+  useEnforceLightTheme()
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const initialRole = searchParams.get('role') === 'teacher' ? 'teacher' : 'student'

@@ -1,7 +1,20 @@
-﻿// ─── Theme Manager (VibeSkool) ─────────────────────────────────────────────────
+import { useEffect } from 'react'
+
+// ─── Theme Manager (VibeSkool) ─────────────────────────────────────────────────
 // Supports: 'light' (The Luminous Atelier), 'dark' (The Obsidian Nocturne), and 'system'
 
 let systemMediaListener = null
+
+export function isLightOnlyPath(path = typeof window !== 'undefined' ? window.location.pathname : '') {
+  return (
+    path === '/' ||
+    path === '/signin' ||
+    path === '/login' ||
+    path === '/signup' ||
+    path === '/privacy' ||
+    path === '/terms'
+  )
+}
 
 export function getStoredTheme() {
   try {
@@ -84,6 +97,42 @@ export function applyTheme(themePreference) {
 }
 
 export function initTheme() {
+  if (typeof window !== 'undefined' && isLightOnlyPath(window.location.pathname)) {
+    const root = document.documentElement
+    root.setAttribute('data-theme', 'light')
+    root.style.colorScheme = 'light'
+    const metaThemeColor = document.querySelector('meta[name="theme-color"]')
+    if (metaThemeColor) {
+      metaThemeColor.setAttribute('content', '#FFFFFF')
+    }
+    return 'light'
+  }
+
   const stored = getStoredTheme()
   return applyTheme(stored)
 }
+
+/**
+ * Hook to enforce light mode on public marketing, auth, and legal pages.
+ * Restores user theme preference when navigating into the authenticated app.
+ */
+export function useEnforceLightTheme() {
+  useEffect(() => {
+    const root = document.documentElement
+    root.setAttribute('data-theme', 'light')
+    root.style.colorScheme = 'light'
+
+    const metaThemeColor = document.querySelector('meta[name="theme-color"]')
+    if (metaThemeColor) {
+      metaThemeColor.setAttribute('content', '#FFFFFF')
+    }
+
+    return () => {
+      // When leaving a public page, only restore stored theme if navigating into the app
+      if (typeof window !== 'undefined' && !isLightOnlyPath(window.location.pathname)) {
+        applyTheme(getStoredTheme())
+      }
+    }
+  }, [])
+}
+

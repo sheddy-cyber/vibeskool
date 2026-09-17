@@ -2,6 +2,7 @@ import React, { useEffect } from 'react'
 import { Outlet, useLocation } from 'react-router-dom'
 import { useStore } from '@/lib/store'
 import { useAuth } from '@/lib/auth'
+import { getStoredTheme, applyTheme } from '@/lib/theme'
 import Topbar from './Topbar'
 import Sidebar from './Sidebar'
 import styles from './AppLayout.module.css'
@@ -10,6 +11,11 @@ export default function AppLayout() {
   const { sidebarOpen, toggleSidebar } = useStore()
   const { currentUser } = useAuth()
   const location = useLocation()
+
+  // Ensure stored theme preference (dark/light/system) is applied when entering the app shell
+  useEffect(() => {
+    applyTheme(getStoredTheme())
+  }, [])
 
   useEffect(() => {
     if (window.innerWidth <= 768 && sidebarOpen) {

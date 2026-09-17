@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/lib/auth";
-import { getStoredTheme, applyTheme } from "@/lib/theme";
+import { useEnforceLightTheme } from "@/lib/theme";
 import { Button, BrandLogo } from "@/components/ui";
 import { 
   ArrowRight, 
@@ -47,22 +47,8 @@ export default function LandingPage() {
     };
   }, []);
 
-  // The landing page remains exclusively in light mode regardless of user app theme preference
-  useEffect(() => {
-    const root = document.documentElement;
-    root.setAttribute("data-theme", "light");
-    root.style.colorScheme = "light";
-
-    const metaThemeColor = document.querySelector('meta[name="theme-color"]');
-    if (metaThemeColor) {
-      metaThemeColor.setAttribute("content", "#FFFFFF");
-    }
-
-    return () => {
-      // Restore user's app theme preference when navigating away
-      applyTheme(getStoredTheme());
-    };
-  }, []);
+  // Enforce light mode on landing page and prevent dark flashes when navigating between public pages
+  useEnforceLightTheme();
 
   const handleCopyInvite = () => {
     navigator.clipboard.writeText("CS-104-ALGO");
