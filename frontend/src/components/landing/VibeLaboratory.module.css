@@ -125,6 +125,15 @@
 
 .vmIcon {
   color: #34A853;
+  flex-shrink: 0;
+}
+
+.vmTextFull {
+  display: inline;
+}
+
+.vmTextShort {
+  display: none;
 }
 
 .pulseBtn,
@@ -492,6 +501,7 @@
   flex: 1;
   display: block;
   cursor: crosshair;
+  touch-action: pan-y;
 }
 
 .canvasMentorCursor {
@@ -592,8 +602,191 @@
   background: #1E293B;
 }
 
-@media (max-width: 640px) {
+/* ── Comprehensive Responsive Media Queries ──────────────────────── */
+@media (max-width: 960px) {
+  .canvasPane {
+    order: -1;
+    min-height: 260px;
+    height: 260px;
+  }
+  .codeLensPane {
+    border-right: none;
+    border-top: 1px solid #1E293B;
+  }
+}
+
+@media (max-width: 768px) {
+  .labContainer {
+    margin-top: 32px;
+    border-radius: 14px;
+  }
+  .labHeader {
+    padding: 10px 12px;
+    gap: 10px;
+  }
+  .headerLeft {
+    width: 100%;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .presetSelector {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+  }
+  .presetBtn {
+    flex: 1;
+    text-align: center;
+    padding: 6px 4px;
+    font-size: 11px;
+  }
+  .headerRight {
+    width: 100%;
+    justify-content: space-between;
+    gap: 6px;
+  }
+  .vmStatusPill {
+    font-size: 10.5px;
+    padding: 4px 8px;
+  }
+  .vmTextFull {
+    display: none;
+  }
+  .vmTextShort {
+    display: inline;
+  }
+  .pulseBtn,
+  .mutateBtn {
+    flex: 1;
+    justify-content: center;
+    padding: 6px 10px;
+    font-size: 11.5px;
+  }
+  .labTelemetry {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px 12px;
+    padding: 10px 14px;
+  }
   .telemetryDivider {
     display: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .codeLensFooter {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+    padding: 10px 14px;
+  }
+  .sliderGroup {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .rangeInput {
+    flex: 1;
+    margin: 0 10px;
+    width: auto;
+  }
+  .sliderVal {
+    text-align: right;
+    min-width: 32px;
+  }
+}
+
+@media (max-width: 480px) {
+  .labContainer {
+    margin-top: 24px;
+    border-radius: 12px;
+  }
+  .brandBadge {
+    font-size: 10px;
+    gap: 6px;
+  }
+  .subTitle {
+    display: none;
+  }
+  .presetBtn {
+    padding: 5px 2px;
+    font-size: 10px;
+  }
+  .canvasPane {
+    min-height: 220px;
+    height: 220px;
+  }
+  .canvasOverlayTop {
+    top: 6px;
+    left: 8px;
+    right: 8px;
+  }
+  .modePill {
+    font-size: 9px;
+    padding: 2px 6px;
+  }
+  .coordReadout {
+    font-size: 8.5px;
+    padding: 2px 5px;
+  }
+  .canvasOverlayBottom {
+    bottom: 6px;
+    left: 8px;
+    right: 8px;
+  }
+  .canvasHint {
+    font-size: 9.5px;
+    padding: 2px 8px;
+  }
+  .canvasMentorCursor {
+    display: none;
+  }
+  .codeLensHeader {
+    height: 32px;
+    padding: 0 10px;
+  }
+  .fileTab {
+    font-size: 11px;
+  }
+  .reactiveTag {
+    font-size: 8.5px;
+    padding: 1px 5px;
+  }
+  .gutter {
+    width: 26px;
+    font-size: 10px;
+    line-height: 19px;
+  }
+  .codeContent {
+    padding-left: 32px;
+    padding-right: 8px;
+    font-size: 10.5px;
+    line-height: 19px;
+  }
+  .interactiveBadge {
+    padding: 0 4px;
+    font-size: 9.5px;
+    margin: 0 1px;
+  }
+  .mentorAnnotation {
+    margin: 8px 6px 0 30px;
+    padding: 8px;
+  }
+  .mentorName {
+    font-size: 10.5px;
+  }
+  .mentorBadge {
+    font-size: 8.5px;
+  }
+  .mentorText {
+    font-size: 10.5px;
+    line-height: 1.4;
+  }
+  .labTelemetry {
+    grid-template-columns: 1fr 1fr;
+    gap: 6px 8px;
+    padding: 8px 10px;
+    font-size: 10px;
   }
 }

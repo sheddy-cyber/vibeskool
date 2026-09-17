@@ -519,6 +519,35 @@ export default function VibeLaboratory() {
     triggerShockwave(cx, cy)
   }
 
+  // Touch event listeners for mobile devices
+  const handleTouchStart = (e) => {
+    const canvas = canvasRef.current
+    if (!canvas || !e.touches || e.touches.length === 0) return
+    const rect = canvas.getBoundingClientRect()
+    const touch = e.touches[0]
+    const x = touch.clientX - rect.left
+    const y = touch.clientY - rect.top
+    mouseRef.current = { x, y, active: true }
+    setMouseCoord({ x: Math.round(x), y: Math.round(y), inside: true })
+    triggerShockwave(x, y)
+  }
+
+  const handleTouchMove = (e) => {
+    const canvas = canvasRef.current
+    if (!canvas || !e.touches || e.touches.length === 0) return
+    const rect = canvas.getBoundingClientRect()
+    const touch = e.touches[0]
+    const x = touch.clientX - rect.left
+    const y = touch.clientY - rect.top
+    mouseRef.current = { x, y, active: true }
+    setMouseCoord({ x: Math.round(x), y: Math.round(y), inside: true })
+  }
+
+  const handleTouchEnd = () => {
+    mouseRef.current = { ...mouseRef.current, active: false }
+    setMouseCoord(c => ({ ...c, inside: false }))
+  }
+
   const currentPreset = PRESETS[activePreset]
 
   return (
@@ -549,7 +578,8 @@ export default function VibeLaboratory() {
         <div className={styles.headerRight}>
           <div className={styles.vmStatusPill}>
             <Cpu size={12} className={styles.vmIcon} />
-            <span>WebContainer VM: Connected</span>
+            <span className={styles.vmTextFull}>WebContainer VM: Connected</span>
+            <span className={styles.vmTextShort}>VM Active</span>
           </div>
 
           <button
@@ -694,6 +724,9 @@ export default function VibeLaboratory() {
             onMouseMove={handleMouseMove}
             onMouseLeave={handleMouseLeave}
             onClick={handleCanvasClick}
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
           />
 
           {/* Floating Mentor Cursor Simulation in Canvas */}
@@ -706,7 +739,7 @@ export default function VibeLaboratory() {
 
           <div className={styles.canvasOverlayBottom}>
             <span className={styles.canvasHint}>
-              Click to emit shockwave · Move cursor to influence physics
+              Tap / click to pulse · Drag to influence physics
             </span>
           </div>
         </div>

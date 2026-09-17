@@ -115,6 +115,21 @@
   flex-shrink: 0;
 }
 
+@media (max-width: 480px) {
+  .headerInner {
+    height: 56px;
+    padding: 0 16px;
+    gap: 12px;
+  }
+  .headerRight {
+    gap: 8px;
+  }
+  .headerRight button {
+    padding: 6px 12px;
+    font-size: 13px;
+  }
+}
+
 /* ── Main Container ──────────────────────────────────────────────── */
 .main {
   flex: 1;
@@ -270,6 +285,12 @@
   box-sizing: border-box;
 }
 
+@media (max-width: 640px) {
+  .sectionContainer {
+    padding: 0 16px;
+  }
+}
+
 /* ── Section 1: Built for Mentors & Classrooms (Logo Green #34A853) ─ */
 .classroomsSection {
   width: 100%;
@@ -417,6 +438,7 @@
 .rosterTableWrapper {
   width: 100%;
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .rosterTable {
@@ -1297,27 +1319,210 @@
 
 /* ── Mobile Breakpoint Tweaks ────────────────────────────────────── */
 @media (max-width: 768px) {
+  .heroSection {
+    padding: 48px 16px 36px;
+  }
   .heroTitle {
-    font-size: 36px;
+    font-size: 34px;
+    line-height: 1.18;
+    margin-bottom: 16px;
   }
   .heroSubtitle {
     font-size: 16px;
+    margin-bottom: 24px;
+  }
+  .classroomsSection {
+    padding: 60px 0 32px 0;
+  }
+  .classroomsHeader,
+  .curriculumHeader,
+  .ctaHeader {
+    margin-bottom: 36px;
   }
   .classroomsTitle,
   .curriculumTitle,
   .ctaTitle {
-    font-size: 28px;
+    font-size: 30px;
+    line-height: 1.25;
   }
-  .classroomsSection,
-  .curriculumSection,
+  .classroomsSubtitle,
+  .curriculumSubtitle,
+  .ctaSubtitle {
+    font-size: 15px;
+  }
+  .telemetryHeader {
+    padding: 14px 16px;
+  }
+  .curriculumSection {
+    padding: 40px 0 64px 0;
+  }
+  .tracksGrid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  .trackCard {
+    padding: 24px 20px;
+  }
   .ctaSection {
     padding: 60px 0;
   }
   .bookPage {
     padding: 28px 20px;
   }
-  .footerLinksGrid {
+  .footer {
+    padding: 48px 16px 36px;
+  }
+  .footerInner {
+    flex-direction: column;
     gap: 36px;
+  }
+  .footerBrandCol {
+    max-width: 100%;
+  }
+  .footerLinksGrid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 28px;
+  }
+}
+
+@media (max-width: 640px) {
+  .heroActions {
+    flex-direction: column;
+    width: 100%;
+    max-width: 320px;
+    gap: 10px;
+    margin-bottom: 28px;
+  }
+  .heroActions button {
+    width: 100%;
+    justify-content: center;
+  }
+  .specBar {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    padding: 12px 14px;
+    border-radius: 14px;
+    width: 100%;
+    max-width: 360px;
+    box-sizing: border-box;
+  }
+  .specDivider {
+    display: none;
+  }
+  .specItem {
+    font-size: 11.5px;
+    gap: 6px;
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 480px) {
+  .specBadge {
+    font-size: 11px;
+    padding: 5px 14px;
+    margin-bottom: 18px;
+    max-width: 95%;
+  }
+  .heroTitle {
+    font-size: 27px;
+    line-height: 1.2;
+    letter-spacing: -0.025em;
+  }
+  .heroSubtitle {
+    font-size: 14.5px;
+    line-height: 1.55;
+  }
+  .classroomsSection {
+    padding: 48px 0 24px 0;
+  }
+  .classroomsTitle,
+  .curriculumTitle,
+  .ctaTitle {
+    font-size: 24px;
+  }
+  .classroomsSubtitle,
+  .curriculumSubtitle,
+  .ctaSubtitle {
+    font-size: 14px;
+  }
+  .telemetryHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px 14px;
+  }
+  .telemetryTitleGroup {
+    width: 100%;
+    justify-content: space-between;
+  }
+  .cohortActions {
+    width: 100%;
+  }
+  .invitePill {
+    width: 100%;
+    justify-content: space-between;
+    box-sizing: border-box;
+  }
+  .rosterTable th {
+    padding: 10px 14px;
+  }
+  .rosterTable td {
+    padding: 12px 14px;
+  }
+  .curriculumSection {
+    padding: 32px 0 52px 0;
+  }
+  .trackCard {
+    padding: 20px 16px;
+    border-radius: 14px;
+  }
+  .trackTitle {
+    font-size: 18px;
+  }
+  .trackDesc {
+    font-size: 13px;
+  }
+  .trackMeta {
+    flex-wrap: wrap;
+    gap: 10px;
+    font-size: 11.5px;
+  }
+  .ctaSection {
+    padding: 48px 0;
+  }
+  .bookPageLeft,
+  .bookPageRight {
+    padding: 22px 16px !important;
+  }
+  .ctaBoxTitle {
+    font-size: 22px;
+  }
+  .ctaBoxDesc {
+    font-size: 13.5px;
+  }
+  .ctaFeatureList {
+    gap: 10px;
+    margin-bottom: 24px;
+  }
+  .ctaFeatureList li {
+    font-size: 13px;
+  }
+  .ctaBoxAction button {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 380px) {
+  .specBar {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+  .footerLinksGrid {
+    grid-template-columns: 1fr;
+    gap: 24px;
   }
 }
 
@@ -1391,7 +1596,12 @@
 
 @media (max-width: 768px) {
   .sectionTransition {
-    height: 100px;
+    height: 80px;
   }
-  
+}
+
+@media (max-width: 480px) {
+  .sectionTransition {
+    height: 56px;
+  }
 }
