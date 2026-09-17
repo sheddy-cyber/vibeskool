@@ -465,6 +465,13 @@
   color: #5F6368;
 }
 
+.rosterTable th:nth-child(4),
+.rosterTable td:nth-child(4),
+.rosterTable th:nth-child(5),
+.rosterTable td:nth-child(5) {
+  white-space: nowrap;
+}
+
 .rosterTable tbody tr:hover {
   background: rgba(241, 245, 249, 0.6);
 }
@@ -534,6 +541,7 @@
   border-radius: var(--radius-pill);
   font-size: 11.5px;
   font-weight: 600;
+  white-space: nowrap;
 }
 
 .badgeGreen {
@@ -555,6 +563,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  white-space: nowrap;
   position: relative;
   isolation: isolate;
   --btn-radius: var(--radius-sm);
@@ -617,6 +626,7 @@
   display: inline-flex;
   align-items: center;
   gap: 5px;
+  white-space: nowrap;
   position: relative;
   isolation: isolate;
   --btn-radius: var(--radius-sm);
@@ -1322,6 +1332,9 @@
   .heroSection {
     padding: 48px 16px 36px;
   }
+  .heroContent {
+    width: 100%;
+  }
   .heroTitle {
     font-size: 34px;
     line-height: 1.18;
@@ -1330,6 +1343,33 @@
   .heroSubtitle {
     font-size: 16px;
     margin-bottom: 24px;
+  }
+  .specBar {
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    justify-content: flex-start;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    padding: 10px 16px;
+    gap: 14px;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .specBar::-webkit-scrollbar {
+    display: none;
+  }
+  .specItem {
+    flex-shrink: 0;
+    white-space: nowrap;
+    font-size: 12px;
+    gap: 6px;
+  }
+  .specDivider {
+    display: block;
+    flex-shrink: 0;
   }
   .classroomsSection {
     padding: 60px 0 32px 0;
@@ -1397,24 +1437,6 @@
   .heroActions button {
     width: 100%;
     justify-content: center;
-  }
-  .specBar {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-    padding: 12px 14px;
-    border-radius: 14px;
-    width: 100%;
-    max-width: 360px;
-    box-sizing: border-box;
-  }
-  .specDivider {
-    display: none;
-  }
-  .specItem {
-    font-size: 11.5px;
-    gap: 6px;
-    justify-content: flex-start;
   }
 }
 
@@ -1516,10 +1538,6 @@
 }
 
 @media (max-width: 380px) {
-  .specBar {
-    grid-template-columns: 1fr;
-    gap: 8px;
-  }
   .footerLinksGrid {
     grid-template-columns: 1fr;
     gap: 24px;
