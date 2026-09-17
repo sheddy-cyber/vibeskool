@@ -6,11 +6,8 @@ import { Button, BrandLogo } from "@/components/ui";
 import { 
   ArrowRight, 
   BookOpen, 
-  Code2, 
   Laptop, 
   CheckCircle2, 
-  Terminal, 
-  Play, 
   Check, 
   Copy, 
   Users, 
@@ -19,6 +16,7 @@ import {
   Layers, 
   ChevronRight
 } from "lucide-react";
+import VibeLaboratory from "@/components/landing/VibeLaboratory";
 import styles from "./LandingPage.module.css";
 import Lenis from "lenis";
 import "lenis/dist/lenis.css";
@@ -141,127 +139,8 @@ export default function LandingPage() {
             </div>
           </div>
 
-          {/* ── Product UI Showcase: In-Browser IDE & Test Runner ── */}
-          <div className={styles.productShowcaseWrapper}>
-            <div className={styles.ideWindow}>
-              {/* Window Header */}
-              <div className={styles.ideHeader}>
-                <div className={styles.windowControls}>
-                  <span className={`${styles.dot} ${styles.dotRed}`} />
-                  <span className={`${styles.dot} ${styles.dotYellow}`} />
-                  <span className={`${styles.dot} ${styles.dotGreen}`} />
-                </div>
-
-                <div className={styles.ideTabs}>
-                  <div className={`${styles.ideTab} ${styles.ideTabActive}`}>
-                    <Code2 size={13} className={styles.tabIcon} />
-                    <span>stream_parser.py</span>
-                  </div>
-                  <div className={styles.ideTab}>
-                    <Terminal size={13} className={styles.tabIcon} />
-                    <span>test_stream.py</span>
-                  </div>
-                  <div className={styles.ideTab}>
-                    <span>README.md</span>
-                  </div>
-                </div>
-
-                <div className={styles.ideHeaderActions}>
-                  <span className={styles.keyShortcut}>Ctrl + Enter</span>
-                  <button type="button" className={styles.runActionBtn}>
-                    <Play size={12} fill="currentColor" />
-                    <span>Run Tests</span>
-                  </button>
-                </div>
-              </div>
-
-              {/* Window Body: Dual Split (Code Editor + Test Runner & Mentor Review) */}
-              <div className={styles.ideBody}>
-                {/* Code Editor Pane */}
-                <div className={styles.editorPane}>
-                  <div className={styles.gutter}>
-                    <span>1</span><span>2</span><span>3</span><span>4</span><span>5</span>
-                    <span>6</span><span>7</span><span>8</span><span>9</span><span>10</span>
-                  </div>
-                  <pre className={styles.editorCode}>
-<code><span className={styles.kw}>def</span> <span className={styles.fn}>parse_tokens</span>(stream: <span className={styles.type}>list</span>) -&gt; <span className={styles.type}>dict</span>:
-    <span className={styles.doc}>"""Extract valid payload entities from telemetry stream."""</span>
-    buffer = {}
-    <span className={styles.kw}>for</span> item <span className={styles.kw}>in</span> stream:
-        <span className={styles.comment}># Guard against unverified telemetry items</span>
-        <span className={styles.kw}>if not</span> item.get(<span className={styles.str}>"valid"</span>):
-            <span className={styles.kw}>continue</span>
-        buffer[item[<span className={styles.str}>"id"</span>]] = item.get(<span className={styles.str}>"payload"</span>, {})
-    <span className={styles.kw}>return</span> buffer</code>
-                  </pre>
-
-                  {/* Inline Mentor Feedback Callout */}
-                  <div className={styles.inlineReviewBox}>
-                    <div className={styles.reviewHeader}>
-                      <div className={styles.mentorAvatar}>SK</div>
-                      <span className={styles.mentorName}>Sarah K.</span>
-                      <span className={styles.mentorRole}>Course Mentor</span>
-                      <span className={styles.reviewTime}>Line 7 · Just now</span>
-                    </div>
-                    <p className={styles.reviewText}>
-                      Solid edge case guard on line 7! Notice how you handled missing payloads with a default dictionary—this prevents downstream <code>KeyError</code> exceptions in the pipeline.
-                    </p>
-                  </div>
-                </div>
-
-                {/* Test Runner & Output Console */}
-                <div className={styles.consolePane}>
-                  <div className={styles.consoleHeader}>
-                    <div className={styles.consoleTitle}>
-                      <CheckCircle2 size={14} className={styles.consoleSuccessIcon} />
-                      <span>Test Results</span>
-                    </div>
-                    <span className={styles.testBadge}>3 of 3 Passed (0.034s)</span>
-                  </div>
-
-                  <div className={styles.testCaseList}>
-                    <div className={styles.testCaseItem}>
-                      <CheckCircle2 size={13} className={styles.testCheck} />
-                      <span className={styles.testName}>test_valid_payload_parsing</span>
-                      <span className={styles.testDuration}>12ms</span>
-                    </div>
-                    <div className={styles.testCaseItem}>
-                      <CheckCircle2 size={13} className={styles.testCheck} />
-                      <span className={styles.testName}>test_unverified_items_skipped</span>
-                      <span className={styles.testDuration}>8ms</span>
-                    </div>
-                    <div className={styles.testCaseItem}>
-                      <CheckCircle2 size={13} className={styles.testCheck} />
-                      <span className={styles.testName}>test_empty_stream_fallback</span>
-                      <span className={styles.testDuration}>14ms</span>
-                    </div>
-                  </div>
-
-                  <div className={styles.terminalStdout}>
-                    <div className={styles.stdoutPrompt}>$ python3 -m unittest test_stream.py -v</div>
-                    <div className={styles.stdoutLine}>test_valid_payload_parsing ... ok</div>
-                    <div className={styles.stdoutLine}>test_unverified_items_skipped ... ok</div>
-                    <div className={styles.stdoutLine}>test_empty_stream_fallback ... ok</div>
-                    <div className={styles.stdoutSummary}>------------------------------------------------------</div>
-                    <div className={styles.stdoutSummary}>Ran 3 tests in 0.034s · Status: OK · Exit Code: 0</div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Status Bar */}
-              <div className={styles.ideFooter}>
-                <div className={styles.footerLeft}>
-                  <span>Python 3.11.4</span>
-                  <span>UTF-8</span>
-                  <span>Spaces: 4</span>
-                </div>
-                <div className={styles.footerRight}>
-                  <span className={styles.statusLiveDot} />
-                  <span>Sandbox VM: Connected (22ms)</span>
-                </div>
-              </div>
-            </div>
-          </div>
+          {/* ── Product UI Showcase: Unconventional Interactive Vibe Laboratory ── */}
+          <VibeLaboratory />
         </section>
 
         {/* ── Section 1: Built for Mentors & Classrooms (Logo Brand Green #34A853) ─ */}
