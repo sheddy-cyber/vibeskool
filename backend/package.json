@@ -6,7 +6,10 @@
   "main": "src/index.js",
   "scripts": {
     "dev": "node --watch src/index.js",
-    "start": "node src/index.js"
+    "start": "node src/index.js",
+    "migrate": "node src/db/migrate.js",
+    "migrate:rls": "node src/db/enable_rls.js",
+    "seed": "node src/db/seed.js"
   },
   "dependencies": {
     "@google/genai": "^2.22.0",

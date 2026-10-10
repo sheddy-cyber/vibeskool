@@ -246,3 +246,27 @@ CREATE INDEX IF NOT EXISTS idx_classroom_members_student_id ON classroom_members
 CREATE INDEX IF NOT EXISTS idx_lessons_path_id ON lessons(path_id);
 CREATE INDEX IF NOT EXISTS idx_lesson_progress_lesson_id ON lesson_progress(lesson_id);
 CREATE INDEX IF NOT EXISTS idx_exercises_lesson_id ON exercises(lesson_id);
+
+-- Enable Row Level Security (RLS)
+-- Protects all tables from unauthorized direct access via Supabase's public Data API (PostgREST)
+ALTER TABLE users ENABLE ROW LEVEL SECURITY;
+ALTER TABLE classrooms ENABLE ROW LEVEL SECURITY;
+ALTER TABLE classroom_members ENABLE ROW LEVEL SECURITY;
+ALTER TABLE skill_paths ENABLE ROW LEVEL SECURITY;
+ALTER TABLE lessons ENABLE ROW LEVEL SECURITY;
+ALTER TABLE exercises ENABLE ROW LEVEL SECURITY;
+ALTER TABLE tests ENABLE ROW LEVEL SECURITY;
+ALTER TABLE test_questions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE exercise_submissions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE test_submissions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE test_answers ENABLE ROW LEVEL SECURITY;
+ALTER TABLE lesson_progress ENABLE ROW LEVEL SECURITY;
+ALTER TABLE student_streaks ENABLE ROW LEVEL SECURITY;
+ALTER TABLE passed_modules ENABLE ROW LEVEL SECURITY;
+ALTER TABLE ai_conversations ENABLE ROW LEVEL SECURITY;
+ALTER TABLE ai_messages ENABLE ROW LEVEL SECURITY;
+ALTER TABLE forum_posts ENABLE ROW LEVEL SECURITY;
+ALTER TABLE forum_replies ENABLE ROW LEVEL SECURITY;
+ALTER TABLE projects ENABLE ROW LEVEL SECURITY;
+ALTER TABLE project_likes ENABLE ROW LEVEL SECURITY;
+
