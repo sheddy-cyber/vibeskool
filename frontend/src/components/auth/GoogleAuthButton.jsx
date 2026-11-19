@@ -55,7 +55,7 @@ export default function GoogleAuthButton({ isSignUp = false, role = 'student' })
         size: 'large',
         type: 'standard',
         text: isSignUp ? 'signup_with' : 'signin_with',
-        shape: 'rectangular',
+        shape: 'pill',
         logo_alignment: 'left',
         width: buttonRef.current.offsetWidth || 340,
       });
@@ -82,7 +82,7 @@ export default function GoogleAuthButton({ isSignUp = false, role = 'student' })
 
       <div className={styles.divider}>
         <div className={styles.dividerLine} />
-        <span className={styles.dividerText}>or continue with email</span>
+        <span className={styles.dividerText}>or use your email</span>
         <div className={styles.dividerLine} />
       </div>
     </div>

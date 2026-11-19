@@ -1,39 +1,7 @@
-@import '@fontsource/outfit/400.css';
-@import '@fontsource/outfit/500.css';
-@import '@fontsource/outfit/600.css';
-@import '@fontsource/outfit/700.css';
-@import '@fontsource/outfit/800.css';
+@import '@fontsource-variable/exo-2';
 @import '@fontsource/geist-mono/400.css';
 @import '@fontsource/geist-mono/500.css';
 @import '@fontsource/geist-mono/600.css';
-
-/* ── Segoe UI Web Font (Cross-Platform) ─────────────────────────── */
-@font-face {
-  font-family: 'Segoe UI';
-  src: local('Segoe UI'),
-       url('/fonts/segoeui.woff2') format('woff2');
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: 'Segoe UI';
-  src: local('Segoe UI Semibold'), local('Segoe UI'),
-       url('/fonts/seguisb.woff2') format('woff2');
-  font-weight: 500 600;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: 'Segoe UI';
-  src: local('Segoe UI Bold'), local('Segoe UI'),
-       url('/fonts/segoeuib.woff2') format('woff2');
-  font-weight: 700 800;
-  font-style: normal;
-  font-display: swap;
-}
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -124,8 +92,8 @@
   --pink-border:      rgba(217, 48, 37, 0.25);
 
   /* ── Typography ───────────────────────────────────────────── */
-  --font-display: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --font-sans:    'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+  --font-display: 'Exo 2 Variable', 'Exo 2', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-sans:    'Exo 2 Variable', 'Exo 2', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   --font-mono:    'Geist Mono', monospace;
 
   /* ── Radius — Friendly Google rounded corners ──────────────── */

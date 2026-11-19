@@ -2,9 +2,9 @@ import React, { useState, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '@/lib/auth'
 import { useEnforceLightTheme } from '@/lib/theme'
-import { Button, BrandLogo } from '@/components/ui'
 import GoogleAuthButton from '@/components/auth/GoogleAuthButton'
-import styles from './SignInPage.module.css'
+import AuthLayout, { Field, PasswordInput, authStyles as styles } from '@/components/auth/AuthLayout'
+import { PairingScene } from '@/components/art/Illustrations'
 
 export default function SignInPage() {
   useEnforceLightTheme()
@@ -14,11 +14,7 @@ export default function SignInPage() {
 
   useEffect(() => {
     if (currentUser) {
-      if (currentUser.role === 'teacher') {
-        navigate('/app/teacher/dashboard', { replace: true })
-      } else {
-        navigate('/app/dashboard', { replace: true })
-      }
+      navigate(currentUser.role === 'teacher' ? '/app/teacher/dashboard' : '/app/dashboard', { replace: true })
     }
   }, [currentUser, navigate])
 
@@ -35,54 +31,48 @@ export default function SignInPage() {
   }
 
   return (
-    <div className={styles.page}>
-      <div className={styles.card}>
-        <Link to="/" className={styles.logo}>
-          <BrandLogo size={32} showText={true} />
-        </Link>
-        <h1 className={styles.title}>Welcome back</h1>
-        
-        {authError && <div className={styles.error}>{authError}</div>}
+    <AuthLayout
+      tone="green"
+      art={<PairingScene />}
+      artTitle="Pick up where you left off."
+      artText="Your lessons, your classes and your tutor are right where you left them."
+    >
+      <h1 className={styles.title}>Welcome back</h1>
+      <p className={styles.subtitle}>
+        New to VibeSkool? <Link to="/signup">Create an account</Link>
+      </p>
+
+      <div className={styles.stack}>
+        {authError && <div className={styles.error} role="alert">{authError}</div>}
 
         <GoogleAuthButton isSignUp={false} />
 
         <form className={styles.form} onSubmit={handleSubmit}>
-          <div className={styles.field}>
-            <label className={styles.label}>Email</label>
-            <input 
-              type="email" 
-              className={styles.input} 
-              placeholder="you@example.com" 
+          <Field id="email" label="Email">
+            <input
+              id="email"
+              type="email"
+              className={styles.input}
+              placeholder="you@example.com"
+              autoComplete="email"
               value={form.email}
               onChange={set('email')}
               required
             />
-          </div>
-          <div className={styles.field}>
-            <label className={styles.label}>Password</label>
-            <input 
-              type="password" 
-              className={styles.input} 
-              placeholder="••••••••" 
+          </Field>
+          <Field id="password" label="Password">
+            <PasswordInput
+              id="password"
               value={form.password}
               onChange={set('password')}
-              required
+              autoComplete="current-password"
             />
-          </div>
-          <Button 
-            className={styles.submitBtn} 
-            type="submit" 
-            variant="primary" 
-            disabled={authLoading}
-          >
-            {authLoading ? 'Signing in...' : 'Sign In'}
-          </Button>
+          </Field>
+          <button className={styles.submit} type="submit" disabled={authLoading}>
+            {authLoading ? 'Logging in…' : 'Log in'}
+          </button>
         </form>
-
-        <div className={styles.footer}>
-          Don't have an account? <Link to="/signup" className={styles.link}>Sign up</Link>
-        </div>
       </div>
-    </div>
+    </AuthLayout>
   )
 }

@@ -1,0 +1,14 @@
+/* Each word sits in its own clipping box so it can rise into view.
+   The padding keeps descenders (g, y, p) from being cut off. */
+.mask {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: top;
+  padding-bottom: 0.12em;
+  margin-bottom: -0.12em;
+}
+
+.word {
+  display: inline-block;
+  will-change: transform;
+}

@@ -1,7 +1,7 @@
 import React from 'react'
 import styles from './UI.module.css'
 import clsx from 'clsx'
-export { default as BrandLogo } from './BrandLogo'
+export { default as BrandLogo, BrandMark } from './BrandLogo'
 
 // ─── Button (Sculpted Liquid-Light) ───────────────────────────────────────────
 export function Button({ children, variant = 'primary', size = 'md', icon, onClick, disabled, className, type = 'button', ...rest }) {

@@ -1,654 +1,672 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "@/lib/auth";
-import { useEnforceLightTheme } from "@/lib/theme";
-import { Button, BrandLogo } from "@/components/ui";
-import { 
-  ArrowRight, 
-  BookOpen, 
-  Laptop, 
-  CheckCircle2, 
-  Check, 
-  Copy, 
-  Users, 
-  ShieldCheck, 
-  Cpu, 
-  Layers, 
-  ChevronRight
-} from "lucide-react";
-import VibeLaboratory from "@/components/landing/VibeLaboratory";
-import styles from "./LandingPage.module.css";
+import { AnimatePresence, MotionConfig, motion, useInView, useScroll, useTransform } from "framer-motion";
 import Lenis from "lenis";
 import "lenis/dist/lenis.css";
+import {
+  ArrowRight,
+  Blocks,
+  BrainCircuit,
+  Check,
+  Cpu,
+  Gamepad2,
+  Menu,
+  Smartphone,
+  X,
+} from "lucide-react";
+import { useAuth } from "@/lib/auth";
+import { useEnforceLightTheme } from "@/lib/theme";
+import { BrandLogo } from "@/components/ui";
+import { LearnerScene, PairingScene, StackArt } from "@/components/art/Illustrations";
+import FistBump from "@/components/art/FistBump";
+import {
+  ExerciseBuilderPreview,
+  LessonPreview,
+  RosterPreview,
+} from "@/components/landing/ProductPreviews";
+import { EASE, Item, MaskText, Stagger } from "@/components/landing/Motion";
+import styles from "./LandingPage.module.css";
+
+/* ── Content ───────────────────────────────────────────────── */
+
+const NAV_LINKS = [
+  { href: "#approach", label: "Our approach" },
+  { href: "#paths", label: "Paths" },
+  { href: "#how-it-works", label: "How it works" },
+  { href: "#tutors", label: "For tutors" },
+];
+
+const LESSON_PARTS = [
+  {
+    title: "The idea",
+    body: "Explained in plain English, with only the detail you'll actually use.",
+  },
+  {
+    title: "Try it yourself",
+    body: "A short exercise in the terminal or editor, so it sticks.",
+  },
+  {
+    title: "Ask AI",
+    body: "A ready-made prompt that shows you how to get a useful answer.",
+  },
+];
+
+const FEATURED_MODULES = [
+  "How the internet actually works",
+  "Tooling: your developer workbench",
+  "Front-end fundamentals",
+  "React fundamentals",
+  "Back-end fundamentals",
+  "Connecting the stack",
+  "Security essentials",
+  "Vibecoding: using AI well",
+  "Capstone project",
+];
+
+const UPCOMING_PATHS = [
+  { icon: Smartphone, name: "Mobile apps", desc: "iOS and Android apps with cross-platform tooling." },
+  { icon: Gamepad2, name: "Game development", desc: "Game loops, physics and engines." },
+  { icon: BrainCircuit, name: "AI & machine learning", desc: "Train models and ship them in real apps." },
+  { icon: Blocks, name: "Blockchain & Web3", desc: "Smart contracts and decentralised apps." },
+  { icon: Cpu, name: "OS & low-level", desc: "Memory, processes and how computers run code." },
+];
+
+const STEPS = {
+  learn: [
+    {
+      title: "Create a free account",
+      body: "Choose a path and open the first lesson. There's nothing to download or set up.",
+    },
+    {
+      title: "Write real code from day one",
+      body: "Every lesson has an editor right next to it, plus checks that tell you when your code works.",
+    },
+    {
+      title: "Get help when you're stuck",
+      body: "Join a tutor's class with a code. They can see where you are and work through it with you in your editor.",
+    },
+  ],
+  teach: [
+    {
+      title: "Create a classroom",
+      body: "You get a join code to share. Students sign up and land straight in your class.",
+    },
+    {
+      title: "See progress as it happens",
+      body: "Know which lesson each student is on, and which check they can't get past.",
+    },
+    {
+      title: "Step into their code",
+      body: "Open a student's editor and fix the problem together, live, without screen sharing.",
+    },
+  ],
+};
+
+const TUTOR_POINTS = [
+  "Share one join code with the whole class",
+  "Spot who's stuck before they have to ask",
+  "Pair in a student's editor in real time",
+  "Write your own exercises with starter code and checks",
+];
+
+/* ── Small pieces ──────────────────────────────────────────── */
+
+const reveal = {
+  initial: { opacity: 0, y: 18 },
+  whileInView: { opacity: 1, y: 0 },
+  viewport: { once: true, margin: "-80px" },
+  transition: { duration: 0.7, ease: EASE },
+};
+
+const revealArt = {
+  initial: { opacity: 0, y: 32, scale: 0.97 },
+  whileInView: { opacity: 1, y: 0, scale: 1 },
+  viewport: { once: true, margin: "-80px" },
+  transition: { duration: 1, ease: EASE },
+};
+
+function Segmented({ value, onChange, options, label, tone = "light" }) {
+  return (
+    <div
+      className={`${styles.segmented} ${tone === "soft" ? styles.segmentedSoft : ""}`}
+      role="tablist"
+      aria-label={label}
+    >
+      {options.map((opt) => (
+        <button
+          key={opt.value}
+          type="button"
+          role="tab"
+          aria-selected={value === opt.value}
+          className={value === opt.value ? styles.segActive : undefined}
+          onClick={() => onChange(opt.value)}
+        >
+          {value === opt.value && (
+            <motion.span
+              layoutId={`seg-${label}`}
+              className={styles.segPill}
+              transition={{ type: "spring", stiffness: 500, damping: 40 }}
+            />
+          )}
+          <span className={styles.segLabel}>{opt.label}</span>
+        </button>
+      ))}
+    </div>
+  );
+}
+
+/* ── Page ──────────────────────────────────────────────────── */
 
 export default function LandingPage() {
   const navigate = useNavigate();
   const { currentUser } = useAuth();
-  const [copiedCode, setCopiedCode] = useState(false);
+  const [role, setRole] = useState("learn");
+  const [howRole, setHowRole] = useState("learn");
+  const [scrolled, setScrolled] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [navHover, setNavHover] = useState(null);
+  const lenisRef = useRef(null);
+  const heroRef = useRef(null);
+  const howRef = useRef(null);
+  const howInView = useInView(howRef, { once: true, margin: "-60px" });
+  const { scrollYProgress: heroProgress } = useScroll({ target: heroRef, offset: ["start start", "end start"] });
+  const heroVisualY = useTransform(heroProgress, [0, 1], [0, -70]);
+  const heroCopyY = useTransform(heroProgress, [0, 1], [0, -24]);
 
-  // Lenis smooth gliding scroll scoped exclusively to the landing page
+  useEnforceLightTheme();
+
   useEffect(() => {
     const lenis = new Lenis({
       autoRaf: true,
-      duration: 1.2,
+      duration: 1.1,
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-      orientation: "vertical",
-      gestureOrientation: "vertical",
       smoothWheel: true,
-      wheelMultiplier: 1.0,
-      touchMultiplier: 1.5,
-      anchors: true,
+      anchors: { offset: -72 },
     });
-
+    lenisRef.current = lenis;
     return () => {
       lenis.destroy();
+      lenisRef.current = null;
     };
   }, []);
 
-  // Enforce light mode on landing page and prevent dark flashes when navigating between public pages
-  useEnforceLightTheme();
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 8);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
-  const handleCopyInvite = () => {
-    navigator.clipboard.writeText("CS-104-ALGO");
-    setCopiedCode(true);
-    setTimeout(() => setCopiedCode(false), 2000);
+  useEffect(() => {
+    if (!menuOpen) return;
+    lenisRef.current?.stop();
+    const onKey = (e) => e.key === "Escape" && setMenuOpen(false);
+    window.addEventListener("keydown", onKey);
+    return () => {
+      lenisRef.current?.start();
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [menuOpen]);
+
+  const startLearning = () =>
+    navigate(currentUser ? "/app/dashboard" : "/signup?role=student");
+  const startTeaching = () =>
+    navigate(
+      !currentUser
+        ? "/signup?role=teacher"
+        : currentUser.role === "teacher"
+          ? "/app/teacher/classrooms"
+          : "/app/dashboard"
+    );
+
+  const scrollTo = (hash) => {
+    setMenuOpen(false);
+    const el = document.querySelector(hash);
+    if (!el) return;
+    const lenis = lenisRef.current;
+    if (lenis) {
+      lenis.start();
+      lenis.scrollTo(el, { offset: -72, force: true });
+    }
+    else el.scrollIntoView({ behavior: "smooth" });
   };
 
   return (
-    <div className={styles.page}>
-      {/* ── Top Navigation Bar ────────────────────────── */}
-      <header className={styles.header}>
-        <div className={styles.headerInner}>
-          <div className={styles.headerLeft}>
-            <Link to="/" className={styles.brandLink}>
-              <BrandLogo size={28} showText={true} />
+    <MotionConfig reducedMotion="user">
+      <div className={styles.page}>
+        {/* ── Header ───────────────────────────────────────── */}
+        <header className={`${styles.header} ${scrolled || menuOpen ? styles.headerScrolled : ""}`}>
+          <div className={styles.headerInner}>
+            <Link to="/" className={styles.brand} aria-label="VibeSkool home">
+              <BrandLogo size={26} />
             </Link>
-          </div>
-          
 
-          <div className={styles.headerRight}>
-            {!currentUser ? (
-              <>
-                <Button variant="ghost" onClick={() => navigate("/login")}>Log in</Button>
-                <Button variant="primary" onClick={() => navigate("/signup")}>Get started</Button>
-              </>
-            ) : (
-              <Button variant="primary" onClick={() => navigate("/app/dashboard")}>Dashboard</Button>
+            <nav className={styles.nav} aria-label="Main" onMouseLeave={() => setNavHover(null)}>
+              {NAV_LINKS.map((l) => (
+                <a
+                  key={l.href}
+                  href={l.href}
+                  className={styles.navLink}
+                  onMouseEnter={() => setNavHover(l.href)}
+                  onFocus={() => setNavHover(l.href)}
+                  onBlur={() => setNavHover(null)}
+                >
+                  {navHover === l.href && (
+                    <motion.span
+                      layoutId="nav-hover"
+                      className={styles.navPill}
+                      transition={{ type: "spring", stiffness: 520, damping: 42 }}
+                    />
+                  )}
+                  <span className={styles.navLabel}>{l.label}</span>
+                </a>
+              ))}
+            </nav>
+
+            <div className={styles.headerActions}>
+              {currentUser ? (
+                <Link to="/app/dashboard" className={`${styles.btn} ${styles.btnPrimary} ${styles.btnSm}`}>
+                  Go to dashboard
+                </Link>
+              ) : (
+                <>
+                  <Link to="/signin" className={styles.loginLink}>
+                    Log in
+                  </Link>
+                  <Link to="/signup" className={`${styles.btn} ${styles.btnPrimary} ${styles.btnSm}`}>
+                    Sign up
+                  </Link>
+                </>
+              )}
+              <button
+                type="button"
+                className={styles.menuBtn}
+                aria-label={menuOpen ? "Close menu" : "Open menu"}
+                aria-expanded={menuOpen}
+                aria-controls="mobile-menu"
+                onClick={() => setMenuOpen((o) => !o)}
+              >
+                {menuOpen ? <X size={20} /> : <Menu size={20} />}
+              </button>
+            </div>
+          </div>
+
+          <AnimatePresence>
+            {menuOpen && (
+              <motion.div
+                id="mobile-menu"
+                className={styles.mobileMenu}
+                initial={{ opacity: 0, y: -8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.2 }}
+              >
+                {NAV_LINKS.map((l) => (
+                  <button key={l.href} type="button" onClick={() => scrollTo(l.href)}>
+                    {l.label}
+                    <ArrowRight size={16} />
+                  </button>
+                ))}
+                {!currentUser && (
+                  <div className={styles.mobileMenuActions}>
+                    <Link to="/signin" className={`${styles.btn} ${styles.btnOutline}`}>
+                      Log in
+                    </Link>
+                  </div>
+                )}
+              </motion.div>
             )}
-          </div>
-        </div>
-      </header>
+          </AnimatePresence>
+        </header>
 
-      <main className={styles.main}>
-        {/* ── Hero Section (Pure Crystalline White & Blue Accents) ── */}
-        <section className={styles.heroSection}>
-          <div className={styles.heroContent}>
-            <div className={styles.specBadge}>
-              <span>Modern Collaborative Engineering Classroom</span>
-            </div>
+        <main>
+          {/* ── Hero ───────────────────────────────────────── */}
+          <section className={styles.hero} ref={heroRef}>
+            <div className={`${styles.container} ${styles.heroGrid}`}>
+              <motion.div className={styles.heroCopy} style={{ y: heroCopyY }}>
+                <MaskText
+                  as="h1"
+                  onMount
+                  className={styles.heroTitle}
+                  text="Learn just enough code to build with AI."
+                  delay={0.1}
+                  stagger={0.06}
+                />
+                <motion.p
+                  className={styles.heroLead}
+                  initial={{ opacity: 0, y: 14 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.8, delay: 0.55, ease: EASE }}
+                >
+                  AI can write the code. You still need to know what to ask for, read
+                  what comes back, and fix it when it breaks. We teach exactly that
+                  much, with a tutor there when you get stuck.
+                </motion.p>
 
-            <h1 className={styles.heroTitle}>
-              The collaborative coding platform for learners and mentors.
-            </h1>
+                <motion.div
+                  className={styles.roleCard}
+                  initial={{ opacity: 0, y: 14 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.8, delay: 0.68, ease: EASE }}
+                >
+                  <Segmented
+                    label="hero-role"
+                    value={role}
+                    onChange={setRole}
+                    options={[
+                      { value: "learn", label: "I want to learn" },
+                      { value: "teach", label: "I want to teach" },
+                    ]}
+                  />
 
-            <p className={styles.heroSubtitle}>
-              Execute code instantly in your browser, progress through hands-on curriculum,
-              and collaborate live with mentors—with zero environment configuration or setup drag.
-            </p>
+                  <AnimatePresence mode="wait" initial={false}>
+                    {role === "learn" ? (
+                      <motion.div
+                        key="learn"
+                        className={styles.roleBody}
+                        initial={{ opacity: 0, y: 6 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -6 }}
+                        transition={{ duration: 0.2 }}
+                      >
+                        <p>
+                          Start with <strong>Full Stack Web Development</strong>: nine
+                          modules, from how the internet works to shipping your own app.
+                        </p>
+                        <div className={styles.roleActions}>
+                          <button type="button" onClick={startLearning} className={`${styles.btn} ${styles.btnPrimary}`}>
+                            Start learning for free
+                          </button>
+                          <button type="button" onClick={() => scrollTo("#paths")} className={styles.textLink}>
+                            See what's inside <ArrowRight size={15} />
+                          </button>
+                        </div>
+                      </motion.div>
+                    ) : (
+                      <motion.div
+                        key="teach"
+                        className={styles.roleBody}
+                        initial={{ opacity: 0, y: 6 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -6 }}
+                        transition={{ duration: 0.2 }}
+                      >
+                        <p>
+                          Create a classroom, share the join code, and follow every
+                          student's progress while they work.
+                        </p>
+                        <div className={styles.roleActions}>
+                          <button type="button" onClick={startTeaching} className={`${styles.btn} ${styles.btnPrimary}`}>
+                            Create a classroom
+                          </button>
+                          <button type="button" onClick={() => scrollTo("#tutors")} className={styles.textLink}>
+                            How it works for tutors <ArrowRight size={15} />
+                          </button>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </motion.div>
 
-            <div className={styles.heroActions}>
-              <Button 
-                variant="primary" 
-                size="lg" 
-                onClick={() => navigate(currentUser ? "/app/dashboard" : "/signup?role=student")}
-                icon={<ArrowRight size={16} />}
+                <motion.ul
+                  className={styles.heroFacts}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.8, delay: 0.9 }}
+                >
+                  <li><Check size={15} strokeWidth={2.5} /> Free to start</li>
+                  <li><Check size={15} strokeWidth={2.5} /> Nothing to install</li>
+                  <li><Check size={15} strokeWidth={2.5} /> Lessons of about ten minutes</li>
+                </motion.ul>
+              </motion.div>
+
+              <motion.div className={styles.heroVisual} style={{ y: heroVisualY }}>
+              <motion.div
+                initial={{ opacity: 0, y: 40, scale: 0.97 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                transition={{ duration: 1.1, delay: 0.35, ease: EASE }}
               >
-                Start learning free
-              </Button>
-              <Button 
-                variant="secondary" 
-                size="lg" 
-                onClick={() => navigate("/app/paths")}
-                icon={<BookOpen size={16} />}
-              >
-                Explore curriculum
-              </Button>
+                <AnimatePresence mode="wait" initial={false}>
+                  <motion.div
+                    key={role}
+                    initial={{ opacity: 0, scale: 0.985 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.985 }}
+                    transition={{ duration: 0.25 }}
+                  >
+                    {role === "learn" ? <LessonPreview /> : <RosterPreview />}
+                  </motion.div>
+                </AnimatePresence>
+              </motion.div>
+              </motion.div>
             </div>
+          </section>
 
-            {/* Spec Bar */}
-            <div className={styles.specBar}>
-              <div className={styles.specItem}>
-                <Cpu size={14} className={styles.specIcon} />
-                <span>In-Browser Python &amp; JS VM</span>
+          {/* ── Approach (minimum effective knowledge) ─────── */}
+          <section id="approach" className={styles.section}>
+            <div className={`${styles.container} ${styles.approachGrid}`}>
+              <div className={styles.approachCopy}>
+                <MaskText className={styles.h2} text="The minimum you need. Nothing you don't." />
+                <motion.p className={styles.sectionLead} {...reveal}>
+                  Every lesson starts by telling you what it's for: enough to read a
+                  network error, enough to trace a bug through your app. You learn
+                  that much, practise it, then put it to work with AI.
+                </motion.p>
+
+                <Stagger as="ol" className={styles.parts} delay={0.15} gap={0.12}>
+                  {LESSON_PARTS.map((p, i) => (
+                    <Item as="li" key={p.title}>
+                      <span className={styles.partNum}>{i + 1}</span>
+                      <div>
+                        <h3>{p.title}</h3>
+                        <p>{p.body}</p>
+                      </div>
+                    </Item>
+                  ))}
+                </Stagger>
+
+                <motion.p className={styles.skipNote} {...reveal}>
+                  <strong>What we leave out:</strong> syntax drills, puzzles you'd never
+                  meet in a real project, and theory that doesn't change what you build.
+                </motion.p>
               </div>
-              <div className={styles.specDivider} />
-              <div className={styles.specItem}>
-                <ShieldCheck size={14} className={styles.specIcon} />
-                <span>Zero Local Dependencies</span>
-              </div>
-              <div className={styles.specDivider} />
-              <div className={styles.specItem}>
-                <Laptop size={14} className={styles.specIcon} />
-                <span>Real-Time Code Pairing</span>
-              </div>
-              <div className={styles.specDivider} />
-              <div className={styles.specItem}>
-                <CheckCircle2 size={14} className={styles.specIcon} />
-                <span>100% Free Core Curriculum</span>
-              </div>
+
+              <motion.div className={styles.approachArt} {...revealArt}>
+                <LearnerScene className={styles.art} />
+              </motion.div>
             </div>
-          </div>
+          </section>
 
-          {/* ── Product UI Showcase: Unconventional Interactive Vibe Laboratory ── */}
-          <VibeLaboratory />
-        </section>
+          {/* ── Paths ──────────────────────────────────────── */}
+          <section id="paths" className={`${styles.section} ${styles.sectionTight}`}>
+            <div className={styles.container}>
+              <div className={styles.sectionHead}>
+                <MaskText className={styles.h2} text="Pick what you want to build" />
+                <motion.p className={styles.sectionLead} {...reveal}>
+                  Each path is a sequence of short lessons and small projects,
+                  in the order you'd actually need them.
+                </motion.p>
+              </div>
 
-        {/* ── Section 1: Built for Mentors & Classrooms (Logo Brand Green #34A853) ─ */}
-        <section id="classrooms" className={styles.classroomsSection}>
-          <div className={styles.sectionContainer}>
-            <div className={styles.classroomsHeader}>
-              <div className={styles.classroomsEyebrow}>CLASSROOM TELEMETRY &amp; LIVE PAIRING</div>
-              <h2 className={styles.classroomsTitle}>
-                Real-time visibility into student code. Live 1-on-1 pairing.
-              </h2>
-              <p className={styles.classroomsSubtitle}>
-                Eliminate the setup overhead at the start of every session. Monitor which test cases students are stuck on,
-                join their editor with shared cursors, and deliver precision feedback.
-              </p>
-            </div>
-
-            <div className={styles.telemetryCard}>
-              <div className={styles.telemetryHeader}>
-                <div className={styles.telemetryTitleGroup}>
-                  <span className={styles.cohortTag}>COHORT CS-104</span>
-                  <span className={styles.cohortCount}>18 Students Online</span>
+              <motion.article className={styles.featured} {...reveal}>
+                <div className={styles.featuredMain}>
+                  <StackArt className={styles.stackArt} />
+                  <div className={styles.featuredTag}>Open now</div>
+                  <h3 className={styles.featuredTitle}>Full Stack Web Development</h3>
+                  <p className={styles.featuredDesc}>
+                    Build complete web apps, from the page in the browser to the
+                    database behind it, and learn to work with AI along the way.
+                  </p>
+                  <div className={styles.featuredMeta}>
+                    <span>9 modules</span>
+                    <span aria-hidden="true">·</span>
+                    <span>43 lessons</span>
+                    <span aria-hidden="true">·</span>
+                    <span>Beginner friendly</span>
+                  </div>
+                  <button type="button" onClick={startLearning} className={`${styles.btn} ${styles.btnDark}`}>
+                    Start this path
+                  </button>
                 </div>
 
-                <div className={styles.cohortActions}>
-                  <div className={styles.invitePill}>
-                    <span className={styles.inviteLabel}>Invite Code:</span>
-                    <code className={styles.inviteCode}>CS-104-ALGO</code>
-                    <button 
-                      type="button" 
-                      onClick={handleCopyInvite} 
-                      className={styles.copyPillBtn}
-                      aria-label="Copy cohort code"
-                    >
-                      {copiedCode ? <Check size={13} /> : <Copy size={13} />}
-                      <span>{copiedCode ? "Copied" : "Copy"}</span>
+                <Stagger as="ol" className={styles.moduleList} delay={0.2} gap={0.05}>
+                  {FEATURED_MODULES.map((m, i) => (
+                    <Item as="li" key={m} y={10}>
+                      <span className={styles.moduleNum}>{String(i + 1).padStart(2, "0")}</span>
+                      {m}
+                    </Item>
+                  ))}
+                </Stagger>
+              </motion.article>
+
+              <motion.div className={styles.upcomingHead} {...reveal}>
+                <h3>Coming next</h3>
+                <span>New paths open as their lessons are finished.</span>
+              </motion.div>
+
+              <Stagger className={styles.upcoming} gap={0.07}>
+                {UPCOMING_PATHS.map(({ icon: Icon, name, desc }) => (
+                  <Item key={name} className={styles.upcomingCard}>
+                    <span className={styles.pathIconSoft}><Icon size={18} /></span>
+                    <h4>{name}</h4>
+                    <p>{desc}</p>
+                  </Item>
+                ))}
+              </Stagger>
+            </div>
+          </section>
+
+          {/* ── How it works ───────────────────────────────── */}
+          <section id="how-it-works" className={`${styles.section} ${styles.sectionSoft}`}>
+            <div className={styles.container}>
+              <motion.div className={styles.howHead} {...reveal}>
+                <MaskText className={styles.h2} text="How it works" />
+                <Segmented
+                  label="how-role"
+                  tone="soft"
+                  value={howRole}
+                  onChange={setHowRole}
+                  options={[
+                    { value: "learn", label: "For students" },
+                    { value: "teach", label: "For tutors" },
+                  ]}
+                />
+              </motion.div>
+
+              <div className={styles.howGrid} ref={howRef}>
+              <AnimatePresence mode="wait" initial={false}>
+                <Stagger
+                  as="ol"
+                  key={howRole}
+                  className={styles.steps}
+                  gap={0.09}
+                  show={howInView}
+                  exit={{ opacity: 0, transition: { duration: 0.15 } }}
+                >
+                  {STEPS[howRole].map((s, i) => (
+                    <Item as="li" key={s.title} className={styles.step}>
+                      <span className={styles.stepNum}>{i + 1}</span>
+                      <h3>{s.title}</h3>
+                      <p>{s.body}</p>
+                    </Item>
+                  ))}
+                </Stagger>
+              </AnimatePresence>
+              <motion.div className={styles.howArt} {...revealArt}>
+                <PairingScene className={styles.art} />
+              </motion.div>
+              </div>
+            </div>
+          </section>
+
+          {/* ── Tutors ─────────────────────────────────────── */}
+          <section id="tutors" className={styles.section}>
+            <div className={styles.container}>
+              <motion.div className={styles.tutorBand} {...reveal}>
+                <div className={styles.tutorCopy}>
+                  <span className={styles.tutorKicker}>For tutors and teachers</span>
+                  <MaskText className={styles.tutorTitle} text="Run your whole class from one screen." delay={0.15} />
+                  <p className={styles.tutorLead}>
+                    Spend the session teaching, not fixing installs. Your students
+                    code in the browser and you see exactly where each of them is.
+                  </p>
+                  <Stagger as="ul" className={styles.tutorList} delay={0.3} gap={0.08}>
+                    {TUTOR_POINTS.map((p) => (
+                      <Item as="li" key={p} y={10}>
+                        <Check size={16} strokeWidth={2.5} />
+                        {p}
+                      </Item>
+                    ))}
+                  </Stagger>
+                  <div className={styles.tutorActions}>
+                    <button type="button" onClick={startTeaching} className={`${styles.btn} ${styles.btnLight}`}>
+                      Create a tutor account
                     </button>
+                    <span className={styles.tutorNote}>Students join with your code. Nothing to install.</span>
                   </div>
                 </div>
-              </div>
 
-              {/* Roster Table */}
-              <div className={styles.rosterTableWrapper}>
-                <table className={styles.rosterTable}>
-                  <thead>
-                    <tr>
-                      <th>Student</th>
-                      <th>Current Exercise</th>
-                      <th>Automated Tests</th>
-                      <th>Status</th>
-                      <th style={{ textAlign: "right" }}>Action</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td>
-                        <div className={styles.studentCell}>
-                          <div className={styles.studentAvatar}>AR</div>
-                          <div className={styles.studentInfo}>
-                            <span className={styles.studentName}>Alex Rivera</span>
-                            <span className={styles.studentEmail}>alex.r@example.edu</span>
-                          </div>
-                        </div>
-                      </td>
-                      <td>Binary Search Tree: Inorder Traversal</td>
-                      <td>
-                        <span className={styles.testScoreGreen}>4 / 4 Passing</span>
-                      </td>
-                      <td>
-                        <span className={`${styles.statusBadge} ${styles.badgeGreen}`}>Completed</span>
-                      </td>
-                      <td style={{ textAlign: "right" }}>
-                        <button type="button" className={styles.inspectBtn}><span>View Solution</span></button>
-                      </td>
-                    </tr>
-
-                    <tr className={styles.activeRow}>
-                      <td>
-                        <div className={styles.studentCell}>
-                          <div className={`${styles.studentAvatar} ${styles.avatarBlue}`}>MC</div>
-                          <div className={styles.studentInfo}>
-                            <span className={styles.studentName}>Maya Chen</span>
-                            <span className={styles.studentEmail}>maya.c@example.edu</span>
-                          </div>
-                        </div>
-                      </td>
-                      <td>Telemetry Stream Parser</td>
-                      <td>
-                        <span className={styles.testScoreAmber}>2 / 3 Passing</span>
-                      </td>
-                      <td>
-                        <span className={`${styles.statusBadge} ${styles.badgeAmber}`}>Editing Line 8</span>
-                      </td>
-                      <td style={{ textAlign: "right" }}>
-                        <button 
-                          type="button" 
-                          className={styles.pairLiveBtn}
-                          onClick={() => navigate("/app/classrooms")}
-                        >
-                          <Laptop size={13} />
-                          <span>Pair Live</span>
-                        </button>
-                      </td>
-                    </tr>
-
-                    <tr>
-                      <td>
-                        <div className={styles.studentCell}>
-                          <div className={styles.studentAvatar}>DK</div>
-                          <div className={styles.studentInfo}>
-                            <span className={styles.studentName}>David Kim</span>
-                            <span className={styles.studentEmail}>david.k@example.edu</span>
-                          </div>
-                        </div>
-                      </td>
-                      <td>Recursion &amp; Memoization</td>
-                      <td>
-                        <span className={styles.testScoreAmber}>1 / 4 Passing</span>
-                      </td>
-                      <td>
-                        <span className={`${styles.statusBadge} ${styles.badgeRed}`}>Stuck on Test 2</span>
-                      </td>
-                      <td style={{ textAlign: "right" }}>
-                        <button 
-                          type="button" 
-                          className={styles.pairLiveBtn}
-                          onClick={() => navigate("/app/classrooms")}
-                        >
-                          <Laptop size={13} />
-                          <span>Pair Live</span>
-                        </button>
-                      </td>
-                    </tr>
-
-                    <tr>
-                      <td>
-                        <div className={styles.studentCell}>
-                          <div className={styles.studentAvatar}>ER</div>
-                          <div className={styles.studentInfo}>
-                            <span className={styles.studentName}>Elena Rostova</span>
-                            <span className={styles.studentEmail}>elena.r@example.edu</span>
-                          </div>
-                        </div>
-                      </td>
-                      <td>Hash Map Collision Resolution</td>
-                      <td>
-                        <span className={styles.testScoreGreen}>3 / 3 Passing</span>
-                      </td>
-                      <td>
-                        <span className={`${styles.statusBadge} ${styles.badgeGreen}`}>Completed</span>
-                      </td>
-                      <td style={{ textAlign: "right" }}>
-                        <button type="button" className={styles.inspectBtn}><span>View Solution</span></button>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
+                <motion.div
+                  className={styles.tutorVisual}
+                  initial={{ opacity: 0, y: 40, rotate: 1.5 }}
+                  whileInView={{ opacity: 1, y: 0, rotate: 0 }}
+                  viewport={{ once: true, margin: "-80px" }}
+                  transition={{ duration: 1, delay: 0.2, ease: EASE }}
+                >
+                  <ExerciseBuilderPreview />
+                </motion.div>
+              </motion.div>
             </div>
-          </div>
-        </section>
+          </section>
 
-        {/* ── Chromatic Transition: Green Telemetry ⟶ Red Curriculum ── */}
-        <div className={styles.sectionTransition} aria-label="Transition from Live Mentorship to Guided Tracks">
-          <svg
-            className={styles.transitionSvg}
-            viewBox="0 0 1440 120"
-            preserveAspectRatio="none"
-            aria-hidden="true"
-          >
-            <defs>
-              {/* Mid ambient wave gradient */}
-              <linearGradient id="ambientGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%" stopColor="#34A853" stopOpacity="0.25" />
-                <stop offset="35%" stopColor="#F9AB00" stopOpacity="0.55" />
-                <stop offset="70%" stopColor="#EA4335" stopOpacity="0.5" />
-                <stop offset="100%" stopColor="#EA4335" stopOpacity="0.25" />
-              </linearGradient>
+          {/* ── Closing CTA ────────────────────────────────── */}
+          <section className={styles.closing}>
+            <div className={`${styles.container} ${styles.closingInner}`}>
+              <MaskText className={styles.closingTitle} text="Your first lesson takes about ten minutes." />
+              <motion.p className={styles.closingLead} {...reveal}>Make an account and you'll be writing code straight away.</motion.p>
+              <FistBump onLearn={startLearning} onTeach={startTeaching} />
+            </div>
+          </section>
+        </main>
 
-              {/* Luminous crest sweep beam */}
-              <linearGradient id="crestBeamGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%" stopColor="#34A853" stopOpacity="0" />
-                <stop offset="25%" stopColor="#34A853" stopOpacity="0.8" />
-                <stop offset="50%" stopColor="#FFFFFF" stopOpacity="1" />
-                <stop offset="75%" stopColor="#F9AB00" stopOpacity="0.9" />
-                <stop offset="100%" stopColor="#EA4335" stopOpacity="0" />
-              </linearGradient>
-            </defs>
-
-            {/* Back ambient wave with amber warm glow */}
-            <path
-              className={styles.backWave}
-              d="M0,40 C400,90 800,20 1200,80 C1320,95 1380,85 1440,75 L1440,120 L0,120 Z"
-              fill="#F9AB00"
-              opacity="0.2"
-            />
-
-            {/* Mid drifting wave with logo triad gradient */}
-            <path
-              className={styles.midWave}
-              d="M0,65 C320,30 640,100 960,45 C1160,10 1320,70 1440,55 L1440,120 L0,120 Z"
-              fill="url(#ambientGrad)"
-            />
-
-            {/* Front seamless wave connecting flush into #EA4335 */}
-            <path
-              className={styles.frontWave}
-              d="M0,50 C200,95 380,95 500,75 C650,50 800,20 950,35 C1120,50 1300,75 1440,60 L1440,120 L0,120 Z"
-              fill="#EA4335"
-            />
-
-            {/* Luminous animated energy pulse along the wave crest */}
-            <path
-              className={styles.crestBeam}
-              d="M0,50 C200,95 380,95 500,75 C650,50 800,20 950,35 C1120,50 1300,75 1440,60"
-              fill="none"
-              stroke="url(#crestBeamGrad)"
-              strokeWidth="3.5"
-              strokeLinecap="round"
-            />
-          </svg>
-
-        </div>
-
-        {/* ── Section 2: Structured Curriculum Tracks (Logo Brand Red #EA4335) ── */}
-        <section id="curriculum" className={styles.curriculumSection}>
-          <div className={styles.sectionContainer}>
-            <div className={styles.curriculumHeader}>
-              <div className={styles.curriculumEyebrow}>STRUCTURED TRACKS</div>
-              <h2 className={styles.curriculumTitle}>
-                Curriculum engineered around building, not syntax memorization.
-              </h2>
-              <p className={styles.curriculumSubtitle}>
-                Step-by-step engineering tracks combining foundational theory, hands-on browser labs,
-                and verified milestone projects.
-              </p>
+        {/* ── Footer ───────────────────────────────────────── */}
+        <footer className={styles.footer}>
+          <div className={`${styles.container} ${styles.footerGrid}`}>
+            <div className={styles.footerBrand}>
+              <BrandLogo size={24} />
+              <p>Learn just enough code to build with AI, with a tutor in your corner.</p>
             </div>
 
-            <div className={styles.tracksGrid}>
-              {/* Track 1 */}
-              <div className={styles.trackCard}>
-                <div className={styles.trackHeader}>
-                  <span className={styles.trackTag}>Core Track</span>
-                  <span className={styles.trackLevel}>Beginner to Intermediate</span>
-                </div>
-                <h3 className={styles.trackTitle}>Python Foundations &amp; Algorithms</h3>
-                <p className={styles.trackDesc}>
-                  Master control flow, memory mental models, object-oriented concepts, and core data structures
-                  through algorithmic problem solving.
-                </p>
-                <div className={styles.trackMeta}>
-                  <div className={styles.metaItem}>
-                    <BookOpen size={14} />
-                    <span>32 Interactive Lessons</span>
-                  </div>
-                  <div className={styles.metaItem}>
-                    <Layers size={14} />
-                    <span>8 Verified Projects</span>
-                  </div>
-                </div>
-                <div className={styles.trackTopics}>
-                  <span className={styles.topicPill}>Control Flow</span>
-                  <span className={styles.topicPill}>Data Structures</span>
-                  <span className={styles.topicPill}>Recursion</span>
-                  <span className={styles.topicPill}>Unit Testing</span>
-                </div>
-                <div className={styles.trackFooter}>
-                  <Button 
-                    variant="secondary" 
-                    onClick={() => navigate("/app/paths")}
-                    icon={<ChevronRight size={14} />}
-                  >
-                    Explore Track
-                  </Button>
-                </div>
+            <nav className={styles.footerCols} aria-label="Footer">
+              <div>
+                <h4>Learn</h4>
+                <a href="#approach">Our approach</a>
+                <a href="#paths">Paths</a>
+                <a href="#how-it-works">How it works</a>
+                <Link to="/signup?role=student">Create an account</Link>
               </div>
-
-              {/* Track 2 */}
-              <div className={styles.trackCard}>
-                <div className={styles.trackHeader}>
-                  <span className={styles.trackTag}>Fullstack Track</span>
-                  <span className={styles.trackLevel}>Intermediate</span>
-                </div>
-                <h3 className={styles.trackTitle}>Web Systems &amp; Modern JavaScript</h3>
-                <p className={styles.trackDesc}>
-                  Build reactive client applications and understand modern browser execution, DOM manipulation,
-                  asynchronous event loops, and RESTful API design.
-                </p>
-                <div className={styles.trackMeta}>
-                  <div className={styles.metaItem}>
-                    <BookOpen size={14} />
-                    <span>28 Interactive Lessons</span>
-                  </div>
-                  <div className={styles.metaItem}>
-                    <Layers size={14} />
-                    <span>6 Verified Projects</span>
-                  </div>
-                </div>
-                <div className={styles.trackTopics}>
-                  <span className={styles.topicPill}>DOM Engine</span>
-                  <span className={styles.topicPill}>Async / Promises</span>
-                  <span className={styles.topicPill}>REST APIs</span>
-                  <span className={styles.topicPill}>State Architecture</span>
-                </div>
-                <div className={styles.trackFooter}>
-                  <Button 
-                    variant="secondary" 
-                    onClick={() => navigate("/app/paths")}
-                    icon={<ChevronRight size={14} />}
-                  >
-                    Explore Track
-                  </Button>
-                </div>
+              <div>
+                <h4>Teach</h4>
+                <a href="#tutors">For tutors</a>
+                <Link to="/signup?role=teacher">Create a classroom</Link>
               </div>
-
-              {/* Track 3 */}
-              <div className={styles.trackCard}>
-                <div className={styles.trackHeader}>
-                  <span className={styles.trackTag}>Advanced Track</span>
-                  <span className={styles.trackLevel}>Intermediate to Advanced</span>
-                </div>
-                <h3 className={styles.trackTitle}>Software Design &amp; Engineering Patterns</h3>
-                <p className={styles.trackDesc}>
-                  Develop production-grade software engineering habits: clean interfaces, automated test-driven development,
-                  concurrency basics, and modular architecture.
-                </p>
-                <div className={styles.trackMeta}>
-                  <div className={styles.metaItem}>
-                    <BookOpen size={14} />
-                    <span>24 Interactive Lessons</span>
-                  </div>
-                  <div className={styles.metaItem}>
-                    <Layers size={14} />
-                    <span>5 Verified Projects</span>
-                  </div>
-                </div>
-                <div className={styles.trackTopics}>
-                  <span className={styles.topicPill}>Design Patterns</span>
-                  <span className={styles.topicPill}>TDD &amp; PyTest</span>
-                  <span className={styles.topicPill}>Concurrency</span>
-                  <span className={styles.topicPill}>System Optimization</span>
-                </div>
-                <div className={styles.trackFooter}>
-                  <Button 
-                    variant="secondary" 
-                    onClick={() => navigate("/app/paths")}
-                    icon={<ChevronRight size={14} />}
-                  >
-                    Explore Track
-                  </Button>
-                </div>
+              <div>
+                <h4>Account</h4>
+                <Link to="/signin">Log in</Link>
+                <Link to="/signup">Sign up</Link>
               </div>
-            </div>
-          </div>
-        </section>
-
-        {/* ── Section 3: Call to Action Hub (Clean Porcelain #F8FAFC) ───────────── */}
-        <section className={styles.ctaSection}>
-          <div className={styles.sectionContainer}>
-            <div className={styles.ctaHeader}>
-              <div className={styles.ctaEyebrow}>GET STARTED TODAY</div>
-              <h2 className={styles.ctaTitle}>Start building your engineering momentum.</h2>
-              <p className={styles.ctaSubtitle}>
-                Free forever for individual learners. Purpose-built for classrooms, bootcamps, and tutoring cohorts.
-              </p>
-            </div>
-
-            <div className={styles.openBookContainer}>
-              {/* Silk Ribbon Bookmark */}
-              <div className={styles.bookRibbon} aria-hidden="true" />
-
-              <div className={styles.bookSpread}>
-                {/* Left Page: Learner */}
-                <div className={`${styles.bookPage} ${styles.bookPageLeft}`}>
-                  <div className={styles.folioHeader}>
-                    <span className={styles.folioPageNum}>PAGE 01</span>
-                    <span className={styles.folioRule} />
-                    <span className={styles.folioChapter}>LEARNER SYLLABUS</span>
-                  </div>
-
-                  <div className={styles.ctaBoxHeader}>
-                    <span className={styles.ctaAudience}>FOR INDIVIDUAL LEARNERS</span>
-                    <h3 className={styles.ctaBoxTitle}>Start building your engineering portfolio.</h3>
-                    <p className={styles.ctaBoxDesc}>
-                      Gain immediate access to all core learning tracks, in-browser execution sandboxes,
-                      and automated test-driven challenges. Free forever for individuals.
-                    </p>
-                  </div>
-
-                  <ul className={styles.ctaFeatureList}>
-                    <li><CheckCircle2 size={14} className={styles.featureCheck} /> In-browser development container</li>
-                    <li><CheckCircle2 size={14} className={styles.featureCheck} /> Automated unit-test grading &amp; feedback</li>
-                    <li><CheckCircle2 size={14} className={styles.featureCheck} /> Free access to all foundational paths</li>
-                  </ul>
-
-                  <div className={styles.ctaBoxAction}>
-                    <Button 
-                      variant="primary" 
-                      size="lg" 
-                      onClick={() => navigate(currentUser ? "/app/dashboard" : "/signup?role=student")}
-                      icon={<ArrowRight size={16} />}
-                    >
-                      Create Free Account
-                    </Button>
-                  </div>
-
-                  <div className={styles.folioFooter}>
-                    <span>VIBESKOOL CORE</span>
-                    <span>01</span>
-                  </div>
-                </div>
-
-                {/* Center Spine Crease */}
-                <div className={styles.bookSpine} aria-hidden="true">
-                  <div className={styles.spineGutter} />
-                  <div className={styles.spineSeam} />
-                </div>
-
-                {/* Right Page: Instructor */}
-                <div className={`${styles.bookPage} ${styles.bookPageRight}`}>
-                  <div className={styles.folioHeader}>
-                    <span className={styles.folioPageNum}>PAGE 02</span>
-                    <span className={styles.folioRule} />
-                    <span className={styles.folioChapter}>INSTRUCTOR PROTOCOL</span>
-                  </div>
-
-                  <div className={styles.ctaBoxHeader}>
-                    <span className={`${styles.ctaAudience} ${styles.audienceAmber}`}>FOR TUTORS &amp; INSTRUCTORS</span>
-                    <h3 className={styles.ctaBoxTitle}>Lead classes with zero infrastructure drag.</h3>
-                    <p className={styles.ctaBoxDesc}>
-                      Deploy student cohorts in seconds. Observe live progress, build custom auto-graded coding challenges,
-                      and pair with students directly in their browser editor.
-                    </p>
-                  </div>
-
-                  <ul className={styles.ctaFeatureList}>
-                    <li><CheckCircle2 size={14} className={styles.featureCheck} /> Unlimited student classrooms &amp; cohorts</li>
-                    <li><CheckCircle2 size={14} className={styles.featureCheck} /> 1-click multiplayer editor pairing</li>
-                    <li><CheckCircle2 size={14} className={styles.featureCheck} /> Custom exercise &amp; test suite authoring</li>
-                  </ul>
-
-                  <div className={styles.ctaBoxAction}>
-                    <Button 
-                      variant="secondary" 
-                      size="lg" 
-                      onClick={() => navigate(currentUser ? "/app/dashboard" : "/signup?role=teacher")}
-                      icon={<Users size={16} />}
-                    >
-                      Create Tutor Account
-                    </Button>
-                  </div>
-
-                  <div className={styles.folioFooter}>
-                    <span>COLLABORATIVE OPS</span>
-                    <span>02</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-      </main>
-
-      {/* ── Footer ─────────────────────────────────── */}
-      <footer className={styles.footer}>
-        <div className={styles.footerInner}>
-          <div className={styles.footerBrandCol}>
-            <BrandLogo size={24} showText={true} skoolColor="#FFFFFF" />
-            <p className={styles.footerTagline}>
-              The collaborative coding classroom for learners and mentors.
-            </p>
-            <p className={styles.copyright}>
-              © {new Date().getFullYear()} VibeSkool. All rights reserved.
-            </p>
+            </nav>
           </div>
 
-          <div className={styles.footerLinksGrid}>
-            <div className={styles.footerCol}>
-              <span className={styles.footerColTitle}>Product</span>
-              <Link to="/app/paths" className={styles.footerLink}>Curriculum Tracks</Link>
-              <Link to="/app/lab" className={styles.footerLink}>Code Playground</Link>
-              <Link to="/app/classrooms" className={styles.footerLink}>Classrooms</Link>
-              <Link to="/app/showcase" className={styles.footerLink}>Project Showcase</Link>
-            </div>
-
-            <div className={styles.footerCol}>
-              <span className={styles.footerColTitle}>Platform</span>
-              <span className={styles.footerStaticLink}>In-Browser WebContainer</span>
-              <span className={styles.footerStaticLink}>Real-time Pairing</span>
-              <span className={styles.footerStaticLink}>Zero Local Config</span>
-              <span className={styles.footerStaticLink}>Automated Testing</span>
-            </div>
-
-            <div className={styles.footerCol}>
-              <span className={styles.footerColTitle}>Account</span>
-              <Link to="/login" className={styles.footerLink}>Log in</Link>
-              <Link to="/signup" className={styles.footerLink}>Get started</Link>
-              <Link to="/app/dashboard" className={styles.footerLink}>Student Dashboard</Link>
-              <Link to="/app/teacher/dashboard" className={styles.footerLink}>Instructor Cockpit</Link>
-            </div>
-
-            <div className={styles.footerCol}>
-              <span className={styles.footerColTitle}>Legal</span>
-              <Link to="/privacy" className={styles.footerLink}>Privacy Policy</Link>
-              <Link to="/terms" className={styles.footerLink}>Terms of Service</Link>
+          <div className={`${styles.container} ${styles.footerBottom}`}>
+            <span>© {new Date().getFullYear()} VibeSkool</span>
+            <div>
+              <Link to="/privacy">Privacy</Link>
+              <Link to="/terms">Terms</Link>
             </div>
           </div>
-        </div>
-      </footer>
-    </div>
+        </footer>
+      </div>
+    </MotionConfig>
   );
 }

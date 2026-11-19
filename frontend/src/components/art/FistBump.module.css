@@ -1,0 +1,65 @@
+.wrap {
+  width: 100%;
+  max-width: 860px;
+  margin: 36px auto 0;
+}
+
+/* Soft stage the arms reach into from both edges. */
+.stage {
+  position: relative;
+  overflow: hidden;
+  border-radius: 28px;
+  background: #EEF3FB;
+  padding-bottom: 36px;
+}
+
+.svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 800 / 280;
+}
+
+/* Each button sits under its own arm: learner left, tutor right. */
+.actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  padding: 0 24px;
+  margin-top: 4px;
+}
+.side { display: flex; justify-content: center; }
+
+.cta {
+  height: 52px;
+  padding: 0 28px;
+  border: 0;
+  border-radius: 999px;
+  font-family: inherit;
+  font-size: 16px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color 160ms ease, translate 200ms cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 200ms ease;
+}
+.cta:hover { translate: 0 -2px; }
+.cta:focus-visible { outline: 2px solid #1A73E8; outline-offset: 3px; }
+
+.ctaPrimary { background: #1A73E8; color: #FFFFFF; }
+.ctaPrimary:hover { background: #1662C9; box-shadow: 0 8px 20px -8px rgba(26, 115, 232, 0.55); }
+
+.ctaDark { background: #14171F; color: #FFFFFF; }
+.ctaDark:hover { background: #000000; }
+
+.short { display: none; }
+
+@media (max-width: 640px) {
+  .wrap { margin-top: 24px; }
+  .stage { border-radius: 20px; }
+  .stage { padding-bottom: 16px; }
+  .actions { gap: 10px; padding: 0 14px; margin-top: 8px; }
+  .side .cta { width: 100%; }
+  .cta { height: 46px; padding: 0 12px; font-size: 14.5px; }
+  .full { display: none; }
+  .short { display: inline; }
+}

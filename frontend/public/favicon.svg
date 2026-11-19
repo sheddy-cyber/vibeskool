@@ -1,11 +1,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-  <!-- Precision white rounded tile for contrast on light and dark browser tabs -->
   <rect width="32" height="32" rx="8" fill="#FFFFFF"/>
-  <rect width="32" height="32" rx="8" fill="none" stroke="#E2E4E8" stroke-width="1.2"/>
-  <!-- Signature 3-bar tilted mark (Red, Blue, Green at -13deg) -->
-  <g transform="rotate(-13 16 16)">
-    <rect x="7.2" y="8.5" width="4.3" height="15" rx="2.15" fill="#EA4335"/>
-    <rect x="13.85" y="4.2" width="4.3" height="23.6" rx="2.15" fill="#1A73E8"/>
-    <rect x="20.5" y="10" width="4.3" height="12" rx="2.15" fill="#34A853"/>
+  <g transform="translate(16 16) scale(0.82) translate(-16 -16) rotate(-12 16 16)">
+    <rect x="5.95" y="9.5" width="5.2" height="13" rx="2.6" fill="#F2553D"/>
+    <rect x="13.4" y="4" width="5.2" height="24" rx="2.6" fill="#1A73E8"/>
+    <rect x="20.85" y="7.5" width="5.2" height="17" rx="2.6" fill="#1FA463"/>
   </g>
 </svg>
