@@ -523,3 +523,14 @@ html { scroll-behavior: smooth; }
   --il-blue-soft: rgba(77, 142, 247, 0.24);
   --il-shadow-op: 0.55;
 }
+
+/* Code shows exactly what the learner should type: no ligatures that turn
+   "<!--", "=>" or "!=" into arrows and symbols. */
+code,
+pre,
+kbd,
+samp,
+.cm-scroller {
+  font-variant-ligatures: none;
+  font-feature-settings: "liga" 0, "calt" 0;
+}

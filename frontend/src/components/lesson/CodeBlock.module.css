@@ -1,0 +1,136 @@
+/* Code samples inside a lesson. Quiet in light mode, deep in dark mode.
+   Token colours are shared by every code surface on the lesson page. */
+
+.block {
+  --code-bg: #F7F8FA;
+  --code-bar: #F1F2F5;
+  --code-line: #E3E6EA;
+  --code-text: #1F2430;
+  --code-num: #A9AFB9;
+  --t-kw: #B4235A;
+  --t-str: #1E7F4F;
+  --t-num: #A15C00;
+  --t-fn: #1A5FD0;
+  --t-prop: #7A3FC4;
+  --t-tag: #B4235A;
+  --t-type: #0E7490;
+  --t-cm: #8A909B;
+  --t-op: #5B6170;
+
+  margin: 22px 0 26px;
+  border: 1px solid var(--code-line);
+  border-radius: 14px;
+  background: var(--code-bg);
+  overflow: hidden;
+}
+:global([data-theme="dark"]) .block {
+  --code-bg: #0E1014;
+  --code-bar: #13161B;
+  --code-line: rgba(255, 255, 255, 0.07);
+  --code-text: #DDE1E8;
+  --code-num: #4C535F;
+  --t-kw: #F48FB8;
+  --t-str: #7DD3A8;
+  --t-num: #F4B740;
+  --t-fn: #7AABF9;
+  --t-prop: #C4A1FF;
+  --t-tag: #F48FB8;
+  --t-type: #67D4E8;
+  --t-cm: #6E7684;
+  --t-op: #A0A7B4;
+}
+
+.bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  height: 38px;
+  padding: 0 8px 0 14px;
+  border-bottom: 1px solid var(--code-line);
+  background: var(--code-bar);
+}
+.lang {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-tertiary);
+}
+
+.copy {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 28px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-tertiary);
+  font-family: var(--font-sans);
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 140ms ease, color 140ms ease;
+}
+.copy:hover { background: var(--bg-overlay); color: var(--text-primary); }
+.copy[data-copied="true"] { color: var(--green-text, var(--green)); }
+
+.pre {
+  margin: 0;
+  padding: 14px 0;
+  overflow-x: auto;
+  font-family: var(--font-mono);
+  font-size: 13.5px;
+  line-height: 1.7;
+  color: var(--code-text);
+  tab-size: 2;
+}
+.pre:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+.pre code { display: block; min-width: max-content; font-family: inherit; }
+
+.line { display: flex; padding-right: 18px; }
+.num {
+  flex-shrink: 0;
+  width: 44px;
+  padding-right: 16px;
+  text-align: right;
+  color: var(--code-num);
+  user-select: none;
+}
+.src { white-space: pre; padding-left: 0; }
+.line:only-child .src,
+.block .src:first-child { padding-left: 18px; }
+
+/* Lezer token classes */
+.block :global(.tok-keyword),
+.block :global(.tok-bool),
+.block :global(.tok-atom) { color: var(--t-kw); }
+.block :global(.tok-string),
+.block :global(.tok-string2) { color: var(--t-str); }
+.block :global(.tok-number),
+.block :global(.tok-literal) { color: var(--t-num); }
+.block :global(.tok-variableName2) { color: var(--t-type); }
+.block :global(.tok-variableName.tok-definition),
+.block :global(.tok-function) { color: var(--t-fn); }
+.block :global(.tok-propertyName) { color: var(--t-prop); }
+.block :global(.tok-typeName) { color: var(--t-tag); }
+.block :global(.tok-className),
+.block :global(.tok-namespace) { color: var(--t-type); }
+.block :global(.tok-comment) { color: var(--t-cm); font-style: italic; }
+.block :global(.tok-operator),
+.block :global(.tok-punctuation) { color: var(--t-op); }
+.block :global(.tok-meta) { color: var(--t-cm); }
+.block :global(.tok-url) { color: var(--t-fn); }
+/* Shell */
+.block :global(.tok-command) { color: var(--t-fn); font-weight: 600; }
+.block :global(.tok-flag) { color: var(--t-num); }
+.block :global(.tok-prompt) { color: var(--t-cm); }
+
+@media (max-width: 600px) {
+  .block { margin: 18px -16px 22px; border-radius: 0; border-left: 0; border-right: 0; }
+  .pre { font-size: 12.5px; }
+  .num { width: 34px; padding-right: 12px; }
+}

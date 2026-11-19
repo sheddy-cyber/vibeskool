@@ -5,16 +5,13 @@ import { python } from '@codemirror/lang-python'
 import { html } from '@codemirror/lang-html'
 import { exerciseApi, aiApi } from '@/lib/api'
 import { Button } from '@/components/ui'
-import { Play, Sparkles, CheckCircle2, XCircle } from 'lucide-react'
+import Icon from '@/components/icons/Icons'
 import { useAuth } from '@/lib/auth'
-import { useStore } from '@/lib/store'
 import styles from './StudentIDE.module.css'
 
 export default function StudentIDE({ lessonId }) {
   const { currentUser } = useAuth()
-  const { settings } = useStore()
-  const activeTheme = settings?.theme || 'dark'
-  const isDark = activeTheme === 'dark' || (activeTheme === 'system' && typeof window !== 'undefined' && window.matchMedia?.('(prefers-color-scheme: dark)').matches)
+  const isDark = typeof document !== 'undefined' && document.documentElement.getAttribute('data-theme') === 'dark'
 
   const [exercises, setExercises] = useState([])
   const [currentIndex, setCurrentIndex] = useState(0)
@@ -168,20 +165,20 @@ export default function StudentIDE({ lessonId }) {
           variant={status === 'passed' ? 'teal' : 'primary'} 
           onClick={runCode}
           disabled={status === 'submitting'}
-          icon={<Play size={15} />}
+          icon={<Icon name="play" size={15} />}
         >
-          {status === 'submitting' ? 'Running Code...' : 'Run & Test'}
+          {status === 'submitting' ? 'Running…' : 'Run the checks'}
         </Button>
         {consecutiveFailures >= 3 && status !== 'passed' && (
-          <Button variant="secondary" onClick={handleGetHint} disabled={hintLoading} icon={<Sparkles size={15} />} style={{ borderColor: 'var(--accent)', color: 'var(--accent)' }}>
-            {hintLoading ? 'Thinking...' : 'Get AI Hint'}
+          <Button variant="secondary" onClick={handleGetHint} disabled={hintLoading} icon={<Icon name="idea" size={15} />} style={{ borderColor: 'var(--accent)', color: 'var(--accent)' }}>
+            {hintLoading ? 'Thinking…' : 'Get a hint'}
           </Button>
         )}
       </div>
 
       {aiHint && (
         <div className={styles.hintBox}>
-          <strong><Sparkles size={14} style={{ display: 'inline', verticalAlign: 'middle', marginRight: '6px' }} />AI Hint:</strong>
+          <strong><Icon name="idea" size={15} style={{ display: 'inline', verticalAlign: 'middle', marginRight: '6px' }} />Hint</strong>
           <p>{aiHint}</p>
         </div>
       )}
@@ -210,13 +207,13 @@ export default function StudentIDE({ lessonId }) {
             <h4>
               {status === 'passed' ? (
                 <>
-                  <CheckCircle2 size={18} style={{ color: 'var(--green)', display: 'inline', verticalAlign: 'middle', marginRight: '6px' }} />
-                  Tests Passed
+                  <Icon name="check" size={18} style={{ color: 'var(--green)', display: 'inline', verticalAlign: 'middle', marginRight: '6px' }} />
+                  All checks pass
                 </>
               ) : (
                 <>
-                  <XCircle size={18} style={{ color: 'var(--red)', display: 'inline', verticalAlign: 'middle', marginRight: '6px' }} />
-                  Tests Failed
+                  <Icon name="close" size={18} style={{ color: 'var(--red)', display: 'inline', verticalAlign: 'middle', marginRight: '6px' }} />
+                  Some checks failed
                 </>
               )}
             </h4>
