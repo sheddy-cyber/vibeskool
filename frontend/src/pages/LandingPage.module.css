@@ -1,6 +1,7 @@
 /* ─────────────────────────────────────────────────────────────
    VibeSkool landing page
-   Light only. One accent (brand blue), near-black ink, soft greys.
+   One accent (brand blue), ink and soft neutrals. Every colour is a
+   token on .page so the dark theme only has to redefine the tokens.
    ───────────────────────────────────────────────────────────── */
 
 .page {
@@ -14,11 +15,23 @@
   --lp-accent-hover: #1662C9;
   --lp-accent-soft: #EAF2FD;
   --lp-green: #157F3C;
+  --lp-accent-text: #1A73E8;
+  --lp-bg: #FFFFFF;
+  --lp-surface: #FFFFFF;
+  --lp-pill: #FFFFFF;
+  --lp-line-strong: #D3D6DC;
+  --lp-on-ink: #FFFFFF;
+  --lp-ink-hover: #000000;
+  --lp-header: rgba(255, 255, 255, 0.92);
+  --lp-shadow-card: 0 1px 2px rgba(16, 24, 40, 0.04), 0 8px 24px -12px rgba(16, 24, 40, 0.10);
+  --lp-shadow-pill: 0 1px 2px rgba(16, 24, 40, 0.08), 0 1px 1px rgba(16, 24, 40, 0.04);
+  --lp-shadow-pop: 0 16px 32px -16px rgba(16, 24, 40, 0.18);
+  --lp-shadow-hover: 0 12px 28px -16px rgba(16, 24, 40, 0.16);
   --lp-radius: 14px;
   --lp-ease: cubic-bezier(0.22, 1, 0.36, 1);
 
   min-height: 100vh;
-  background: #FFFFFF;
+  background: var(--lp-bg);
   color: var(--lp-ink);
   font-family: var(--font-sans);
   font-size: 16px;
@@ -72,13 +85,13 @@
 .btnPrimary { background: var(--lp-accent); color: #FFFFFF; }
 .btnPrimary:hover { background: var(--lp-accent-hover); box-shadow: 0 8px 20px -8px rgba(26, 115, 232, 0.55); }
 
-.btnDark { background: var(--lp-ink); color: #FFFFFF; }
-.btnDark:hover { background: #000000; }
+.btnDark { background: var(--lp-ink); color: var(--lp-on-ink); }
+.btnDark:hover { background: var(--lp-ink-hover); }
 
-.btnOutline { background: #FFFFFF; color: var(--lp-ink); border-color: #D3D6DC; }
+.btnOutline { background: var(--lp-surface); color: var(--lp-ink); border-color: var(--lp-line-strong); }
 .btnOutline:hover { border-color: var(--lp-ink); }
 
-.btnLight { background: #FFFFFF; color: var(--lp-ink); }
+.btnLight { background: #FFFFFF; color: #14171F; }
 .btnLight:hover { background: #E9ECF1; }
 
 .textLink {
@@ -102,7 +115,7 @@
   position: sticky;
   top: 0;
   z-index: 50;
-  background: rgba(255, 255, 255, 0.92);
+  background: var(--lp-header);
   backdrop-filter: saturate(180%) blur(12px);
   -webkit-backdrop-filter: saturate(180%) blur(12px);
   border-bottom: 1px solid transparent;
@@ -176,8 +189,8 @@
   right: 0;
   padding: 8px 20px 20px;
   border-top: 1px solid var(--lp-line);
-  background: #FFFFFF;
-  box-shadow: 0 16px 32px -16px rgba(16, 24, 40, 0.18);
+  background: var(--lp-surface);
+  box-shadow: var(--lp-shadow-pop);
 }
 .mobileMenu > button {
   width: 100%;
@@ -234,8 +247,8 @@
   padding: 8px 8px 22px;
   border: 1px solid var(--lp-line);
   border-radius: 20px;
-  background: #FFFFFF;
-  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04), 0 8px 24px -12px rgba(16, 24, 40, 0.10);
+  background: var(--lp-surface);
+  box-shadow: var(--lp-shadow-card);
 }
 
 .roleBody { padding: 18px 14px 0; }
@@ -293,19 +306,19 @@
   position: absolute;
   inset: 0;
   border-radius: 10px;
-  background: #FFFFFF;
-  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.08), 0 1px 1px rgba(16, 24, 40, 0.04);
+  background: var(--lp-pill);
+  box-shadow: var(--lp-shadow-pill);
 }
 .segLabel { position: relative; z-index: 1; }
 
 .segmentedSoft {
   display: inline-grid;
-  background: #FFFFFF;
+  background: var(--lp-surface);
   border: 1px solid var(--lp-line);
 }
 .segmentedSoft .segPill { background: var(--lp-ink); box-shadow: none; }
 .segmentedSoft button.segActive,
-.segmentedSoft button.segActive:hover { color: #FFFFFF; }
+.segmentedSoft button.segActive:hover { color: var(--lp-on-ink); }
 .segmentedSoft button:hover:not(.segActive) { color: var(--lp-ink); }
 
 /* ── Sections ─────────────────────────────────────────────── */
@@ -351,7 +364,7 @@
   height: 32px;
   border-radius: 10px;
   background: var(--lp-accent-soft);
-  color: var(--lp-accent);
+  color: var(--lp-accent-text);
   font-size: 14px;
   font-weight: 700;
 }
@@ -379,7 +392,7 @@
   padding: 40px;
   border: 1px solid var(--lp-line);
   border-radius: 24px;
-  background: #FFFFFF;
+  background: var(--lp-surface);
 }
 
 .featuredMain {
@@ -438,8 +451,8 @@
   color: var(--lp-ink);
 }
 .moduleList li { transition: color 200ms ease; }
-.moduleList li:hover { color: var(--lp-accent); }
-.moduleList li:hover .moduleNum { color: var(--lp-accent); }
+.moduleList li:hover { color: var(--lp-accent-text); }
+.moduleList li:hover .moduleNum { color: var(--lp-accent-text); }
 .moduleNum {
   transition: color 200ms ease;
   font-family: var(--font-mono);
@@ -467,9 +480,9 @@
   padding: 22px;
   border: 1px solid var(--lp-line);
   border-radius: var(--lp-radius);
-  background: #FFFFFF;
+  background: var(--lp-surface);
 }
-.upcomingCard:hover .pathIconSoft { background: var(--lp-accent-soft); color: var(--lp-accent); }
+.upcomingCard:hover .pathIconSoft { background: var(--lp-accent-soft); color: var(--lp-accent-text); }
 .pathIconSoft { transition: background-color 250ms ease, color 250ms ease; }
 .pathIconSoft {
   display: inline-grid;
@@ -522,13 +535,13 @@
   column-gap: 20px;
   padding: 26px 28px;
   border-radius: 20px;
-  background: #FFFFFF;
+  background: var(--lp-surface);
   border: 1px solid var(--lp-line);
 }
 .step p { grid-column: 2; }
-.step:hover { border-color: #D3D7DE; box-shadow: 0 12px 28px -16px rgba(16, 24, 40, 0.16); }
+.step:hover { border-color: var(--lp-line-strong); box-shadow: var(--lp-shadow-hover); }
 .stepNum { transition: background-color 250ms ease, color 250ms ease; }
-.step:hover .stepNum { background: var(--lp-ink); color: #FFFFFF; }
+.step:hover .stepNum { background: var(--lp-ink); color: var(--lp-on-ink); }
 .stepNum {
   display: inline-grid;
   place-items: center;
@@ -678,6 +691,44 @@
 }
 .footerBottom div { display: flex; gap: 20px; }
 .footerBottom a:hover { color: var(--lp-ink); }
+
+/* ── Header theme switch ─────────────────────────────────── */
+.themeToggle { margin-right: 4px; }
+
+/* ── Dark theme ───────────────────────────────────────────── */
+:global([data-theme="dark"]) .page {
+  --lp-bg: #0F1115;
+  --lp-surface: #171A20;
+  --lp-soft: #13161B;
+  --lp-pill: #2A2F38;
+  --lp-ink: #ECEEF2;
+  --lp-ink-2: #C3C8D1;
+  --lp-muted: #A0A7B4;
+  --lp-faint: #6E7684;
+  --lp-line: rgba(255, 255, 255, 0.08);
+  --lp-line-strong: rgba(255, 255, 255, 0.2);
+  --lp-accent: #1F74E8;
+  --lp-accent-hover: #3584F0;
+  --lp-accent-soft: rgba(77, 142, 247, 0.14);
+  --lp-accent-text: #7AABF9;
+  --lp-green: #3DC488;
+  --lp-on-ink: #0F1115;
+  --lp-ink-hover: #FFFFFF;
+  --lp-header: rgba(15, 17, 21, 0.82);
+  --lp-shadow-card: 0 1px 0 rgba(255, 255, 255, 0.03) inset, 0 16px 32px -20px rgba(0, 0, 0, 0.6);
+  --lp-shadow-pill: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --lp-shadow-pop: 0 20px 40px -16px rgba(0, 0, 0, 0.7);
+  --lp-shadow-hover: 0 16px 36px -18px rgba(0, 0, 0, 0.8);
+}
+:global([data-theme="dark"]) .btnPrimary:hover { box-shadow: 0 8px 22px -8px rgba(53, 132, 240, 0.6); }
+
+/* The tutor band is a deep navy plate in dark mode, so it still reads as its
+   own surface against the near-black page. */
+:global([data-theme="dark"]) .tutorBand {
+  background: #121A2A;
+  box-shadow: inset 0 0 0 1px rgba(122, 171, 249, 0.12);
+}
+:global([data-theme="dark"]) .tutorLead { color: #A7B1C4; }
 
 /* ── Responsive ───────────────────────────────────────────── */
 @media (max-width: 1080px) {

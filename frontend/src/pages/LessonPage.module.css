@@ -4,7 +4,7 @@
 
 .page {
   display: flex;
-  height: calc(100vh - 56px);
+  height: calc(100vh - var(--app-top));
   overflow: hidden;
   background-color: var(--bg-base);
   color: var(--text-primary);
@@ -127,7 +127,7 @@
 /* Practice Side-Dock */
 .practiceSidebar {
   position: fixed;
-  top: 56px;
+  top: var(--app-top);
   right: 0;
   bottom: 0;
   width: 520px;

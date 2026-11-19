@@ -9,7 +9,7 @@
 .header {
   height: 64px;
   border-bottom: 1px solid var(--border-default, #E2E8F0);
-  background: #FFFFFF;
+  background: var(--bg-surface, #FFFFFF);
   display: flex;
   align-items: center;
   padding: 0 24px;
@@ -48,7 +48,7 @@
 }
 
 .card {
-  background: #FFFFFF;
+  background: var(--bg-surface, #FFFFFF);
   border: 1px solid var(--border-default, #E2E8F0);
   border-radius: 16px;
   padding: 48px 56px;
@@ -109,4 +109,10 @@
   .title {
     font-size: 26px;
   }
+}
+
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
 }

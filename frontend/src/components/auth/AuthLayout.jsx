@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { MotionConfig } from 'framer-motion'
 import { Eye, EyeOff } from 'lucide-react'
-import { BrandLogo } from '@/components/ui'
+import { BrandLogo, ThemeToggle } from '@/components/ui'
 import styles from './Auth.module.css'
 
 /* Split-screen shell shared by sign in and sign up. */
@@ -11,9 +11,12 @@ export default function AuthLayout({ art, artTitle, artText, tone = 'blue', foot
     <MotionConfig reducedMotion="user">
     <div className={styles.page}>
       <div className={styles.formSide}>
-        <Link to="/" className={styles.logo} aria-label="VibeSkool home">
-          <BrandLogo size={28} />
-        </Link>
+        <div className={styles.topRow}>
+          <Link to="/" className={styles.logo} aria-label="VibeSkool home">
+            <BrandLogo size={28} />
+          </Link>
+          <ThemeToggle />
+        </div>
 
         <main className={styles.formWrap}>{children}</main>
 

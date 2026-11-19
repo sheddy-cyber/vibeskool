@@ -1,12 +1,10 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
-import { BrandLogo } from '@/components/ui'
+import { BrandLogo, ThemeToggle } from '@/components/ui'
 import { ArrowLeft } from 'lucide-react'
-import { useEnforceLightTheme } from '@/lib/theme'
 import styles from './LegalPage.module.css'
 
 export default function PrivacyPage() {
-  useEnforceLightTheme()
   return (
     <div className={styles.page}>
       <header className={styles.header}>
@@ -14,9 +12,12 @@ export default function PrivacyPage() {
           <Link to="/" style={{ textDecoration: 'none' }}>
             <BrandLogo size={28} showText={true} />
           </Link>
-          <Link to="/" className={styles.backLink}>
-            <ArrowLeft size={16} /> Back to Home
-          </Link>
+          <div className={styles.headerActions}>
+            <Link to="/" className={styles.backLink}>
+              <ArrowLeft size={16} /> Back to Home
+            </Link>
+            <ThemeToggle />
+          </div>
         </div>
       </header>
 

@@ -66,7 +66,7 @@ export default function SettingsPage() {
     updateAllSettings({ fontSize: id })
   }
 
-  const currentTheme = settings.theme || 'light'
+  const currentTheme = settings.theme || 'dark'
 
   return (
     <div className={styles.page}>

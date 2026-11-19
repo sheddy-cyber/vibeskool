@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="light">
+<html lang="en" data-theme="dark">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#FFFFFF" />
+    <meta name="theme-color" content="#0F1115" />
     <title>VibeSkool | Learn just enough code to build with AI</title>
     <meta name="description" content="Learn the minimum code you need to build real apps with AI: what to ask for, how to read what it writes, and how to fix it when it breaks. Short lessons, live tutors." />
     <script>
@@ -15,12 +15,12 @@
             var s = localStorage.getItem('vibeskool_settings');
             if (s) { var p = JSON.parse(s); if (p && p.theme) t = p.theme; }
           }
-          if (!t) t = 'light';
+          if (!t) t = 'dark';
           var resolved = t === 'dark' ? 'dark' : (t === 'system' && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
           document.documentElement.setAttribute('data-theme', resolved);
           document.documentElement.style.colorScheme = resolved;
           var m = document.querySelector('meta[name="theme-color"]');
-          if (m) m.setAttribute('content', resolved === 'dark' ? '#090A0F' : '#FFFFFF');
+          if (m) m.setAttribute('content', resolved === 'dark' ? '#0F1115' : '#FFFFFF');
         } catch(e) {}
       })();
     </script>

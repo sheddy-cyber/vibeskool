@@ -1,0 +1,54 @@
+.mark {
+  display: block;
+  flex-shrink: 0;
+  overflow: visible;
+}
+
+/* Line work */
+.l {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+/* Shapes that sit on top of other lines get the card colour as a fill */
+.solid { fill: var(--mark-bg, var(--bg-surface)); }
+
+.thin {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1;
+  stroke-linecap: round;
+  opacity: 0.45;
+}
+
+/* Faint plane behind the line work */
+.p {
+  fill: currentColor;
+  opacity: 0.08;
+  stroke: none;
+  transition: opacity 160ms ease;
+}
+
+.dot { fill: currentColor; opacity: 0.55; }
+
+/* The one accent detail */
+.a { fill: var(--accent); stroke: none; }
+.aS { stroke: var(--accent); }
+/* Accent shape cut out from the line work behind it */
+.ring { stroke: var(--mark-bg, var(--bg-surface)); stroke-width: 2.4; paint-order: stroke; }
+/* Links between blocks */
+.link {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+}
+.onA {
+  fill: none;
+  stroke: #FFFFFF;
+  stroke-width: 1.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}

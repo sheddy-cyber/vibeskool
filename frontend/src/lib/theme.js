@@ -1,20 +1,9 @@
 import { useEffect } from 'react'
 
 // ─── Theme Manager (VibeSkool) ─────────────────────────────────────────────────
-// Supports: 'light' (The Luminous Atelier), 'dark' (The Obsidian Nocturne), and 'system'
+// Supports: 'light', 'dark' and 'system'. Dark is the default everywhere.
 
 let systemMediaListener = null
-
-export function isLightOnlyPath(path = typeof window !== 'undefined' ? window.location.pathname : '') {
-  return (
-    path === '/' ||
-    path === '/signin' ||
-    path === '/login' ||
-    path === '/signup' ||
-    path === '/privacy' ||
-    path === '/terms'
-  )
-}
 
 export function getStoredTheme() {
   try {
@@ -29,7 +18,7 @@ export function getStoredTheme() {
   } catch (e) {
     // ignore
   }
-  return 'light'
+  return 'dark'
 }
 
 export function getResolvedTheme(themePreference) {
@@ -44,7 +33,7 @@ export function getResolvedTheme(themePreference) {
 }
 
 export function applyTheme(themePreference) {
-  const theme = themePreference || 'light'
+  const theme = themePreference || 'dark'
   const resolved = getResolvedTheme(theme)
 
   if (typeof document !== 'undefined') {
@@ -55,7 +44,7 @@ export function applyTheme(themePreference) {
     // Update meta theme-color for mobile address bar
     const metaThemeColor = document.querySelector('meta[name="theme-color"]')
     if (metaThemeColor) {
-      metaThemeColor.setAttribute('content', resolved === 'dark' ? '#090A0F' : '#FFFFFF')
+      metaThemeColor.setAttribute('content', resolved === 'dark' ? '#0F1115' : '#FFFFFF')
     }
 
     try {
@@ -81,7 +70,7 @@ export function applyTheme(themePreference) {
           root.setAttribute('data-theme', nextResolved)
           root.style.colorScheme = nextResolved
           if (metaThemeColor) {
-            metaThemeColor.setAttribute('content', nextResolved === 'dark' ? '#090A0F' : '#FFFFFF')
+            metaThemeColor.setAttribute('content', nextResolved === 'dark' ? '#0F1115' : '#FFFFFF')
           }
         }
         try {
@@ -97,42 +86,5 @@ export function applyTheme(themePreference) {
 }
 
 export function initTheme() {
-  if (typeof window !== 'undefined' && isLightOnlyPath(window.location.pathname)) {
-    const root = document.documentElement
-    root.setAttribute('data-theme', 'light')
-    root.style.colorScheme = 'light'
-    const metaThemeColor = document.querySelector('meta[name="theme-color"]')
-    if (metaThemeColor) {
-      metaThemeColor.setAttribute('content', '#FFFFFF')
-    }
-    return 'light'
-  }
-
-  const stored = getStoredTheme()
-  return applyTheme(stored)
+  return applyTheme(getStoredTheme())
 }
-
-/**
- * Hook to enforce light mode on public marketing, auth, and legal pages.
- * Restores user theme preference when navigating into the authenticated app.
- */
-export function useEnforceLightTheme() {
-  useEffect(() => {
-    const root = document.documentElement
-    root.setAttribute('data-theme', 'light')
-    root.style.colorScheme = 'light'
-
-    const metaThemeColor = document.querySelector('meta[name="theme-color"]')
-    if (metaThemeColor) {
-      metaThemeColor.setAttribute('content', '#FFFFFF')
-    }
-
-    return () => {
-      // When leaving a public page, only restore stored theme if navigating into the app
-      if (typeof window !== 'undefined' && !isLightOnlyPath(window.location.pathname)) {
-        applyTheme(getStoredTheme())
-      }
-    }
-  }, [])
-}
-

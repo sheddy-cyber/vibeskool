@@ -1,0 +1,25 @@
+.icon {
+  display: block;
+  flex-shrink: 0;
+  overflow: visible;
+}
+
+/* Hairline layer */
+.s {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* Soft plane behind the line work */
+.p {
+  fill: currentColor;
+  opacity: 0.1;
+  stroke: none;
+  transition: opacity 160ms ease, fill 160ms ease;
+}
+
+.active { color: var(--accent); }
+.active .p { opacity: 0.22; }

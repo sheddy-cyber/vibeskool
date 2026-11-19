@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate, Link, useSearchParams } from 'react-router-dom'
 import { useAuth } from '@/lib/auth'
-import { useEnforceLightTheme } from '@/lib/theme'
 import GoogleAuthButton from '@/components/auth/GoogleAuthButton'
 import AuthLayout, { Field, PasswordInput, authStyles as styles } from '@/components/auth/AuthLayout'
 import { LearnerScene, PairingScene } from '@/components/art/Illustrations'
@@ -20,7 +19,6 @@ const ROLE_COPY = {
 }
 
 export default function SignUpPage() {
-  useEnforceLightTheme()
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const initialRole = searchParams.get('role') === 'teacher' ? 'teacher' : 'student'

@@ -6,6 +6,15 @@ export default function GoogleAuthButton({ isSignUp = false, role = 'student' })
   const { signInWithGoogle, authLoading } = useAuth();
   const buttonRef = useRef(null);
   const [scriptLoaded, setScriptLoaded] = useState(false);
+  const isDarkNow = () => document.documentElement.getAttribute('data-theme') === 'dark';
+  const [dark, setDark] = useState(isDarkNow);
+
+  // Google draws its own button, so redraw it when the theme changes
+  useEffect(() => {
+    const obs = new MutationObserver(() => setDark(isDarkNow()));
+    obs.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+    return () => obs.disconnect();
+  }, []);
 
   const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 
@@ -51,7 +60,7 @@ export default function GoogleAuthButton({ isSignUp = false, role = 'student' })
       buttonRef.current.innerHTML = '';
 
       window.google.accounts.id.renderButton(buttonRef.current, {
-        theme: 'outline',
+        theme: dark ? 'filled_black' : 'outline',
         size: 'large',
         type: 'standard',
         text: isSignUp ? 'signup_with' : 'signin_with',
@@ -62,7 +71,7 @@ export default function GoogleAuthButton({ isSignUp = false, role = 'student' })
     } catch (err) {
       console.error('Failed to render Google Sign-In button:', err);
     }
-  }, [scriptLoaded, clientId, isSignUp, role, signInWithGoogle]);
+  }, [scriptLoaded, clientId, isSignUp, role, signInWithGoogle, dark]);
 
   return (
     <div className={styles.container}>

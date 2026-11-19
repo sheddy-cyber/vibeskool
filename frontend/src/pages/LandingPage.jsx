@@ -15,8 +15,7 @@ import {
   X,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
-import { useEnforceLightTheme } from "@/lib/theme";
-import { BrandLogo } from "@/components/ui";
+import { BrandLogo, ThemeToggle } from "@/components/ui";
 import { LearnerScene, PairingScene, StackArt } from "@/components/art/Illustrations";
 import FistBump from "@/components/art/FistBump";
 import {
@@ -173,7 +172,6 @@ export default function LandingPage() {
   const heroVisualY = useTransform(heroProgress, [0, 1], [0, -70]);
   const heroCopyY = useTransform(heroProgress, [0, 1], [0, -24]);
 
-  useEnforceLightTheme();
 
   useEffect(() => {
     const lenis = new Lenis({
@@ -264,6 +262,7 @@ export default function LandingPage() {
             </nav>
 
             <div className={styles.headerActions}>
+              <ThemeToggle className={styles.themeToggle} />
               {currentUser ? (
                 <Link to="/app/dashboard" className={`${styles.btn} ${styles.btnPrimary} ${styles.btnSm}`}>
                   Go to dashboard

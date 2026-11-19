@@ -28,16 +28,19 @@ export const useAuth = create((set, get) => {
   if (token) {
     authApi.getMe()
       .then((data) => {
-        set({ currentUser: mapUser(data.user, data) })
+        set({ currentUser: mapUser(data.user, data), authReady: true })
       })
       .catch(() => {
         clearToken()
-        set({ currentUser: null })
+        set({ currentUser: null, authReady: true })
       })
   }
 
   return {
     currentUser: null,
+    // False only while a stored session is being checked on page load,
+    // so protected pages don't bounce to sign-in on refresh.
+    authReady: !token,
     authError: null,
     authLoading: false,
 

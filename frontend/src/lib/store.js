@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import { contentApi } from '@/lib/api'
+import { contentApi, progressApi } from '@/lib/api'
 import { applyTheme, getStoredTheme } from '@/lib/theme'
 
 // ─── Store ─────────────────────────────────────────────────────────────────────
@@ -30,6 +30,29 @@ export const useStore = create((set, get) => ({
     }
   },
 
+  // Learner progress (from /api/progress)
+  progress: {},
+  passedModules: [],
+  completions: [],
+  streak: { current: 0, longest: 0 },
+  progressLoaded: false,
+
+  fetchProgress: async () => {
+    try {
+      const data = await progressApi.get()
+      set({
+        progress: data.progress || {},
+        passedModules: data.passedModules || [],
+        completions: data.completions || [],
+        streak: { current: data.currentStreak || 0, longest: data.longestStreak || 0 },
+        progressLoaded: true,
+      })
+    } catch (err) {
+      console.error('Failed to fetch progress:', err)
+      set({ progressLoaded: true })
+    }
+  },
+
   fetchLesson: async (id) => {
     if (get().lessonCache[id]) return get().lessonCache[id]
     try {
@@ -51,7 +74,7 @@ export const useStore = create((set, get) => ({
     anthropicKey:   '',       // Anthropic API key
     dailyGoal:      2,        // daily lesson goal target
     ...getSavedSettings(),
-    theme:          getSavedSettings()?.theme || getStoredTheme() || 'light',
+    theme:          getSavedSettings()?.theme || getStoredTheme() || 'dark',
   },
 
   // Active lesson
@@ -59,8 +82,18 @@ export const useStore = create((set, get) => ({
   setActiveLesson: (id) => set({ activeLesson: id }),
 
   // Sidebar
-  sidebarOpen: true,
+  sidebarOpen: false, // mobile drawer only; the sidebar is always shown on wide screens
   toggleSidebar: () => set((s) => ({ sidebarOpen: !s.sidebarOpen })),
+
+  // Wide screens: full sidebar or a narrow icon rail. Remembered per browser.
+  sidebarCollapsed: (() => {
+    try { return localStorage.getItem('vibeskool_sidebar_collapsed') === '1' } catch { return false }
+  })(),
+  toggleSidebarCollapsed: () => set((s) => {
+    const next = !s.sidebarCollapsed
+    try { localStorage.setItem('vibeskool_sidebar_collapsed', next ? '1' : '0') } catch {}
+    return { sidebarCollapsed: next }
+  }),
 
   // Update settings
   updateSettings: (patch) => set((s) => {

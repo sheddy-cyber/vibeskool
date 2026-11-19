@@ -4,14 +4,16 @@ import { useAuth } from '@/lib/auth'
 
 /** Redirects to /signin if not authenticated */
 export function ProtectedRoute({ children }) {
-  const { currentUser } = useAuth()
+  const { currentUser, authReady } = useAuth()
+  if (!authReady) return null
   if (!currentUser) return <Navigate to="/signin" replace />
   return children
 }
 
 /** Redirects to /app/dashboard if not admin */
 export function AdminRoute({ children }) {
-  const { currentUser } = useAuth()
+  const { currentUser, authReady } = useAuth()
+  if (!authReady) return null
   if (!currentUser) return <Navigate to="/signin" replace />
   if (currentUser.role !== 'admin') return <Navigate to="/app/dashboard" replace />
   return children
@@ -19,7 +21,8 @@ export function AdminRoute({ children }) {
 
 /** Redirects to /app/dashboard if not teacher or admin */
 export function TeacherRoute({ children }) {
-  const { currentUser } = useAuth()
+  const { currentUser, authReady } = useAuth()
+  if (!authReady) return null
   if (!currentUser) return <Navigate to="/signin" replace />
   if (currentUser.role !== 'teacher' && currentUser.role !== 'admin') {
     return <Navigate to="/app/dashboard" replace />

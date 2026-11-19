@@ -64,3 +64,11 @@
   margin-top: 6px;
   word-break: break-all;
 }
+
+:global([data-theme="dark"]) .devNotice { color: #FBBF24; }
+:global([data-theme="dark"]) .devNoticeCode { background: rgba(255, 255, 255, 0.08); }
+
+/* Google's button is a cross-origin iframe. If its colour scheme differs from
+   the page's, Chrome paints it an opaque white backdrop; matching the scheme
+   keeps the corners around the pill transparent. */
+.googleBtnWrapper iframe { color-scheme: light; }

@@ -2,24 +2,28 @@ import React, { useId } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 
 /* Original flat illustrations for VibeSkool.
-   One palette, faceless figures, no gradients. All text is real copy. */
+   One palette, faceless figures, no gradients. All text is real copy.
+   Neutrals are theme tokens (--il-*, defined in index.css) so each scene
+   has a light and a dark version; brand colours and skin tones are fixed. */
 
 const C = {
-  ink: "#14171F",
-  ink2: "#2B303B",
-  muted: "#6B7280",
-  line: "#E1E5EC",
-  white: "#FFFFFF",
+  ink: "var(--il-text)",
+  hair: "var(--il-hair)",
+  ink2: "var(--il-ink2)",
+  code: "var(--il-code)",
+  muted: "var(--il-muted)",
+  line: "var(--il-line)",
+  white: "var(--il-card)",
+  card2: "var(--il-card-2)",
   blue: "#1A73E8",
-  blueSoft: "#DCE8FB",
-  bgBlue: "#EEF3FB",
-  bgGreen: "#EAF5EE",
+  blueSoft: "var(--il-blue-soft)",
+  bgBlue: "var(--il-bg-blue)",
+  bgGreen: "var(--il-bg-green)",
   coral: "#F2553D",
   green: "#1FA463",
-  greenSoft: "#D5EEDD",
   amber: "#F4B740",
-  metal: "#D6DBE3",
-  metalDark: "#BCC3CE",
+  metal: "var(--il-metal)",
+  metalDark: "var(--il-metal-dark)",
 };
 
 const EASE = [0.22, 1, 0.36, 1];
@@ -51,7 +55,7 @@ function useSafeId(prefix) {
 function Shadow({ id }) {
   return (
     <filter id={id} x="-20%" y="-20%" width="140%" height="160%">
-      <feDropShadow dx="0" dy="8" stdDeviation="10" floodColor="#101828" floodOpacity="0.10" />
+      <feDropShadow dx="0" dy="8" stdDeviation="10" style={{ floodColor: "#05070B", floodOpacity: "var(--il-shadow-op)" }} />
     </filter>
   );
 }
@@ -105,7 +109,7 @@ function Person({ cx, by, skin, skinShade, hair, hairStyle = "short", shirt, gla
         <path d={`M${hx - 30} ${hy - 4} q-2 -36 30 -36 q32 0 30 36 q-12 -16 -30 -18 q-18 2 -30 18 z`} fill={hair} />
       )}
       {glasses && (
-        <g fill="none" stroke={C.ink} strokeWidth="2.2">
+        <g fill="none" stroke={C.hair} strokeWidth="2.2">
           <rect x={hx - 22} y={hy - 2} width="17" height="12" rx="5" />
           <rect x={hx + 5} y={hy - 2} width="17" height="12" rx="5" />
           <path d={`M${hx - 5} ${hy + 3} h10`} />
@@ -192,7 +196,7 @@ export function LearnerScene({ className, title = "A learner asks AI why their c
       <rect x="96" y="360" width="10" height="70" fill={C.ink2} />
       <rect x="454" y="360" width="10" height="70" fill={C.ink2} />
 
-      <Person cx={280} by={206} skin="#B9784F" skinShade="#9E6440" hair={C.ink} hairStyle="curly" shirt={C.blue} />
+      <Person cx={280} by={206} skin="#B9784F" skinShade="#9E6440" hair={C.hair} hairStyle="curly" shirt={C.blue} />
       <LaptopBack cx={280} top={236} />
       <Mug x={118} y={308} />
       <Plant x={410} y={300} />
@@ -237,7 +241,7 @@ export function PairingScene({ className, title = "A tutor and a student editing
   const sh = useSafeId("sh");
   const reduce = useReducedMotion();
   const lines = [
-    [0, 92, C.coral], [0, 132, C.ink2], [16, 104, C.blue], [16, 70, C.ink2], [0, 40, C.ink2],
+    [0, 92, C.coral], [0, 132, C.code], [16, 104, C.blue], [16, 70, C.code], [0, 40, C.code],
   ];
   return (
     <svg viewBox="0 0 560 440" className={className} role="img" aria-label={title}>
@@ -251,8 +255,8 @@ export function PairingScene({ className, title = "A tutor and a student editing
       <g filter={`url(#${sh})`}>
         <rect x="186" y="60" width="188" height="128" rx="16" fill={C.white} />
       </g>
-      <rect x="186" y="60" width="188" height="30" rx="16" fill="#F5F7FA" />
-      <rect x="186" y="76" width="188" height="14" fill="#F5F7FA" />
+      <rect x="186" y="60" width="188" height="30" rx="16" fill={C.card2} />
+      <rect x="186" y="76" width="188" height="14" fill={C.card2} />
       <text x="202" y="80" fontSize="11.5" fontWeight="600" fill={C.muted}>cart.js · 2 people</text>
       {lines.map(([indent, w, col], i) => (
         <motion.rect
@@ -263,7 +267,7 @@ export function PairingScene({ className, title = "A tutor and a student editing
           height="7"
           rx="3.5"
           fill={col}
-          opacity={col === C.ink2 ? 0.22 : 0.85}
+          opacity={col === C.code ? 0.22 : 0.85}
           style={{ originX: 0 }}
           initial={{ scaleX: 0 }}
           whileInView={{ scaleX: 1 }}
@@ -307,7 +311,7 @@ export function PairingScene({ className, title = "A tutor and a student editing
 
       <g transform="translate(150 0)">
         <g transform="scale(0.86) translate(-150 52)">
-          <Person cx={150} by={226} skin="#7A4A2E" skinShade="#633B24" hair={C.ink} hairStyle="bun" shirt={C.green} glasses />
+          <Person cx={150} by={226} skin="#7A4A2E" skinShade="#633B24" hair={C.hair} hairStyle="bun" shirt={C.green} glasses />
           <LaptopBack cx={150} top={254} w={164} h={104} />
         </g>
       </g>
@@ -347,7 +351,7 @@ export function StackArt({ className, title = "Front end, back end and database 
       <path d="M40 30 h220" stroke={C.line} strokeWidth="1.5" />
       <circle cx="54" cy="20" r="3.5" fill={C.metal} />
       <circle cx="66" cy="20" r="3.5" fill={C.metal} />
-      <rect x="56" y="44" width="92" height="9" rx="4.5" fill={C.ink2} opacity="0.85" />
+      <rect x="56" y="44" width="92" height="9" rx="4.5" fill={C.code} opacity="0.85" />
       <rect x="56" y="60" width="132" height="6" rx="3" fill={C.metal} />
       <rect x="196" y="54" width="48" height="20" rx="10" fill={C.blue} />
 

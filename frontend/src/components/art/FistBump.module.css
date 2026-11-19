@@ -9,7 +9,7 @@
   position: relative;
   overflow: hidden;
   border-radius: 28px;
-  background: #EEF3FB;
+  background: var(--il-bg-blue, #EEF3FB);
   padding-bottom: 36px;
 }
 
@@ -52,6 +52,12 @@
 .ctaDark:hover { background: #000000; }
 
 .short { display: none; }
+
+:global([data-theme="dark"]) .ctaPrimary { background: #1F74E8; }
+:global([data-theme="dark"]) .ctaPrimary:hover { background: #3584F0; }
+:global([data-theme="dark"]) .ctaDark { background: #ECEEF2; color: #0F1115; }
+:global([data-theme="dark"]) .ctaDark:hover { background: #FFFFFF; }
+:global([data-theme="dark"]) .cta:focus-visible { outline-color: #7AABF9; }
 
 @media (max-width: 640px) {
   .wrap { margin-top: 24px; }

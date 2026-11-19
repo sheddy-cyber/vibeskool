@@ -1,102 +1,219 @@
-import React from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
-import { useStore } from '@/lib/store';
-import { useAuth } from '@/lib/auth';
-import { Home, BookOpen, Terminal, Users, Sparkles, User, Settings, BarChart3, School2, PenLine, Puzzle } from 'lucide-react';
-import styles from './Sidebar.module.css';
+import React, { useEffect, useRef, useState } from 'react'
+import { Link, NavLink } from 'react-router-dom'
+import { useStore } from '@/lib/store'
+import { useAuth } from '@/lib/auth'
+import { usePalette, isMac } from '@/lib/palette'
+import { BrandLogo, BrandMark } from '@/components/ui'
+import Icon from '@/components/icons/Icons'
+import styles from './Sidebar.module.css'
 
-export default function Sidebar() {
-  const { sidebarOpen, toggleSidebar } = useStore();
-  const { currentUser } = useAuth();
-  const location = useLocation();
+const LEARN = [
+  { to: '/app/dashboard', label: 'Home', icon: 'home' },
+  { to: '/app/paths', label: 'Paths', icon: 'route' },
+  { to: '/app/lab', label: 'Playground', icon: 'terminal' },
+]
 
-  const isTeacher = currentUser?.role === 'teacher' || currentUser?.role === 'admin';
+const COMMUNITY = [
+  { to: '/app/classrooms', label: 'Classrooms', icon: 'classroom' },
+  { to: '/app/showcase', label: 'Showcase', icon: 'showcase' },
+]
 
-  const handleNavClick = () => {
-    if (window.innerWidth <= 768 && sidebarOpen) {
-      toggleSidebar();
+const TEACHING = [
+  { to: '/app/teacher/dashboard', label: 'Overview', icon: 'chart' },
+  { to: '/app/teacher/classrooms', label: 'Classes', icon: 'board' },
+  { to: '/app/teacher/cms', label: 'Content', icon: 'pen' },
+  { to: '/app/teacher/exercises', label: 'Exercises', icon: 'checklist' },
+]
+
+const THEMES = [
+  { value: 'light', label: 'Light', icon: 'sun' },
+  { value: 'dark', label: 'Dark', icon: 'moon' },
+  { value: 'system', label: 'System', icon: 'monitor' },
+]
+
+function NavItem({ to, label, icon, onNavigate, end }) {
+  return (
+    <NavLink
+      to={to}
+      end={end}
+      onClick={onNavigate}
+      className={({ isActive }) => `${styles.item} ${isActive ? styles.itemActive : ''}`}
+      data-tip={label}
+    >
+      {({ isActive }) => (
+        <>
+          <Icon name={icon} size={19} active={isActive} />
+          <span className={styles.label}>{label}</span>
+        </>
+      )}
+    </NavLink>
+  )
+}
+
+function initials(name = '') {
+  const parts = name.trim().split(/\s+/).filter(Boolean)
+  if (!parts.length) return '?'
+  return (parts[0][0] + (parts[1]?.[0] || '')).toUpperCase()
+}
+
+function UserMenu({ onNavigate }) {
+  const { currentUser, signOut, updateUserSettings } = useAuth()
+  const { settings, updateSettings } = useStore()
+  const [open, setOpen] = useState(false)
+  const ref = useRef(null)
+  const theme = settings?.theme || 'dark'
+
+  useEffect(() => {
+    if (!open) return
+    const onDown = (e) => ref.current && !ref.current.contains(e.target) && setOpen(false)
+    const onKey = (e) => e.key === 'Escape' && setOpen(false)
+    document.addEventListener('mousedown', onDown)
+    document.addEventListener('keydown', onKey)
+    return () => {
+      document.removeEventListener('mousedown', onDown)
+      document.removeEventListener('keydown', onKey)
     }
-  };
+  }, [open])
 
-  const getInitials = (name) => {
-    if (!name) return 'U';
-    return name.substring(0, 2).toUpperCase();
-  };
+  const setTheme = (value) => {
+    updateSettings({ theme: value })
+    updateUserSettings?.({ theme: value })
+  }
+
+  const name = currentUser?.name || 'Your account'
+  const role = currentUser?.role === 'teacher' ? 'Tutor' : currentUser?.role === 'admin' ? 'Admin' : 'Learner'
 
   return (
-    <>
-      {sidebarOpen && (
-        <div className={styles.backdrop} onClick={toggleSidebar}></div>
+    <div className={styles.userWrap} ref={ref}>
+      {open && (
+        <div className={styles.menu} role="menu">
+          <div className={styles.menuHead}>
+            <span className={styles.menuName}>{name}</span>
+            {currentUser?.email && <span className={styles.menuEmail}>{currentUser.email}</span>}
+          </div>
+          <Link to="/app/profile" className={styles.menuItem} role="menuitem" onClick={() => { setOpen(false); onNavigate?.() }}>
+            <Icon name="profile" size={17} /> Profile
+          </Link>
+          <Link to="/app/settings" className={styles.menuItem} role="menuitem" onClick={() => { setOpen(false); onNavigate?.() }}>
+            <Icon name="settings" size={17} /> Settings
+          </Link>
+          <div className={styles.menuSep} />
+          <div className={styles.themeRow} role="radiogroup" aria-label="Theme">
+            {THEMES.map((t) => (
+              <button
+                key={t.value}
+                type="button"
+                role="radio"
+                aria-checked={theme === t.value}
+                className={theme === t.value ? styles.themeOn : undefined}
+                onClick={() => setTheme(t.value)}
+                title={t.label}
+              >
+                <Icon name={t.icon} size={16} active={theme === t.value} />
+                <span>{t.label}</span>
+              </button>
+            ))}
+          </div>
+          <div className={styles.menuSep} />
+          <button type="button" className={styles.menuItem} role="menuitem" onClick={() => { setOpen(false); signOut() }}>
+            <Icon name="logout" size={17} /> Sign out
+          </button>
+        </div>
       )}
-      <aside className={`${styles.sidebar} ${sidebarOpen ? styles.sidebarOpen : styles.sidebarClosed}`}>
-        <div className={styles.navSection}>
-          <div className={styles.nav}>
-            <NavLink to="/app/dashboard" className={({ isActive }) => isActive ? styles.navItemActive : styles.navItem} onClick={handleNavClick}>
-              <span className={`${styles.navIcon} ${styles.iconSapphire}`}><Home size={17} /></span>
-              <span className={styles.navLabel}>Home</span>
-            </NavLink>
-            <NavLink to="/app/paths" className={({ isActive }) => isActive ? styles.navItemActive : styles.navItem} onClick={handleNavClick}>
-              <span className={`${styles.navIcon} ${styles.iconEmerald}`}><BookOpen size={17} /></span>
-              <span className={styles.navLabel}>Courses</span>
-            </NavLink>
-            <NavLink to="/app/lab" className={({ isActive }) => isActive ? styles.navItemActive : styles.navItem} onClick={handleNavClick}>
-              <span className={`${styles.navIcon} ${styles.iconAmethyst}`}><Terminal size={17} /></span>
-              <span className={styles.navLabel}>Playground</span>
-            </NavLink>
-            <NavLink to="/app/classrooms" className={({ isActive }) => isActive ? styles.navItemActive : styles.navItem} onClick={handleNavClick}>
-              <span className={`${styles.navIcon} ${styles.iconAmber}`}><Users size={17} /></span>
-              <span className={styles.navLabel}>Classrooms</span>
-            </NavLink>
-            <NavLink to="/app/showcase" className={({ isActive }) => isActive ? styles.navItemActive : styles.navItem} onClick={handleNavClick}>
-              <span className={`${styles.navIcon} ${styles.iconCoral}`}><Sparkles size={17} /></span>
-              <span className={styles.navLabel}>Showcase</span>
-            </NavLink>
-            
-            <div className={styles.divider}></div>
 
-            <NavLink to="/app/profile" className={({ isActive }) => isActive ? styles.navItemActive : styles.navItem} onClick={handleNavClick}>
-              <span className={`${styles.navIcon} ${styles.iconSlate}`}><User size={17} /></span>
-              <span className={styles.navLabel}>Profile</span>
-            </NavLink>
-            <NavLink to="/app/settings" className={({ isActive }) => isActive ? styles.navItemActive : styles.navItem} onClick={handleNavClick}>
-              <span className={`${styles.navIcon} ${styles.iconSlate}`}><Settings size={17} /></span>
-              <span className={styles.navLabel}>Settings</span>
-            </NavLink>
+      <button
+        type="button"
+        className={`${styles.user} ${open ? styles.userOpen : ''}`}
+        onClick={() => setOpen((o) => !o)}
+        aria-haspopup="menu"
+        aria-expanded={open}
+        aria-label={`${name}, account menu`}
+        data-tip={open ? undefined : name}
+      >
+        <span className={styles.avatar}>
+          {currentUser?.avatar && currentUser.avatar.startsWith('http')
+            ? <img src={currentUser.avatar} alt="" />
+            : initials(currentUser?.name)}
+        </span>
+        <span className={styles.userText}>
+          <span className={styles.userName}>{name}</span>
+          <span className={styles.userRole}>{role}</span>
+        </span>
+        <Icon name="chevronDown" size={16} className={styles.userChevron} />
+      </button>
+    </div>
+  )
+}
 
-            {isTeacher && (
-              <>
-                <div className={styles.sectionLabel}>Instruction</div>
-                <NavLink to="/app/teacher/dashboard" className={({ isActive }) => isActive ? styles.navItemActive : styles.navItem} onClick={handleNavClick}>
-                  <span className={`${styles.navIcon} ${styles.iconSapphire}`}><BarChart3 size={17} /></span>
-                  <span className={styles.navLabel}>Dashboard</span>
-                </NavLink>
-                <NavLink to="/app/teacher/classrooms" className={({ isActive }) => isActive ? styles.navItemActive : styles.navItem} onClick={handleNavClick}>
-                  <span className={`${styles.navIcon} ${styles.iconEmerald}`}><School2 size={17} /></span>
-                  <span className={styles.navLabel}>My Classes</span>
-                </NavLink>
-                <NavLink to="/app/teacher/cms" className={({ isActive }) => isActive ? styles.navItemActive : styles.navItem} onClick={handleNavClick}>
-                  <span className={`${styles.navIcon} ${styles.iconAmethyst}`}><PenLine size={17} /></span>
-                  <span className={styles.navLabel}>Content Editor</span>
-                </NavLink>
-                <NavLink to="/app/teacher/exercises" className={({ isActive }) => isActive ? styles.navItemActive : styles.navItem} onClick={handleNavClick}>
-                  <span className={`${styles.navIcon} ${styles.iconAmber}`}><Puzzle size={17} /></span>
-                  <span className={styles.navLabel}>Exercises</span>
-                </NavLink>
-              </>
-            )}
-          </div>
+export default function Sidebar() {
+  const { sidebarOpen, toggleSidebar, sidebarCollapsed: collapsed, toggleSidebarCollapsed } = useStore()
+  const { currentUser } = useAuth()
+  const showPalette = usePalette((s) => s.show)
+  const isTeacher = currentUser?.role === 'teacher' || currentUser?.role === 'admin'
+
+  const closeOnMobile = () => {
+    if (sidebarOpen) toggleSidebar()
+  }
+
+  return (
+    <aside
+      className={`${styles.sidebar} ${sidebarOpen ? styles.open : ''} ${collapsed ? styles.collapsed : ''}`}
+      aria-label="App navigation"
+    >
+      <div className={styles.head}>
+        <Link to="/app/dashboard" className={styles.brand} onClick={closeOnMobile} aria-label="VibeSkool home">
+          <BrandLogo size={24} />
+        </Link>
+        <button
+          type="button"
+          className={styles.collapseBtn}
+          onClick={toggleSidebarCollapsed}
+          aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+          aria-expanded={!collapsed}
+          title={collapsed ? undefined : `Collapse sidebar (${isMac() ? '⌘' : 'Ctrl'} B)`}
+          data-tip={`Expand sidebar (${isMac() ? '⌘' : 'Ctrl'} B)`}
+        >
+          <span className={styles.railMark}><BrandMark size={22} /></span>
+          <Icon name="sidebar" size={19} className={styles.railIcon} />
+        </button>
+        <button type="button" className={styles.closeBtn} onClick={toggleSidebar} aria-label="Close menu">
+          <Icon name="close" size={18} />
+        </button>
+      </div>
+
+      <button
+        type="button"
+        className={styles.search}
+        onClick={() => { closeOnMobile(); showPalette() }}
+        aria-label="Search"
+        data-tip={`Search (${isMac() ? '⌘K' : 'Ctrl K'})`}
+      >
+        <Icon name="search" size={17} />
+        <span>Search</span>
+        <kbd>{isMac() ? '⌘K' : 'Ctrl K'}</kbd>
+      </button>
+
+      <nav className={styles.nav}>
+        <div className={styles.group}>
+          {LEARN.map((i) => <NavItem key={i.to} {...i} onNavigate={closeOnMobile} />)}
         </div>
 
-        <div className={styles.userCard}>
-          <div className={styles.userAvatar}>
-            {getInitials(currentUser?.name || currentUser?.username)}
-          </div>
-          <div className={styles.userInfo}>
-            <div className={styles.userCardName}>{currentUser?.name || currentUser?.username || 'User'}</div>
-            <div className={styles.userCardRole}>{currentUser?.role || 'Student'}</div>
-          </div>
+        <div className={styles.group}>
+          <span className={styles.groupLabel}>Community</span>
+          {COMMUNITY.map((i) => <NavItem key={i.to} {...i} onNavigate={closeOnMobile} />)}
         </div>
-      </aside>
-    </>
-  );
+
+        {isTeacher && (
+          <div className={styles.group}>
+            <span className={styles.groupLabel}>Teaching</span>
+            {TEACHING.map((i) => <NavItem key={i.to} {...i} onNavigate={closeOnMobile} />)}
+          </div>
+        )}
+      </nav>
+
+      <div className={styles.foot}>
+        <UserMenu onNavigate={closeOnMobile} />
+      </div>
+    </aside>
+  )
 }

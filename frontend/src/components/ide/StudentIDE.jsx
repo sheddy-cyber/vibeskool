@@ -13,7 +13,7 @@ import styles from './StudentIDE.module.css'
 export default function StudentIDE({ lessonId }) {
   const { currentUser } = useAuth()
   const { settings } = useStore()
-  const activeTheme = settings?.theme || 'light'
+  const activeTheme = settings?.theme || 'dark'
   const isDark = activeTheme === 'dark' || (activeTheme === 'system' && typeof window !== 'undefined' && window.matchMedia?.('(prefers-color-scheme: dark)').matches)
 
   const [exercises, setExercises] = useState([])

@@ -1,13 +1,11 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '@/lib/auth'
-import { useEnforceLightTheme } from '@/lib/theme'
 import GoogleAuthButton from '@/components/auth/GoogleAuthButton'
 import AuthLayout, { Field, PasswordInput, authStyles as styles } from '@/components/auth/AuthLayout'
 import { PairingScene } from '@/components/art/Illustrations'
 
 export default function SignInPage() {
-  useEnforceLightTheme()
   const navigate = useNavigate()
   const { signIn, currentUser, authError, authLoading, clearError } = useAuth()
   const [form, setForm] = useState({ email: '', password: '' })
