@@ -8,6 +8,7 @@ import { buildAttempt, PASS_MARK } from '@/lib/quiz'
 import Icon from '@/components/icons/Icons'
 import CodeBlock from '@/components/lesson/CodeBlock'
 import styles from './SkillCheckPage.module.css'
+import { confirmDialog } from '@/lib/dialog'
 
 const LETTERS = ['A', 'B', 'C', 'D', 'E', 'F']
 const SECONDS_PER_QUESTION = 30
@@ -190,8 +191,11 @@ export default function SkillCheckPage() {
     window.scrollTo({ top: 0, behavior: 'instant' })
   }
 
-  const exit = () => {
-    if (answered > 0 && phase === 'quiz' && !window.confirm('Leave the skill check? Your answers so far will not be saved.')) return
+  const exit = async () => {
+    if (answered > 0 && phase === 'quiz') {
+      const ok = await confirmDialog({ title: 'Leave the skill check?', body: `You've answered ${answered} of ${total}. Your answers won't be saved.`, confirmLabel: 'Leave', cancelLabel: 'Keep going' })
+      if (!ok) return
+    }
     navigate(`/app/paths/${pathId}`)
   }
 

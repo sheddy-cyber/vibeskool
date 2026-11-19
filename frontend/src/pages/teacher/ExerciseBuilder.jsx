@@ -3,6 +3,7 @@ import { exerciseApi, contentApi } from '@/lib/api'
 import { SectionTitle, Button, CodeBlock } from '@/components/ui'
 import { FadeUp } from '@/components/ui/Motion'
 import styles from './ExerciseBuilder.module.css'
+import { confirmDialog, notify } from '@/lib/dialog'
 
 export default function ExerciseBuilder() {
   const [lessons, setLessons] = useState([])
@@ -36,7 +37,7 @@ export default function ExerciseBuilder() {
 
   async function handleSave(e) {
     e.preventDefault()
-    if (!selectedLesson || !title) return alert('Lesson and Title are required')
+    if (!selectedLesson || !title) return notify({ title: 'Some details are missing', body: 'Pick a lesson and give the exercise a title.', tone: 'error' })
     
     try {
       setSaving(true)
@@ -59,9 +60,9 @@ export default function ExerciseBuilder() {
       setStarterCode('')
       setSolutionCode('')
       setTestCases([{ input: '', expected_output: '' }])
-      alert('Exercise created successfully!')
+      notify({ title: 'Exercise created', tone: 'success' })
     } catch (err) {
-      alert(err.message || 'Failed to create exercise')
+      notify({ title: "Couldn't create the exercise", body: err.message, tone: 'error' })
     } finally {
       setSaving(false)
     }
@@ -82,12 +83,13 @@ export default function ExerciseBuilder() {
   }
 
   async function handleDelete(id) {
-    if (!window.confirm('Delete this exercise?')) return
+    const ok = await confirmDialog({ tone: 'danger', title: 'Delete this exercise?', body: 'Students will no longer see it. This can’t be undone.', confirmLabel: 'Delete exercise' })
+    if (!ok) return
     try {
       await exerciseApi.delete(id)
       setExercises(exercises.filter(e => e.id !== id))
     } catch (err) {
-      alert('Failed to delete')
+      notify({ title: "Couldn't delete the exercise", body: 'Check your connection and try again.', tone: 'error' })
     }
   }
 

@@ -6,6 +6,7 @@ import CodeMirror from '@uiw/react-codemirror'
 import { javascript } from '@codemirror/lang-javascript'
 import { python } from '@codemirror/lang-python'
 import styles from './ShowcasePage.module.css'
+import { notify } from '@/lib/dialog'
 
 export default function ShowcasePage() {
   const [projects, setProjects] = useState([])
@@ -40,9 +41,9 @@ export default function ShowcasePage() {
       setCode('')
       setShowNew(false)
       loadProjects()
-      alert('Project published! You earned +30 XP.')
+      notify({ title: 'Project published', body: 'You earned 30 XP.', tone: 'success' })
     } catch (err) {
-      alert('Failed to publish project')
+      notify({ title: "Couldn't publish the project", body: 'Check your connection and try again.', tone: 'error' })
     }
   }
 

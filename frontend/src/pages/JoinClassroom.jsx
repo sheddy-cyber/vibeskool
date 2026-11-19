@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { classroomApi } from '@/lib/api'
 import { Button } from '@/components/ui'
 import styles from './JoinClassroom.module.css'
+import { notify } from '@/lib/dialog'
 
 export default function JoinClassroom() {
   const [classrooms, setClassrooms] = useState([])
@@ -34,9 +35,9 @@ export default function JoinClassroom() {
       const res = await classroomApi.join(inviteCode)
       setClassrooms([res.classroom, ...classrooms])
       setInviteCode('')
-      alert('Successfully joined classroom!')
+      notify({ title: 'You joined the class', tone: 'success' })
     } catch (err) {
-      alert(err.message || 'Failed to join classroom')
+      notify({ title: "Couldn't join the class", body: err.message || 'Check the code with your tutor and try again.', tone: 'error' })
     } finally {
       setJoining(false)
     }

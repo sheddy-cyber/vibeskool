@@ -4,6 +4,7 @@ import { classroomApi } from '@/lib/api'
 import { Button, SectionTitle } from '@/components/ui'
 import { FadeUp } from '@/components/ui/Motion'
 import styles from './ClassroomManager.module.css'
+import { confirmDialog, notify } from '@/lib/dialog'
 
 export default function ClassroomManager() {
   const navigate = useNavigate()
@@ -40,7 +41,7 @@ export default function ClassroomManager() {
       setAnalyticsData(data)
     } catch (err) {
       console.error(err)
-      alert("Failed to load analytics")
+      notify({ title: "Couldn't load this class's progress", body: 'Check your connection and try again.', tone: 'error' })
       setActiveAnalytics(null)
     }
   }
@@ -55,19 +56,20 @@ export default function ClassroomManager() {
       setName('')
       setDescription('')
     } catch (err) {
-      alert('Failed to create classroom')
+      notify({ title: "Couldn't create the class", body: 'Check your connection and try again.', tone: 'error' })
     } finally {
       setCreating(false)
     }
   }
 
   async function handleDelete(id) {
-    if (!window.confirm('Are you sure you want to delete this classroom? All data will be lost.')) return
+    const ok = await confirmDialog({ tone: 'danger', title: 'Delete this class?', body: 'Its students, progress and analytics will be removed. This can’t be undone.', confirmLabel: 'Delete class' })
+    if (!ok) return
     try {
       await classroomApi.delete(id)
       setClassrooms(classrooms.filter(c => c.id !== id))
     } catch (err) {
-      alert('Failed to delete classroom')
+      notify({ title: "Couldn't delete the class", body: 'Check your connection and try again.', tone: 'error' })
     }
   }
 

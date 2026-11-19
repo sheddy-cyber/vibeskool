@@ -5,6 +5,7 @@ import { CodeBlock } from '@/components/ui'
 import { Plus, Edit3, Trash2, Eye, ArrowLeft, Save, Copy, Check } from 'lucide-react'
 import styles from './AdminCMSPage.module.css'
 import { FadeUp, StaggerGroup } from '@/components/ui/Motion'
+import { notify } from '@/lib/dialog'
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 const BLANK_LESSON = () => ({
@@ -173,7 +174,7 @@ export default function AdminCMSPage() {
 
   async function handleSave() {
     if (!lessonId || !lesson.pathId || !lesson.title) {
-      alert("Lesson ID, Path ID, and Title are required.")
+      notify({ title: 'Some details are missing', body: 'Lesson ID, path ID and title are required.', tone: 'error' })
       return
     }
     
@@ -205,10 +206,10 @@ export default function AdminCMSPage() {
 
       if (editingExisting) {
         await contentApi.updateLesson(lessonId, payload)
-        alert('Lesson updated successfully!')
+        notify({ title: 'Lesson updated', tone: 'success' })
       } else {
         await contentApi.createLesson(payload)
-        alert('Lesson created successfully!')
+        notify({ title: 'Lesson created', tone: 'success' })
       }
       
       // Refresh paths to update the UI
@@ -216,7 +217,7 @@ export default function AdminCMSPage() {
       setMode('list')
     } catch (err) {
       console.error(err)
-      alert(err.message || 'Failed to save lesson.')
+      notify({ title: "Couldn't save the lesson", body: err.message, tone: 'error' })
     } finally {
       setSaving(false)
     }

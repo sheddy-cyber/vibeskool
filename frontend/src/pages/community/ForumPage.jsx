@@ -6,6 +6,7 @@ import { Button, CodeBlock } from '@/components/ui'
 import { Plus, X, Send, ArrowLeft } from 'lucide-react'
 import { FadeUp } from '@/components/ui/Motion'
 import styles from './ForumPage.module.css'
+import { notify } from '@/lib/dialog'
 
 export default function ForumPage() {
   const { classroomId } = useParams()
@@ -41,7 +42,7 @@ export default function ForumPage() {
       setShowNew(false)
       loadPosts()
     } catch (err) {
-      alert('Failed to post')
+      notify({ title: "Couldn't post that", body: 'Check your connection and try again.', tone: 'error' })
     }
   }
 
@@ -131,7 +132,7 @@ function ThreadView({ postId, onBack }) {
       setReplyBody('')
       load()
     } catch (err) {
-      alert('Failed to reply')
+      notify({ title: "Couldn't send your reply", body: 'Check your connection and try again.', tone: 'error' })
     }
   }
 

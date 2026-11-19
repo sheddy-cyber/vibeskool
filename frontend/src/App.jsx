@@ -27,12 +27,14 @@ import AdminCMSPage from '@/pages/AdminCMSPage'
 import PrivacyPage from '@/pages/PrivacyPage'
 import TermsPage from '@/pages/TermsPage'
 import NotFoundPage from '@/pages/NotFoundPage'
+import DialogHost from '@/components/ui/DialogHost'
 
 export default function App() {
   return (
     <BrowserRouter>
       <SmoothScroll>
         <ScrollToTop />
+        <DialogHost />
         <Routes>
           {/* Public routes */}
           <Route path="/" element={<LandingPage />} />
