@@ -43,6 +43,13 @@ router.get('/', async (req, res) => {
 
     res.json({
       progress,
+      // Each completion with its timestamp (oldest first), so the client can
+      // show recent activity, today's goal and the weekly streak strip.
+      completions: lessonsResult.rows.map(r => ({
+        lessonId: r.lesson_id,
+        pathId: r.path_id,
+        completedAt: r.completed_at,
+      })),
       lessonsCompleted: lessonsResult.rows.length,
       passedModules: modulesResult.rows.map(r => r.module_id),
       currentStreak: streak.current_streak,
