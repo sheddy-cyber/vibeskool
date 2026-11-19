@@ -23,6 +23,15 @@ export function minutes(duration) {
   return Number.isFinite(n) ? n : null;
 }
 
+/** 75 -> "1 h 15 min" */
+export function formatMinutes(total) {
+  if (!total) return "0 min";
+  const h = Math.floor(total / 60);
+  const m = total % 60;
+  if (!h) return `${m} min`;
+  return m ? `${h} h ${m} min` : `${h} h`;
+}
+
 /** Splits "Title — subtitle" into its two halves. */
 export function splitTitle(title) {
   const full = String(title || "");
@@ -64,6 +73,8 @@ export function buildPathModel(path, completedIds = new Set(), passedModules = n
       title: def.title || shortModuleName(ls[0]?.part) || `Module ${i + 1}`,
       short: shortModuleName(ls[0]?.part) || def.title || `Module ${i + 1}`,
       goal: def.goal || null,
+      deliverables: def.deliverables || null,
+      minutes: ls.reduce((sum, l) => sum + (minutes(l.duration) || 0), 0),
       lessons: ls,
       total: ls.length,
       done,
@@ -82,6 +93,7 @@ export function buildPathModel(path, completedIds = new Set(), passedModules = n
   });
 
   const doneCount = lessons.filter((l) => l.done).length;
+  const totalMinutes = lessons.reduce((sum, l) => sum + (minutes(l.duration) || 0), 0);
   const remainingMinutes = lessons
     .filter((l) => !l.done)
     .reduce((sum, l) => sum + (minutes(l.duration) || 0), 0);
@@ -95,6 +107,7 @@ export function buildPathModel(path, completedIds = new Set(), passedModules = n
     total: lessons.length,
     doneCount,
     remainingMinutes,
+    totalMinutes,
     next,
     nextModule,
     nextIndexInModule: next && nextModule ? nextModule.lessons.findIndex((l) => l.id === next.id) : -1,
