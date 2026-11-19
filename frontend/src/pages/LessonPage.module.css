@@ -838,3 +838,37 @@ li:has(> .tocItem[data-part="true"]) { margin-top: 6px; }
   .pageNext { align-items: flex-start; text-align: left; }
   .note { padding: 14px 16px 16px 14px; gap: 12px; }
 }
+
+/* "Try it here" on lesson commands: types the command into the practice terminal */
+.tryBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  height: 28px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--accent-dim);
+  color: var(--accent-text);
+  font-family: var(--font-sans);
+  font-size: 12.5px;
+  font-weight: 650;
+  cursor: pointer;
+  transition: background-color 140ms ease;
+}
+.tryBtn:hover { background: color-mix(in srgb, var(--accent) 22%, transparent); }
+@media (max-width: 600px) { .tryBtn span { display: none; } .tryBtn { width: 28px; padding: 0; justify-content: center; } }
+
+.termReset {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: #7D8593;
+  cursor: pointer;
+}
+.termReset:hover { background: rgba(255, 255, 255, 0.06); color: #D7DCE3; }

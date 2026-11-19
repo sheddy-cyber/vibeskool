@@ -9,9 +9,11 @@ import CodeBlock, { CopyButton } from '@/components/lesson/CodeBlock'
 import Scratchpad from '@/components/lesson/Scratchpad'
 import Tutor from '@/components/lesson/Tutor'
 import StudentIDE from '@/components/ide/StudentIDE'
-import FriendlyTerminal from '@/components/terminal/FriendlyTerminal'
+import Terminal from '@/components/shell/Terminal'
+import { Shell } from '@/lib/shell/shell'
 import { clamp, readNumber, useDrag, writeNumber } from '@/lib/useDrag'
 import styles from './LessonPage.module.css'
+import { confirmDialog } from '@/lib/dialog'
 
 const lessonHref = (pathId, lessonId) => `/app/paths/${pathId}/lessons/${lessonId}`
 
@@ -44,10 +46,15 @@ function splitMek(mek) {
   return m ? { lead: m[1], rest: m[2] } : { lead: null, rest: s }
 }
 
-function CommandLine({ cmd }) {
+function CommandLine({ cmd, onTry }) {
   return (
     <div className={styles.cmd}>
       <code><span className={styles.cmdPrompt} aria-hidden="true">$</span>{cmd}</code>
+      {onTry && (
+        <button type="button" className={styles.tryBtn} onClick={() => onTry(cmd)} title="Type this into the practice terminal">
+          <Icon name="terminal" size={14} /> <span>Try it here</span>
+        </button>
+      )}
       <CopyButton text={cmd} className={styles.cmdCopy} />
     </div>
   )
@@ -79,7 +86,7 @@ function DoneMark() {
   )
 }
 
-function Mission({ mission, onOpenScratch }) {
+function Mission({ mission, onOpenScratch, onTry, onOpenTerminal }) {
   if (!mission) return null
   return (
     <div className={styles.tryCard}>
@@ -91,7 +98,7 @@ function Mission({ mission, onOpenScratch }) {
               <li key={i} className={styles.step}>
                 <span className={styles.stepNum}>{i + 1}</span>
                 <div className={styles.stepBody}>
-                  <CommandLine cmd={s.cmd} />
+                  <CommandLine cmd={s.cmd} onTry={onTry} />
                   {s.note && <p className={styles.stepNote}>{s.note}</p>}
                 </div>
               </li>
@@ -107,7 +114,7 @@ function Mission({ mission, onOpenScratch }) {
             {mission.steps.map((s, i) => (
               <li key={i}>
                 <span className={styles.stepNum}>{i + 1}</span>
-                {s.isCmd ? <CommandLine cmd={s.text} /> : <span className={styles.chainText}>{s.text.charAt(0).toUpperCase() + s.text.slice(1)}</span>}
+                {s.isCmd ? <CommandLine cmd={s.text} onTry={onTry} /> : <span className={styles.chainText}>{s.text.charAt(0).toUpperCase() + s.text.slice(1)}</span>}
               </li>
             ))}
           </ol>
@@ -123,10 +130,16 @@ function Mission({ mission, onOpenScratch }) {
       )}
 
       <div className={styles.tryFoot}>
-        <span>Rather practise in the browser?</span>
-        <button type="button" className={styles.linkBtn} onClick={onOpenScratch}>
-          <Icon name="code" size={16} /> Open the scratchpad
-        </button>
+        <span>{mission.kind === 'task' ? 'Rather practise in the browser?' : 'No terminal to hand? Use the practice one.'}</span>
+        {mission.kind === 'task' ? (
+          <button type="button" className={styles.linkBtn} onClick={onOpenScratch}>
+            <Icon name="code" size={16} /> Open the scratchpad
+          </button>
+        ) : (
+          <button type="button" className={styles.linkBtn} onClick={onOpenTerminal}>
+            <Icon name="terminal" size={16} /> Open the terminal
+          </button>
+        )}
       </div>
     </div>
   )
@@ -177,6 +190,11 @@ function Skeleton() {
 
 /* ── Page ──────────────────────────────────────────────────── */
 
+const TERM_WELCOME = [
+  { text: 'A practice terminal that runs in your browser. Nothing here touches your computer.' },
+  { text: 'Commands from the lesson work here. Type help to see the rest.' },
+]
+
 const DOCK_TABS = [
   { id: 'scratch', label: 'Scratchpad', icon: 'code' },
   { id: 'exercise', label: 'Exercises', icon: 'checklist' },
@@ -194,6 +212,8 @@ export default function LessonPage() {
   const [loading, setLoading] = useState(true)
   const [exerciseCount, setExerciseCount] = useState(0)
 
+  const lessonShell = useMemo(() => new Shell({ storageKey: 'vibeskool_lesson_shell', seed: 'lesson' }), [])
+  const termRef = useRef(null)
   const [dockOpen, setDockOpen] = useState(false)
   const [dockW, setDockW] = useState(() => readNumber(DOCK_KEY, DOCK_DEFAULT))
   const [dockWide, setDockWide] = useState(false)
@@ -263,6 +283,10 @@ export default function LessonPage() {
   }, [lesson])
   const mission = useMemo(() => parseMission(lesson?.terminalMission), [lesson])
   const prompt = typeof lesson?.aiPrompt === 'string' ? lesson.aiPrompt.trim() : ''
+  const termSuggestions = useMemo(() => {
+    const cmds = mission?.kind === 'commands' ? mission.steps.map((x) => x.cmd) : mission?.kind === 'chain' ? mission.steps.filter((x) => x.isCmd).map((x) => x.text) : []
+    return cmds.length ? [...new Set(cmds)].slice(0, 4) : ['ls', 'pwd', 'help']
+  }, [mission])
   const mek = splitMek(lesson?.mekLabel || here?.mekLabel)
   const { main, sub } = splitTitle(lesson?.title || '')
 
@@ -339,6 +363,10 @@ export default function LessonPage() {
   const toggleDock = (t) => {
     if (dockOpen && tab === t) setDockOpen(false)
     else openDock(t)
+  }
+  const tryInTerminal = (cmd) => {
+    openDock('terminal')
+    setTimeout(() => termRef.current?.type(cmd), 120)
   }
   const askTutor = (text) => {
     setPending({ id: Date.now(), text })
@@ -525,7 +553,7 @@ export default function LessonPage() {
                 title="Try it yourself"
                 sub={mission.kind === 'task' ? 'A small task to do on your own machine.' : 'In your own terminal. Read each result before the next step.'}
               />
-              <Mission mission={mission} onOpenScratch={() => openDock('scratch')} />
+              <Mission mission={mission} onOpenScratch={() => openDock('scratch')} onTry={tryInTerminal} onOpenTerminal={() => openDock('terminal')} />
             </section>
           )}
 
@@ -709,11 +737,28 @@ export default function LessonPage() {
             </div>
           )}
           {(visited.has('terminal') || tab === 'terminal') && (
-            <div className={`${styles.dockPane} ${styles.dockScroll}`} hidden={tab !== 'terminal'}>
-              <p className={styles.dockNote}>
-                A safe practice terminal. Nothing you type here touches your computer. Type <code>help</code> to see what it understands.
-              </p>
-              <FriendlyTerminal mode="free" workspaceFiles={{}} />
+            <div className={styles.dockPane} hidden={tab !== 'terminal'}>
+              <Terminal
+                ref={termRef}
+                shell={lessonShell}
+                title="Practice terminal"
+                welcome={TERM_WELCOME}
+                suggestions={termSuggestions}
+                actions={(
+                  <button
+                    type="button"
+                    className={styles.termReset}
+                    onClick={async () => {
+                      const ok = await confirmDialog({ tone: 'danger', title: 'Reset the practice terminal?', body: 'Its files and Git history will be cleared. This can’t be undone.', confirmLabel: 'Reset' })
+                      if (ok) { lessonShell.reset(); termRef.current?.clear() }
+                    }}
+                    aria-label="Reset the practice terminal"
+                    title="Start again"
+                  >
+                    <Icon name="trash" size={15} />
+                  </button>
+                )}
+              />
             </div>
           )}
           {(visited.has('tutor') || tab === 'tutor') && (
