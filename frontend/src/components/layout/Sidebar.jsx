@@ -20,7 +20,7 @@ const COMMUNITY = [
 
 const TEACHING = [
   { to: '/app/teacher/dashboard', label: 'Overview', icon: 'chart' },
-  { to: '/app/teacher/classrooms', label: 'Classes', icon: 'board' },
+  { to: '/app/classrooms', label: 'Classes', icon: 'board' },
   { to: '/app/teacher/cms', label: 'Content', icon: 'pen' },
   { to: '/app/teacher/exercises', label: 'Exercises', icon: 'checklist' },
 ]
@@ -200,7 +200,8 @@ export default function Sidebar() {
 
         <div className={styles.group}>
           <span className={styles.groupLabel}>Community</span>
-          {COMMUNITY.map((i) => <NavItem key={i.to} {...i} onNavigate={closeOnMobile} />)}
+          {/* Tutors reach their classes from the Teaching group */}
+          {COMMUNITY.filter((i) => !(isTeacher && i.to === '/app/classrooms')).map((i) => <NavItem key={i.to} {...i} onNavigate={closeOnMobile} />)}
         </div>
 
         {isTeacher && (

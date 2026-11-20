@@ -1,0 +1,284 @@
+/* Same palette as lesson code blocks, plus feedback threads between lines. */
+.block {
+  --code-bg: #F7F8FA;
+  --code-bar: #F1F2F5;
+  --code-line: #E3E6EA;
+  --code-text: #1F2430;
+  --code-num: #A9AFB9;
+  --t-kw: #B4235A;
+  --t-str: #1E7F4F;
+  --t-num: #A15C00;
+  --t-fn: #1A5FD0;
+  --t-prop: #7A3FC4;
+  --t-tag: #B4235A;
+  --t-type: #0E7490;
+  --t-cm: #8A909B;
+  --t-op: #5B6170;
+  --mark: rgba(249, 171, 0, 0.12);
+  --mark-edge: #E8A100;
+
+  margin: 0;
+  border: 1px solid var(--code-line);
+  border-radius: 14px;
+  background: var(--code-bg);
+  overflow: hidden;
+}
+:global([data-theme="dark"]) .block {
+  --code-bg: #0E1014;
+  --code-bar: #13161B;
+  --code-line: rgba(255, 255, 255, 0.07);
+  --code-text: #DDE1E8;
+  --code-num: #4C535F;
+  --t-kw: #F48FB8;
+  --t-str: #7DD3A8;
+  --t-num: #F4B740;
+  --t-fn: #7AABF9;
+  --t-prop: #C4A1FF;
+  --t-tag: #F48FB8;
+  --t-type: #67D4E8;
+  --t-cm: #6E7684;
+  --t-op: #A0A7B4;
+  --mark: rgba(244, 183, 64, 0.09);
+  --mark-edge: #F4B740;
+}
+
+.bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  height: 40px;
+  padding: 0 8px 0 14px;
+  border-bottom: 1px solid var(--code-line);
+  background: var(--code-bar);
+}
+.lang {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-tertiary);
+}
+.count {
+  margin-left: 6px;
+  padding-left: 10px;
+  border-left: 1px solid var(--code-line);
+  color: var(--amber-text, var(--amber));
+  font-weight: 600;
+  white-space: nowrap;
+}
+:global([data-theme="dark"]) .count { color: #F4B740; }
+
+.pre {
+  padding: 12px 0;
+  overflow-x: auto;
+  font-family: var(--font-mono);
+  font-size: 13.5px;
+  line-height: 1.7;
+  color: var(--code-text);
+  tab-size: 2;
+  font-variant-ligatures: none;
+}
+
+.line { display: flex; min-width: max-content; padding-right: 18px; position: relative; }
+.line[data-has-thread] { background: var(--mark); box-shadow: inset 2px 0 0 var(--mark-edge); }
+.line[data-open] { background: var(--accent-dim); box-shadow: inset 2px 0 0 var(--accent); }
+.block[data-commentable] .line:hover { background: var(--accent-dim); }
+
+.gutter {
+  position: sticky;
+  left: 0;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  width: 58px;
+  padding-right: 14px;
+  background: inherit;
+}
+.num { flex: 1; text-align: right; color: var(--code-num); user-select: none; font-variant-numeric: tabular-nums; }
+.add {
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  margin-left: 6px;
+  border: 0;
+  border-radius: 6px;
+  background: var(--accent);
+  color: #FFFFFF;
+  cursor: pointer;
+  opacity: 0;
+  transform: scale(0.85);
+  transition: opacity 120ms ease, transform 120ms ease;
+}
+.line:hover .add,
+.line[data-open] .add,
+.add:focus-visible { opacity: 1; transform: none; }
+.add:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.src { white-space: pre; font-family: inherit; }
+
+/* Thread between lines */
+.inline {
+  margin: 4px 14px 10px 58px;
+  padding: 12px 14px;
+  border: 1px solid var(--border-default);
+  border-radius: 12px;
+  background: var(--bg-surface);
+  font-family: var(--font-sans);
+  white-space: normal;
+  position: sticky;
+  left: 14px;
+  max-width: min(640px, calc(100% - 72px));
+}
+.thread { display: grid; gap: 12px; }
+.thread + .composer,
+.thread + .replyLink { margin-top: 12px; }
+.comment { display: flex; gap: 10px; }
+.commentMain { min-width: 0; }
+.commentMeta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+  font-size: 12.5px;
+  color: var(--text-tertiary);
+}
+.commentMeta strong { font-size: 13px; font-weight: 650; color: var(--text-primary); }
+.tutorTag {
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: var(--accent-dim);
+  color: var(--accent-text);
+  font-size: 11px;
+  font-weight: 650;
+}
+.commentBody { margin-top: 3px; font-size: 14px; line-height: 1.55; color: var(--text-primary); white-space: pre-wrap; overflow-wrap: anywhere; }
+
+.composer textarea {
+  display: block;
+  width: 100%;
+  min-height: 64px;
+  padding: 10px 12px;
+  border: 1px solid var(--border-default);
+  border-radius: 10px;
+  background: var(--bg-input);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 1.5;
+  resize: vertical;
+}
+.composer textarea:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-dim); }
+.composerRow { display: flex; align-items: center; justify-content: flex-end; gap: 8px; margin-top: 8px; }
+.hint { margin-right: auto; font-size: 12px; color: var(--text-tertiary); }
+.ghostBtn,
+.sendBtn {
+  height: 32px;
+  padding: 0 14px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.ghostBtn { background: none; color: var(--text-secondary); }
+.ghostBtn:hover { background: var(--bg-raised); color: var(--text-primary); }
+.sendBtn { background: var(--accent); color: #FFFFFF; }
+.sendBtn:hover:not(:disabled) { background: var(--accent-hover); }
+.sendBtn:disabled { opacity: 0.5; cursor: default; }
+.replyLink {
+  padding: 0;
+  border: 0;
+  background: none;
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--accent-text);
+  cursor: pointer;
+}
+.replyLink:hover { text-decoration: underline; }
+
+/* Feedback whose line has changed since: kept, but out of the code */
+.countDim {
+  margin-left: 6px;
+  padding-left: 10px;
+  border-left: 1px solid var(--code-line);
+  color: var(--text-tertiary);
+  font-weight: 600;
+  white-space: nowrap;
+}
+.earlier {
+  border-top: 1px solid var(--code-line);
+  background: var(--code-bar);
+  font-family: var(--font-sans);
+}
+.earlier summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 14px;
+  list-style: none;
+  font-size: 13px;
+  font-weight: 650;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+.earlier summary::-webkit-details-marker { display: none; }
+.earlier summary:hover { color: var(--text-primary); }
+.earlierChevron { transition: transform 150ms ease; }
+.earlier[open] .earlierChevron { transform: rotate(90deg); }
+.earlierCount {
+  display: inline-grid;
+  place-items: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--bg-overlay);
+  font-size: 11.5px;
+  font-variant-numeric: tabular-nums;
+}
+.earlierList { list-style: none; display: grid; gap: 10px; padding: 0 14px 14px; }
+.earlierItem {
+  padding: 12px 14px;
+  border: 1px solid var(--border-default);
+  border-radius: 12px;
+  background: var(--bg-surface);
+}
+.earlierWhere { margin-bottom: 10px; font-size: 12.5px; color: var(--text-tertiary); }
+.earlierWhere code {
+  padding: 2px 6px;
+  border-radius: 6px;
+  background: var(--bg-raised);
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  text-decoration: line-through;
+  text-decoration-color: var(--text-tertiary);
+  overflow-wrap: anywhere;
+}
+
+/* Lezer token classes (same as lesson code) */
+.block :global(.tok-keyword),
+.block :global(.tok-bool),
+.block :global(.tok-atom) { color: var(--t-kw); }
+.block :global(.tok-string),
+.block :global(.tok-string2) { color: var(--t-str); }
+.block :global(.tok-number),
+.block :global(.tok-literal) { color: var(--t-num); }
+.block :global(.tok-variableName2) { color: var(--t-type); }
+.block :global(.tok-variableName.tok-definition),
+.block :global(.tok-function) { color: var(--t-fn); }
+.block :global(.tok-propertyName) { color: var(--t-prop); }
+.block :global(.tok-typeName) { color: var(--t-tag); }
+.block :global(.tok-className),
+.block :global(.tok-namespace) { color: var(--t-type); }
+.block :global(.tok-comment) { color: var(--t-cm); font-style: italic; }
+.block :global(.tok-operator),
+.block :global(.tok-punctuation) { color: var(--t-op); }
+.block :global(.tok-meta) { color: var(--t-cm); }
+.block :global(.tok-url) { color: var(--t-fn); }
+.block :global(.tok-command) { color: var(--t-fn); font-weight: 600; }

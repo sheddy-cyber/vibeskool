@@ -27,7 +27,7 @@ export default function TeacherDashboard() {
 
       <StaggerGroup className={styles.stats}>
         <StatCard label="Active Classrooms" value={loading ? '...' : classrooms.length} />
-        <StatCard label="Total Students" value={loading ? '...' : classrooms.reduce((acc, c) => acc + (c.student_count || 0), 0)} />
+        <StatCard label="Total Students" value={loading ? '...' : classrooms.reduce((acc, c) => acc + (c.member_count || 0), 0)} />
       </StaggerGroup>
 
       <FadeUp delay={100}>
@@ -35,7 +35,7 @@ export default function TeacherDashboard() {
           <div className={styles.card}>
             <h3>Classrooms</h3>
             <p>Create new classrooms, manage student rosters, and generate invite codes.</p>
-            <Link to="/app/teacher/classrooms" className={styles.btn}>Manage Classrooms</Link>
+            <Link to="/app/classrooms" className={styles.btn}>Manage Classrooms</Link>
           </div>
 
           <div className={styles.card}>

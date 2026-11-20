@@ -213,7 +213,7 @@ export default function LandingPage() {
       !currentUser
         ? "/signup?role=teacher"
         : currentUser.role === "teacher"
-          ? "/app/teacher/classrooms"
+          ? "/app/classrooms"
           : "/app/dashboard"
     );
 

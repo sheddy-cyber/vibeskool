@@ -76,6 +76,7 @@ const get = (endpoint) => fetchWrapper(endpoint, { method: 'GET' });
 const post = (endpoint, body) => fetchWrapper(endpoint, { method: 'POST', body: JSON.stringify(body) });
 const put = (endpoint, body) => fetchWrapper(endpoint, { method: 'PUT', body: JSON.stringify(body) });
 const del = (endpoint) => fetchWrapper(endpoint, { method: 'DELETE' });
+const patch = (endpoint, body) => fetchWrapper(endpoint, { method: 'PATCH', body: JSON.stringify(body) });
 
 // ============================================================================
 // API Route Definitions
@@ -93,14 +94,45 @@ export const classroomApi = {
   list: () => get('/api/classrooms'),
   get: (id) => get(`/api/classrooms/${id}`),
   create: (data) => post('/api/classrooms', data),
-  update: (id, data) => put(`/api/classrooms/${id}`, data),
+  update: (id, data) => patch(`/api/classrooms/${id}`, data),
   delete: (id) => del(`/api/classrooms/${id}`),
   join: (inviteCode) => post('/api/classrooms/join', { inviteCode }),
+  leave: (id) => post(`/api/classrooms/${id}/leave`),
+  newInviteCode: (id) => post(`/api/classrooms/${id}/invite-code`),
   getMembers: (id) => get(`/api/classrooms/${id}/members`),
   removeMember: (classroomId, studentId) => del(`/api/classrooms/${classroomId}/members/${studentId}`),
   getStats: (id) => get(`/api/classrooms/${id}/stats`),
   getLeaderboard: (id) => get(`/api/classrooms/${id}/leaderboard`),
   getAnalytics: (id) => get(`/api/classrooms/${id}/analytics`),
+  getInsights: (id) => get(`/api/classrooms/${id}/insights`),
+
+  // Stream
+  posts: (id, params = {}) => {
+    const q = new URLSearchParams(Object.entries(params).filter(([, v]) => v !== undefined && v !== '' && v !== null)).toString()
+    return get(`/api/classrooms/${id}/posts${q ? `?${q}` : ''}`)
+  },
+  createPost: (id, data) => post(`/api/classrooms/${id}/posts`, data),
+  updatePost: (id, postId, data) => patch(`/api/classrooms/${id}/posts/${postId}`, data),
+  deletePost: (id, postId) => del(`/api/classrooms/${id}/posts/${postId}`),
+  reply: (id, postId, data) => post(`/api/classrooms/${id}/posts/${postId}/replies`, data),
+  deleteReply: (id, replyId) => del(`/api/classrooms/${id}/replies/${replyId}`),
+  acceptReply: (id, replyId) => post(`/api/classrooms/${id}/replies/${replyId}/accept`),
+
+  // Classwork
+  assignments: (id) => get(`/api/classrooms/${id}/assignments`),
+  assignment: (id, aid) => get(`/api/classrooms/${id}/assignments/${aid}`),
+  createAssignment: (id, data) => post(`/api/classrooms/${id}/assignments`, data),
+  updateAssignment: (id, aid, data) => patch(`/api/classrooms/${id}/assignments/${aid}`, data),
+  deleteAssignment: (id, aid) => del(`/api/classrooms/${id}/assignments/${aid}`),
+  handIn: (id, aid, data) => put(`/api/classrooms/${id}/assignments/${aid}/submission`, data),
+  submission: (id, sid) => get(`/api/classrooms/${id}/submissions/${sid}`),
+  review: (id, sid, data) => post(`/api/classrooms/${id}/submissions/${sid}/review`, data),
+  comment: (id, sid, data) => post(`/api/classrooms/${id}/submissions/${sid}/comments`, data),
+
+  // Nudges
+  nudges: (id) => get(`/api/classrooms/${id}/nudges`),
+  nudge: (id, studentId, message) => post(`/api/classrooms/${id}/nudges`, { studentId, message }),
+  readNudge: (id, nid) => post(`/api/classrooms/${id}/nudges/${nid}/read`),
 };
 
 export const contentApi = {
@@ -147,13 +179,6 @@ export const aiApi = {
   chat: (data) => post('/api/ai/chat', data),
   getHistory: (lessonId) => get(`/api/ai/history?lessonId=${lessonId}`),
   getHint: (data) => post('/api/ai/hint', data),
-};
-
-export const forumApi = {
-  getPosts: (classroomId) => get(`/api/forums/${classroomId}`),
-  createPost: (classroomId, data) => post(`/api/forums/${classroomId}`, data),
-  getPost: (postId) => get(`/api/forums/post/${postId}`),
-  reply: (postId, body) => post(`/api/forums/post/${postId}/reply`, { body })
 };
 
 export const projectApi = {

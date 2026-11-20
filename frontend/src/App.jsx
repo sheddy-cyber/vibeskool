@@ -1,5 +1,5 @@
 import React from 'react'
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate, useParams } from 'react-router-dom'
 import AppLayout from '@/components/layout/AppLayout'
 import ScrollToTop from '@/components/layout/ScrollToTop'
 import SmoothScroll from '@/components/layout/SmoothScroll'
@@ -15,12 +15,12 @@ import LabPage from '@/pages/LabPage'
 import SkillCheckPage from '@/pages/SkillCheckPage'
 import ProfilePage from '@/pages/ProfilePage'
 import SettingsPage from '@/pages/SettingsPage'
-import JoinClassroom from '@/pages/JoinClassroom'
+import ClassroomsPage from '@/pages/classroom/ClassroomsPage'
+import ClassroomPage from '@/pages/classroom/ClassroomPage'
+import AssignmentPage from '@/pages/classroom/AssignmentPage'
 import ShowcasePage from '@/pages/community/ShowcasePage'
-import ForumPage from '@/pages/community/ForumPage'
 
 import TeacherDashboard from '@/pages/teacher/TeacherDashboard'
-import ClassroomManager from '@/pages/teacher/ClassroomManager'
 import ExerciseBuilder from '@/pages/teacher/ExerciseBuilder'
 import MultiplayerIDE from '@/pages/teacher/MultiplayerIDE'
 import AdminCMSPage from '@/pages/AdminCMSPage'
@@ -28,6 +28,11 @@ import PrivacyPage from '@/pages/PrivacyPage'
 import TermsPage from '@/pages/TermsPage'
 import NotFoundPage from '@/pages/NotFoundPage'
 import DialogHost from '@/components/ui/DialogHost'
+
+function ToClass() {
+  const { classroomId } = useParams()
+  return <Navigate to={`/app/classrooms/${classroomId}`} replace />
+}
 
 export default function App() {
   return (
@@ -68,10 +73,13 @@ export default function App() {
             
             {/* Interactive features */}
             <Route path="lab" element={<LabPage />} />
-            <Route path="classrooms" element={<JoinClassroom />} />
+            <Route path="classrooms" element={<ClassroomsPage />} />
+            <Route path="classrooms/:classroomId" element={<ClassroomPage />} />
+            <Route path="classrooms/:classroomId/assignments/:assignmentId" element={<AssignmentPage />} />
             <Route path="showcase" element={<ShowcasePage />} />
-            <Route path="forum/:classroomId" element={<ForumPage />} />
-            <Route path="classrooms/:classroomId/forum" element={<ForumPage />} />
+            {/* The class forum became the class stream */}
+            <Route path="forum/:classroomId" element={<ToClass />} />
+            <Route path="classrooms/:classroomId/forum" element={<ToClass />} />
             
             {/* User account */}
             <Route path="profile" element={<ProfilePage />} />
@@ -79,7 +87,7 @@ export default function App() {
 
             {/* Teacher routes */}
             <Route path="teacher/dashboard" element={<TeacherRoute><TeacherDashboard /></TeacherRoute>} />
-            <Route path="teacher/classrooms" element={<TeacherRoute><ClassroomManager /></TeacherRoute>} />
+            <Route path="teacher/classrooms" element={<Navigate to="/app/classrooms" replace />} />
             <Route path="teacher/cms" element={<TeacherRoute><AdminCMSPage /></TeacherRoute>} />
             <Route path="teacher/exercises" element={<TeacherRoute><ExerciseBuilder /></TeacherRoute>} />
             <Route path="teacher/workspace/:studentId" element={<TeacherRoute><MultiplayerIDE /></TeacherRoute>} />
@@ -94,7 +102,7 @@ export default function App() {
 
           {/* Legacy / Top-level Teacher aliases */}
           <Route path="/teacher/dashboard" element={<Navigate to="/app/teacher/dashboard" replace />} />
-          <Route path="/teacher/classrooms" element={<Navigate to="/app/teacher/classrooms" replace />} />
+          <Route path="/teacher/classrooms" element={<Navigate to="/app/classrooms" replace />} />
           <Route path="/teacher/cms" element={<Navigate to="/app/teacher/cms" replace />} />
           <Route path="/teacher/exercises" element={<Navigate to="/app/teacher/exercises" replace />} />
 

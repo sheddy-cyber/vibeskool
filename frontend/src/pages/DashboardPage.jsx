@@ -363,7 +363,7 @@ function ClassroomCard({ isStudent }) {
       </div>
 
       {first ? (
-        <Link to="/app/classrooms" className={styles.classRow}>
+        <Link to={`/app/classrooms/${first.id}`} className={styles.classRow}>
           <span className={styles.classMono} aria-hidden="true">{(first.name || 'C').trim().charAt(0).toUpperCase()}</span>
           <span className={styles.classText}>
             <span className={styles.className}>{first.name}</span>
@@ -382,7 +382,7 @@ function ClassroomCard({ isStudent }) {
               <input
                 value={code}
                 onChange={(e) => { setCode(e.target.value); setMessage(null) }}
-                placeholder="e.g. WEB-EVE-24"
+                placeholder="e.g. VIBE-7KQ2MD"
                 aria-label="Class join code"
                 autoComplete="off"
                 spellCheck="false"
