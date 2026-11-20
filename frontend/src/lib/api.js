@@ -78,6 +78,31 @@ const put = (endpoint, body) => fetchWrapper(endpoint, { method: 'PUT', body: JS
 const del = (endpoint) => fetchWrapper(endpoint, { method: 'DELETE' });
 const patch = (endpoint, body) => fetchWrapper(endpoint, { method: 'PATCH', body: JSON.stringify(body) });
 
+// File uploads: the browser sets the multipart boundary, so no JSON header
+async function upload(endpoint, fields) {
+  const form = new FormData();
+  Object.entries(fields).forEach(([k, v]) => { if (v !== undefined && v !== null) form.append(k, v); });
+  const token = getToken();
+  const res = await fetch(`${BASE_URL}${endpoint}`, {
+    method: 'POST',
+    body: form,
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    const error = new Error(data.error || res.statusText);
+    error.status = res.status;
+    error.data = data;
+    throw error;
+  }
+  return data;
+}
+
+const query = (params = {}) => {
+  const q = new URLSearchParams(Object.entries(params).filter(([, v]) => v !== undefined && v !== '' && v !== null)).toString();
+  return q ? `?${q}` : '';
+};
+
 // ============================================================================
 // API Route Definitions
 // ============================================================================
@@ -88,6 +113,29 @@ export const authApi = {
   googleAuth: ({ credential, role }) => post('/api/auth/google', { credential, role }),
   getMe: () => get('/api/auth/me'),
   updateProfile: (data) => put('/api/auth/profile', data),
+  uploadAvatar: (file) => upload('/api/auth/avatar', { avatar: file }),
+  removeAvatar: () => del('/api/auth/avatar'),
+};
+
+export const peopleApi = {
+  get: (id) => get(`/api/people/${id}`),
+};
+
+export const showcaseApi = {
+  list: (params) => get(`/api/showcase/projects${query(params)}`),
+  get: (id) => get(`/api/showcase/projects/${id}`),
+  create: (data) => post('/api/showcase/projects', data),
+  update: (id, data) => patch(`/api/showcase/projects/${id}`, data),
+  delete: (id) => del(`/api/showcase/projects/${id}`),
+  uploadImage: (id, file, alt) => upload(`/api/showcase/projects/${id}/image`, { image: file, alt }),
+  removeImage: (id) => del(`/api/showcase/projects/${id}/image`),
+  appreciate: (id) => post(`/api/showcase/projects/${id}/appreciate`),
+  feature: (id) => post(`/api/showcase/projects/${id}/feature`),
+  leave: (id) => post(`/api/showcase/projects/${id}/leave`),
+  comments: (id) => get(`/api/showcase/projects/${id}/comments`),
+  comment: (id, body) => post(`/api/showcase/projects/${id}/comments`, { body }),
+  deleteComment: (id, commentId) => del(`/api/showcase/projects/${id}/comments/${commentId}`),
+  people: (q) => get(`/api/showcase/collaborators${query({ q })}`),
 };
 
 export const classroomApi = {
@@ -103,7 +151,6 @@ export const classroomApi = {
   removeMember: (classroomId, studentId) => del(`/api/classrooms/${classroomId}/members/${studentId}`),
   getStats: (id) => get(`/api/classrooms/${id}/stats`),
   getLeaderboard: (id) => get(`/api/classrooms/${id}/leaderboard`),
-  getAnalytics: (id) => get(`/api/classrooms/${id}/analytics`),
   getInsights: (id) => get(`/api/classrooms/${id}/insights`),
 
   // Stream
@@ -117,6 +164,9 @@ export const classroomApi = {
   reply: (id, postId, data) => post(`/api/classrooms/${id}/posts/${postId}/replies`, data),
   deleteReply: (id, replyId) => del(`/api/classrooms/${id}/replies/${replyId}`),
   acceptReply: (id, replyId) => post(`/api/classrooms/${id}/replies/${replyId}/accept`),
+  // The tutor's edited version of the code in a post, with notes on its lines
+  saveCodeReview: (id, postId, data) => put(`/api/classrooms/${id}/posts/${postId}/code-review`, data),
+  removeCodeReview: (id, postId) => del(`/api/classrooms/${id}/posts/${postId}/code-review`),
 
   // Classwork
   assignments: (id) => get(`/api/classrooms/${id}/assignments`),
@@ -140,13 +190,6 @@ export const contentApi = {
   getPath: (id) => get(`/api/paths/${id}`),
   getLessons: () => get('/api/lessons'),
   getLesson: (id) => get(`/api/lessons/${id}`),
-  // Teacher CRUD (Phase 2)
-  createLesson: (data) => post('/api/lessons', data),
-  updateLesson: (id, data) => put(`/api/lessons/${id}`, data),
-  deleteLesson: (id) => del(`/api/lessons/${id}`),
-  createPath: (data) => post('/api/paths', data),
-  updatePath: (id, data) => put(`/api/paths/${id}`, data),
-  deletePath: (id) => del(`/api/paths/${id}`),
 };
 
 export const progressApi = {
@@ -163,31 +206,35 @@ export const exerciseApi = {
   delete: (id) => del(`/api/exercises/${id}`),
   submit: (id, code) => post(`/api/exercises/${id}/submit`, { code }),
   getSolutions: (id) => get(`/api/exercises/${id}/solutions`),
+  check: (data) => post('/api/exercises/check', data),
 };
 
-export const testApi = {
-  list: () => get('/api/tests'),
-  get: (id) => get(`/api/tests/${id}`),
-  create: (data) => post('/api/tests', data),
-  start: (id) => post(`/api/tests/${id}/start`),
-  submit: (id, answers) => post(`/api/tests/${id}/submit`, { answers }),
-  getSubmissions: (testId) => get(`/api/submissions?testId=${testId}`),
-  grade: (submissionId, data) => put(`/api/submissions/${submissionId}/grade`, data),
+/* Tutors: their own courses (alone or as a team) */
+export const studioApi = {
+  courses: () => get('/api/studio/courses'),
+  createCourse: (data) => post('/api/studio/courses', data),
+  course: (id) => get(`/api/studio/courses/${id}`),
+  updateCourse: (id, data) => patch(`/api/studio/courses/${id}`, data),
+  deleteCourse: (id) => del(`/api/studio/courses/${id}`),
+  saveOutline: (id, modules) => put(`/api/studio/courses/${id}/outline`, { modules }),
+  addLesson: (id, data) => post(`/api/studio/courses/${id}/lessons`, data),
+  lesson: (id) => get(`/api/studio/lessons/${id}`),
+  updateLesson: (id, data) => patch(`/api/studio/lessons/${id}`, data),
+  deleteLesson: (id) => del(`/api/studio/lessons/${id}`),
+  invite: (id, email) => post(`/api/studio/courses/${id}/invites`, { email }),
+  cancelInvite: (inviteId) => del(`/api/studio/invites/${inviteId}`),
+  acceptInvite: (inviteId) => post(`/api/studio/invites/${inviteId}/accept`),
+  removeMember: (id, userId) => del(`/api/studio/courses/${id}/team/${userId}`),
+  makeOwner: (id, userId) => post(`/api/studio/courses/${id}/team/${userId}/owner`),
+  setClasses: (id, classIds) => put(`/api/studio/courses/${id}/classes`, { classIds }),
+  exercises: (courseId) => get(`/api/studio/exercises${query({ courseId })}`),
+};
+
+export const teachingApi = {
+  overview: () => get('/api/teaching/overview'),
 };
 
 export const aiApi = {
   chat: (data) => post('/api/ai/chat', data),
-  getHistory: (lessonId) => get(`/api/ai/history?lessonId=${lessonId}`),
   getHint: (data) => post('/api/ai/hint', data),
-};
-
-export const projectApi = {
-  list: () => get('/api/projects'),
-  create: (data) => post('/api/projects', data),
-  toggleLike: (id) => post(`/api/projects/${id}/like`)
-};
-
-export const challengeApi = {
-  getDaily: () => get('/api/challenges/daily'),
-  submitDaily: (id, code) => post('/api/challenges/daily/submit', { id, code })
 };

@@ -2,11 +2,13 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import Icon from '@/components/icons/Icons'
 import CodeBlock from '@/components/lesson/CodeBlock'
+import CodeChanges from '@/components/classroom/CodeChanges'
 import { Avatar, Empty, Pill, Segmented, Skeleton } from '@/components/classroom/Parts'
 import { classroomApi, contentApi } from '@/lib/api'
 import { errorText, timeAgo } from '@/lib/classroom'
 import { useLive } from '@/lib/live'
 import { confirmDialog, notify } from '@/lib/dialog'
+import CodeReviewEditor from './CodeReviewEditor'
 import styles from './Classroom.module.css'
 
 const FILTERS = [
@@ -217,10 +219,15 @@ function ReplyForm({ onSend, placeholder }) {
 
 function Post({ post, room, tutor, me, onChange, onRemove, focused }) {
   const [expanded, setExpanded] = useState(false)
+  const [editingCode, setEditingCode] = useState(false)
   const mine = post.author.id === me.id
   const byTutor = post.author.id === room.teacher_id
   const question = post.kind === 'question'
   const canPickAnswer = question && (mine || tutor)
+  // The tutor can edit the code in someone else's post; everyone else sees
+  // their version and answers in the replies
+  const canEditCode = tutor && !mine && Boolean(post.code?.trim())
+  const review = post.code_review
 
   const update = async (data, done) => {
     try {
@@ -280,7 +287,25 @@ function Post({ post, room, tutor, me, onChange, onRemove, focused }) {
     }
   }
 
+  const removeReview = async () => {
+    const ok = await confirmDialog({
+      tone: 'danger',
+      title: 'Remove your edit?',
+      body: `${post.author.display_name.split(' ')[0]} will see their original code again, without your changes or notes.`,
+      confirmLabel: 'Remove edit',
+    })
+    if (!ok) return
+    try {
+      const { post: next } = await classroomApi.removeCodeReview(room.id, post.id)
+      onChange(next)
+    } catch (err) {
+      notify({ title: "Couldn't remove your edit", body: errorText(err), tone: 'error' })
+    }
+  }
+
   const menu = []
+  if (canEditCode && !editingCode) menu.push({ label: review ? 'Edit your changes to the code' : 'Edit the code', icon: 'pen', onClick: () => setEditingCode(true) })
+  if (canEditCode && review && !editingCode) menu.push({ label: 'Remove your edit', icon: 'reset', onClick: removeReview })
   if (tutor) menu.push({ label: post.pinned ? 'Unpin' : 'Pin to the top', icon: 'flag', onClick: () => update({ pinned: !post.pinned }) })
   if (question && (mine || tutor)) {
     menu.push(post.resolved
@@ -321,7 +346,45 @@ function Post({ post, room, tutor, me, onChange, onRemove, focused }) {
 
       {post.title && <h3 className={styles.postTitle}>{post.title}</h3>}
       <p className={styles.postBody}>{post.body}</p>
-      {post.code && <div className={styles.postCode}><CodeBlock code={post.code} /></div>}
+      {post.code && (
+        editingCode ? (
+          <div className={styles.postCode}>
+            <CodeReviewEditor
+              room={room}
+              post={post}
+              onCancel={() => setEditingCode(false)}
+              onSaved={(next) => { onChange(next); setEditingCode(false) }}
+            />
+          </div>
+        ) : review ? (
+          <div className={styles.postCode}>
+            <CodeChanges
+              key={review.at}
+              base={review.base}
+              code={review.code}
+              notes={review.notes}
+              by={review.by}
+              at={review.at}
+              whose={mine ? 'your' : `${post.author.display_name.split(' ')[0]}’s`}
+              outdatedBy={review.outdated ? (mine ? 'You' : post.author.display_name.split(' ')[0]) : null}
+            />
+            {canEditCode && (
+              <button type="button" className={styles.textBtn} data-tone="accent" onClick={() => setEditingCode(true)} style={{ marginTop: 8 }}>
+                <Icon name="pen" size={14} /> Edit your changes
+              </button>
+            )}
+          </div>
+        ) : (
+          <div className={styles.postCode}>
+            <CodeBlock code={post.code} />
+            {canEditCode && (
+              <button type="button" className={styles.textBtn} data-tone="accent" onClick={() => setEditingCode(true)} style={{ marginTop: 8 }}>
+                <Icon name="pen" size={14} /> Edit the code and add notes
+              </button>
+            )}
+          </div>
+        )
+      )}
       {post.lesson && (
         <Link to={lessonHref(post.lesson)} className={styles.lessonLink}>
           <Icon name="book" size={15} /> {post.lesson.title}

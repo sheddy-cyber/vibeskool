@@ -19,10 +19,10 @@ const COMMUNITY = [
 ]
 
 const TEACHING = [
-  { to: '/app/teacher/dashboard', label: 'Overview', icon: 'chart' },
+  { to: '/app/teaching', label: 'Overview', icon: 'chart', end: true },
   { to: '/app/classrooms', label: 'Classes', icon: 'board' },
-  { to: '/app/teacher/cms', label: 'Content', icon: 'pen' },
-  { to: '/app/teacher/exercises', label: 'Exercises', icon: 'checklist' },
+  { to: '/app/teaching/courses', label: 'Courses', icon: 'pen' },
+  { to: '/app/teaching/exercises', label: 'Exercises', icon: 'checklist' },
 ]
 
 const THEMES = [

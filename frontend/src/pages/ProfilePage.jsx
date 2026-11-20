@@ -1,391 +1,286 @@
-import React from "react";
-import { useStore } from "@/lib/store";
-import { useAuth } from "@/lib/auth";
-import { ProgressBar } from "@/components/ui";
-import styles from "./ProfilePage.module.css";
-import { FadeUp, RevealOnScroll, StaggerGroup } from "@/components/ui/Motion";
+import React, { useEffect, useMemo, useRef, useState } from 'react'
+import { Link, useParams } from 'react-router-dom'
+import Icon from '@/components/icons/Icons'
+import { Avatar, Empty, Modal, Skeleton } from '@/components/classroom/Parts'
+import ProjectCard from '@/components/showcase/ProjectCard'
+import { authApi, peopleApi } from '@/lib/api'
+import { useAuth } from '@/lib/auth'
+import { errorText } from '@/lib/classroom'
+import { notify } from '@/lib/dialog'
+import { useStore } from '@/lib/store'
+import ui from './classroom/Classroom.module.css'
+import styles from './ProfilePage.module.css'
 
-// SVG icons for builds
-const BuildIcons = {
-  web: (
-    <svg
-      width="20"
-      height="20"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.6"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <circle cx="12" cy="12" r="10" />
-      <line x1="2" y1="12" x2="22" y2="12" />
-      <path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z" />
-    </svg>
-  ),
-  bot: (
-    <svg
-      width="20"
-      height="20"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.6"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <rect x="3" y="11" width="18" height="10" rx="2" />
-      <path d="M12 11V5" />
-      <circle cx="12" cy="4" r="1" />
-      <path d="M8 15h.01M16 15h.01" />
-    </svg>
-  ),
-  api: (
-    <svg
-      width="20"
-      height="20"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.6"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
-      <polyline points="14 2 14 8 20 8" />
-      <line x1="16" y1="13" x2="8" y2="13" />
-      <line x1="16" y1="17" x2="8" y2="17" />
-    </svg>
-  ),
-  db: (
-    <svg
-      width="20"
-      height="20"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.6"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <ellipse cx="12" cy="5" rx="9" ry="3" />
-      <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3" />
-      <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5" />
-    </svg>
-  ),
-  deploy: (
-    <svg
-      width="20"
-      height="20"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.6"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-    </svg>
-  ),
-};
+const ROLE = { teacher: 'Tutor', admin: 'Admin', student: 'Student' }
+const IMAGE_TYPES = ['image/png', 'image/jpeg', 'image/webp', 'image/gif']
 
-const BUILDS = [
-  {
-    icon: BuildIcons.web,
-    title: "Landing Page with AI",
-    unlocked: (score) => score >= 30,
-  },
-  {
-    icon: BuildIcons.bot,
-    title: "Chatbot Interface",
-    unlocked: (score) => score >= 50,
-  },
-  {
-    icon: BuildIcons.api,
-    title: "REST API (AI-assisted)",
-    unlocked: (score) => score >= 65,
-  },
-  {
-    icon: BuildIcons.db,
-    title: "Database-backed App",
-    unlocked: (score) => score >= 80,
-  },
-  {
-    icon: BuildIcons.deploy,
-    title: "Full-Stack Deploy",
-    unlocked: (score) => score >= 95,
-  },
-];
+function monthYear(value) {
+  return new Date(value).toLocaleDateString(undefined, { month: 'long', year: 'numeric' })
+}
 
-const CheckIcon = () => (
-  <svg
-    width="13"
-    height="13"
-    viewBox="0 0 12 12"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2.2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <polyline points="2,6 5,9 10,3" />
-  </svg>
-);
-const LockIcon = () => (
-  <svg
-    width="13"
-    height="13"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-    <path d="M7 11V7a5 5 0 0110 0v4" />
-  </svg>
-);
+function siteLabel(url) {
+  try { return new URL(url).host.replace(/^www\./, '') } catch { return url }
+}
 
-const PATH_ICONS = {
-  "vibe-web": (
-    <svg
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.6"
-      strokeLinecap="round"
-    >
-      <circle cx="12" cy="12" r="10" />
-      <path d="M2 12h20M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z" />
-    </svg>
-  ),
-  "vibe-coding": (
-    <svg
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.6"
-      strokeLinecap="round"
-    >
-      <polyline points="16 18 22 12 16 6" />
-      <polyline points="8 6 2 12 8 18" />
-    </svg>
-  ),
-  "git-github": (
-    <svg
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.6"
-      strokeLinecap="round"
-    >
-      <circle cx="18" cy="18" r="3" />
-      <circle cx="6" cy="6" r="3" />
-      <path d="M13 6h3a2 2 0 012 2v7" />
-      <line x1="6" y1="9" x2="6" y2="21" />
-    </svg>
-  ),
-  "python-basics": (
-    <svg
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.6"
-      strokeLinecap="round"
-    >
-      <polyline points="4 17 10 11 4 5" />
-      <line x1="12" y1="19" x2="20" y2="19" />
-    </svg>
-  ),
-  apis: (
-    <svg
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.6"
-      strokeLinecap="round"
-    >
-      <path d="M8 9l3 3-3 3" />
-      <line x1="13" y1="15" x2="16" y2="15" />
-      <rect x="3" y="3" width="18" height="18" rx="2" />
-    </svg>
-  ),
-  "sql-basics": (
-    <svg
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.6"
-      strokeLinecap="round"
-    >
-      <ellipse cx="12" cy="5" rx="9" ry="3" />
-      <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3" />
-      <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5" />
-    </svg>
-  ),
-};
+/* ── Edit dialog ──────────────────────────────────────────── */
+function EditProfile({ onClose }) {
+  const { currentUser, updateProfile, applyUser } = useAuth()
+  const [name, setName] = useState(currentUser.name)
+  const [headline, setHeadline] = useState(currentUser.headline)
+  const [bio, setBio] = useState(currentUser.bio)
+  const [github, setGithub] = useState(currentUser.github)
+  const [website, setWebsite] = useState(currentUser.website)
+  const [errors, setErrors] = useState({})
+  const [busy, setBusy] = useState(false)
+  const [photoBusy, setPhotoBusy] = useState(false)
+  const file = useRef(null)
+  const me = { display_name: currentUser.name, avatar_url: currentUser.avatar, role: currentUser.role }
+  const hasPhoto = /^https?:\/\//.test(currentUser.avatar || '')
 
-export default function ProfilePage() {
-  const { progress, paths, fetchPaths } = useStore();
-  const { currentUser } = useAuth();
-  
-  React.useEffect(() => {
-    if (paths.length === 0) fetchPaths()
-  }, [paths.length, fetchPaths])
+  const uploadPhoto = async (f) => {
+    if (!f) return
+    if (!IMAGE_TYPES.includes(f.type)) { notify({ title: 'Use a PNG, JPG, WebP or GIF', tone: 'error' }); return }
+    if (f.size > 8 * 1024 * 1024) { notify({ title: 'That photo is over 8 MB', tone: 'error' }); return }
+    setPhotoBusy(true)
+    try {
+      const res = await authApi.uploadAvatar(f)
+      applyUser(res.user)
+    } catch (err) {
+      notify({ title: "Couldn't upload that photo", body: errorText(err), tone: 'error' })
+    } finally {
+      setPhotoBusy(false)
+    }
+  }
 
-  const user = currentUser || {
-    name: 'Student',
-    avatar: 'S',
-    lessonsCompleted: 0,
-    buildsUnlocked: 0,
-  };
+  const removePhoto = async () => {
+    setPhotoBusy(true)
+    try { applyUser((await authApi.removeAvatar()).user) } finally { setPhotoBusy(false) }
+  }
 
-  const totalLessons = paths.reduce((sum, p) => sum + (p.lessons_data?.length || 0), 0);
-  const doneLessons = Object.values(progress).reduce((a, b) => a + b, 0);
-  const overallPct = totalLessons > 0 ? Math.round((doneLessons / totalLessons) * 100) : 0;
+  const save = async (e) => {
+    e.preventDefault()
+    setBusy(true)
+    setErrors({})
+    try {
+      await updateProfile({ displayName: name, headline, bio, github, website })
+      notify({ title: 'Profile updated', tone: 'success' })
+      onClose()
+    } catch (err) {
+      const f = err.data?.fields || {}
+      setErrors(Object.fromEntries(Object.entries(f).map(([k, v]) => [k, Array.isArray(v) ? v[0] : String(v)])))
+      setBusy(false)
+    }
+  }
 
   return (
-    <div className={styles.page}>
-      {/* Profile card */}
-      <FadeUp delay={0}>
-        <div className={styles.profileCard}>
-          <div className={styles.avatarLg}>
-            <svg
-              width="28"
-              height="28"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="var(--bg-base)"
-              strokeWidth="1.8"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" />
-              <circle cx="12" cy="7" r="4" />
-            </svg>
-          </div>
-          <div className={styles.profileInfo}>
-            <h1 className={styles.profileName}>{user.name}</h1>
-            <p className={styles.profileSub}>AI-native learner · VibeSkool</p>
-            <div className={styles.profileStats}>
-              <div className={styles.pStat}>
-                <span className={styles.pStatNum}>{user.lessonsCompleted}</span>
-                <span className={styles.pStatLabel}>Lessons done</span>
-              </div>
-              <div className={styles.pStatDiv} />
-              <div className={styles.pStat}>
-                <span className={styles.pStatNum}>{user.mekScore}%</span>
-                <span className={styles.pStatLabel}>MEK Score</span>
-              </div>
-              <div className={styles.pStatDiv} />
-              <div className={styles.pStat}>
-                <span className={styles.pStatNum}>{user.buildsUnlocked}</span>
-                <span className={styles.pStatLabel}>Builds unlocked</span>
-              </div>
-            </div>
-          </div>
+    <Modal
+      title="Edit profile"
+      description="This is what other people at VibeSkool see. Your email is never shown."
+      onClose={onClose}
+      footer={
+        <>
+          <button type="button" className={ui.btnGhost} onClick={onClose}>Cancel</button>
+          <button type="submit" form="profile-form" className={ui.btnPrimary} disabled={busy || name.trim().length < 2}>{busy ? 'Saving…' : 'Save'}</button>
+        </>
+      }
+    >
+      <div className={styles.photoRow}>
+        <Avatar user={me} size={64} />
+        <div className={styles.photoTools}>
+          <button type="button" className={`${ui.btnGhost} ${ui.sm}`} onClick={() => file.current?.click()} disabled={photoBusy}>
+            <Icon name="image" size={15} /> {photoBusy ? 'Uploading…' : hasPhoto ? 'Change photo' : 'Upload a photo'}
+          </button>
+          {hasPhoto && <button type="button" className={`${ui.btnDanger} ${ui.sm}`} onClick={removePhoto} disabled={photoBusy}>Remove</button>}
         </div>
-      </FadeUp>
-
-      {/* Overall progress */}
-      <div className={styles.section}>
-        <h2 className={styles.sectionTitle}>Overall Progress</h2>
-        <div className={styles.overallProgress}>
-          <div className={styles.overallTop}>
-            <span className={styles.overallLabel}>Across all paths</span>
-            <span className={styles.overallPct}>{overallPct}%</span>
-          </div>
-          <ProgressBar
-            value={doneLessons}
-            max={totalLessons}
-            color="violet"
-            height={6}
-          />
-          <span className={styles.overallSub}>
-            {doneLessons} of {totalLessons} lessons complete
+        <input ref={file} type="file" accept={IMAGE_TYPES.join(',')} hidden onChange={(e) => { uploadPhoto(e.target.files?.[0]); e.target.value = '' }} />
+      </div>
+      <form id="profile-form" onSubmit={save}>
+        <label className={ui.field}>
+          <span>Name</span>
+          <input className={ui.input} value={name} onChange={(e) => setName(e.target.value)} maxLength={120} />
+          {errors.displayName && <small className={styles.fieldError}>{errors.displayName}</small>}
+        </label>
+        <label className={ui.field}>
+          <span className={styles.labelRow}>Headline <span className={styles.counter}>{headline.length}/80</span></span>
+          <input className={ui.input} value={headline} onChange={(e) => setHeadline(e.target.value)} maxLength={80} placeholder="e.g. Learning full-stack, one build at a time" />
+        </label>
+        <label className={ui.field}>
+          <span className={styles.labelRow}>About you <span className={styles.counter}>{bio.length}/500</span></span>
+          <textarea className={ui.textarea} rows={4} value={bio} onChange={(e) => setBio(e.target.value)} maxLength={500} placeholder="What are you learning, and what do you want to build?" />
+        </label>
+        <label className={ui.field}>
+          <span>GitHub</span>
+          <span className={styles.prefix}>
+            <span>github.com/</span>
+            <input
+              className={ui.input}
+              value={github}
+              onChange={(e) => setGithub(e.target.value)}
+              onBlur={() => setGithub((v) => v.trim().replace(/^@/, '').replace(/^(https?:\/\/)?(www\.)?github\.com\//i, '').replace(/\/+$/, ''))}
+              maxLength={60}
+              placeholder="username"
+              autoComplete="off"
+              spellCheck="false"
+            />
           </span>
-        </div>
-      </div>
+          {errors.github && <small className={styles.fieldError}>{errors.github}</small>}
+        </label>
+        <label className={ui.field}>
+          <span>Website</span>
+          <input className={ui.input} value={website} onChange={(e) => setWebsite(e.target.value)} maxLength={300} placeholder="https://your-site.dev" inputMode="url" />
+          {errors.website && <small className={styles.fieldError}>{errors.website}</small>}
+        </label>
+      </form>
+    </Modal>
+  )
+}
 
-      {/* Per-path progress */}
-      <div className={styles.section}>
-        <h2 className={styles.sectionTitle}>Path Breakdown</h2>
-        <div className={styles.pathsBreakdown}>
-          {paths.map((path) => {
-            const done = progress[path.id] || 0;
-            const total = path.lessons_data?.length || 1;
-            const pct = Math.round((done / total) * 100);
-            return (
-              <div key={path.id} className={styles.pathRow}>
-                <span className={styles.pathRowIcon}>
-                  {PATH_ICONS[path.id] || PATH_ICONS["vibe-coding"]}
-                </span>
-                <div className={styles.pathRowInfo}>
-                  <div className={styles.pathRowTop}>
-                    <span className={styles.pathRowName}>{path.name}</span>
-                    <span className={styles.pathRowPct}>{pct}%</span>
-                  </div>
-                  <ProgressBar
-                    value={done}
-                    max={total}
-                    color={path.color}
-                    height={4}
-                  />
-                  <span className={styles.pathRowSub}>
-                    {done} / {total} lessons
-                  </span>
-                </div>
-              </div>
-            );
-          })}
+/* ── Learning progress (your own profile only) ────────────── */
+function Learning() {
+  const { paths, fetchPaths, progress } = useStore()
+  useEffect(() => { if (!paths.length) fetchPaths() }, [paths.length, fetchPaths])
+  const rows = useMemo(() => paths.map((p) => {
+    const total = p.lessons_data?.length || 0
+    const done = (progress[p.id] || []).length
+    return { id: p.id, name: p.name, total, done, pct: total ? Math.round((done / total) * 100) : 0 }
+  }).filter((r) => r.total).sort((a, b) => b.done - a.done), [paths, progress])
+  if (!rows.length) return null
+  return (
+    <section className={styles.section}>
+      <div className={styles.sectionHead}>
+        <div>
+          <h2 className={ui.sectionTitle}>Your learning</h2>
+          <p className={ui.sectionSub}>Only you see this part.</p>
         </div>
       </div>
+      <ul className={`${ui.card} ${styles.paths}`}>
+        {rows.map((r) => (
+          <li key={r.id}>
+            <Link to={`/app/paths/${r.id}`} className={styles.pathRow}>
+              <span>
+                <span className={styles.pathName}>{r.name}</span>
+                <span className={styles.pathSub} style={{ display: 'block' }}>{r.done} of {r.total} lessons</span>
+              </span>
+              <span className={styles.bar}><span style={{ width: `${r.pct}%` }} /></span>
+              <span className={styles.pct}>{r.pct}%</span>
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </section>
+  )
+}
 
-      {/* Builds unlocked */}
-      <div className={styles.section}>
-        <h2 className={styles.sectionTitle}>Builds Unlocked</h2>
-        <p className={styles.buildsSub}>
-          Things you can now build with AI based on your MEK score.
-        </p>
-        <div className={styles.buildsList}>
-          {BUILDS.map((b, i) => {
-            const isUnlocked = b.unlocked(user.mekScore);
-            return (
-              <div
-                key={i}
-                className={`${styles.buildRow} ${isUnlocked ? styles.buildUnlocked : styles.buildLocked}`}
-              >
-                <span className={styles.buildIcon}>{b.icon}</span>
-                <span className={styles.buildTitle}>{b.title}</span>
-                <span className={styles.buildStatus}>
-                  {isUnlocked ? (
-                    <>
-                      <CheckIcon /> Unlocked
-                    </>
-                  ) : (
-                    <>
-                      <LockIcon /> Keep learning
-                    </>
-                  )}
-                </span>
-              </div>
-            );
-          })}
-        </div>
+/* ── Page ─────────────────────────────────────────────────── */
+export default function ProfilePage() {
+  const { personId } = useParams()
+  const { currentUser } = useAuth()
+  const id = personId || currentUser?.id
+  const [data, setData] = useState(null)
+  const [error, setError] = useState(null)
+  const [editing, setEditing] = useState(false)
+
+  useEffect(() => {
+    if (!id) return
+    setData(null)
+    setError(null)
+    peopleApi.get(id).then(setData).catch((err) => setError(err.status === 404 ? "This person doesn't exist." : errorText(err)))
+  }, [id, currentUser?.name, currentUser?.avatar, currentUser?.headline, currentUser?.bio, currentUser?.github, currentUser?.website])
+
+  if (error) {
+    return <div className={ui.page}><div className={ui.card}><Empty icon="profile" title="Couldn't open this profile">{error}</Empty></div></div>
+  }
+  if (!data) {
+    return (
+      <div className={ui.page}>
+        <div className={`${ui.card} ${styles.hero}`}><span style={{ width: 88, height: 88, borderRadius: '50%', background: 'var(--bg-raised)' }} /><Skeleton lines={3} /></div>
       </div>
+    )
+  }
+
+  const { person, stats, teaching, projects, isMe } = data
+  const tutor = person.role !== 'student'
+  const first = person.display_name.split(' ')[0]
+  const emptyProfile = isMe && !person.headline && !person.bio && !person.github_username && !person.website_url
+
+  return (
+    <div className={ui.page}>
+      <section className={`${ui.card} ${styles.hero}`}>
+        {isMe ? (
+          <button type="button" className={styles.avatarBtn} onClick={() => setEditing(true)} aria-label="Change your photo">
+            <Avatar user={person} size={88} />
+          </button>
+        ) : <Avatar user={person} size={88} />}
+        <div style={{ minWidth: 0 }}>
+          <h1 className={styles.name}>
+            {person.display_name}
+            <span className={styles.role} data-tone={tutor ? 'tutor' : undefined}>{ROLE[person.role] || 'Student'}</span>
+          </h1>
+          {person.headline && <p className={styles.headline}>{person.headline}</p>}
+          {person.bio && <p className={styles.bio}>{person.bio}</p>}
+          <div className={styles.links}>
+            {person.github_username && (
+              <a href={`https://github.com/${person.github_username}`} target="_blank" rel="noopener noreferrer"><Icon name="branch" size={15} />{person.github_username}</a>
+            )}
+            {person.website_url && (
+              <a href={person.website_url} target="_blank" rel="noopener noreferrer"><Icon name="web" size={15} />{siteLabel(person.website_url)}</a>
+            )}
+            <span><Icon name="clock" size={15} />Joined {monthYear(person.joined)}</span>
+          </div>
+          {emptyProfile && (
+            <p className={styles.nudgeEdit}>
+              Add a headline, a few words about you and your GitHub so classmates know who you are.
+              <button type="button" className={ui.textBtn} data-tone="accent" onClick={() => setEditing(true)}>Add them</button>
+            </p>
+          )}
+        </div>
+        {isMe && (
+          <div className={styles.heroActions}>
+            <button type="button" className={ui.btnGhost} onClick={() => setEditing(true)}><Icon name="pen" size={16} /> Edit profile</button>
+          </div>
+        )}
+      </section>
+
+      {teaching ? (
+        <div className={`${ui.card} ${styles.stats}`} data-cols="2">
+          <div className={styles.stat}><p className={styles.statNum}>{teaching.classes}</p><p className={styles.statLabel}>Classes taught</p></div>
+          <div className={styles.stat}><p className={styles.statNum}>{teaching.students}</p><p className={styles.statLabel}>Students</p></div>
+        </div>
+      ) : stats ? (
+        <div className={`${ui.card} ${styles.stats}`}>
+          <div className={styles.stat}><p className={styles.statNum}>{stats.lessonsCompleted}</p><p className={styles.statLabel}>Lessons finished</p></div>
+          <div className={styles.stat}><p className={styles.statNum}>{stats.passedModules.length}</p><p className={styles.statLabel}>Skill checks passed</p></div>
+          <div className={styles.stat}><p className={styles.statNum}>{stats.currentStreak}</p><p className={styles.statLabel}>Day streak (best {stats.longestStreak})</p></div>
+          <div className={styles.stat}><p className={styles.statNum}>{stats.xp}</p><p className={styles.statLabel}>XP</p></div>
+        </div>
+      ) : (
+        <div className={`${ui.card} ${styles.private}`}><Icon name="lock" size={17} /> {first} keeps their learning stats private.</div>
+      )}
+
+      <section className={styles.section}>
+        <div className={styles.sectionHead}>
+          <div>
+            <h2 className={ui.sectionTitle}>{isMe ? 'Your projects' : 'Projects'}</h2>
+            <p className={ui.sectionSub}>{isMe ? 'Including drafts, which only you and your collaborators see.' : `Things ${first} built or helped build.`}</p>
+          </div>
+          {isMe && projects.length > 0 && <Link to="/app/showcase/new" className={`${ui.btnGhost} ${ui.sm}`}><Icon name="plus" size={15} /> Share a project</Link>}
+        </div>
+        {projects.length ? (
+          <div className={styles.grid}>{projects.map((p) => <ProjectCard key={p.id} project={p} />)}</div>
+        ) : (
+          <div className={ui.card}>
+            {isMe ? (
+              <Empty icon="showcase" title="Nothing shared yet" action={<Link to="/app/showcase/new" className={ui.btnPrimary}><Icon name="plus" size={16} /> Share a project</Link>}>
+                Your projects show up here and on the showcase.
+              </Empty>
+            ) : <Empty icon="showcase" title={`${first} hasn't shared a project yet`} />}
+          </div>
+        )}
+      </section>
+
+      {isMe && person.role === 'student' && <Learning />}
+
+      {editing && <EditProfile onClose={() => setEditing(false)} />}
     </div>
-  );
+  )
 }

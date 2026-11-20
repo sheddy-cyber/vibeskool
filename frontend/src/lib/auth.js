@@ -10,6 +10,11 @@ function mapUser(backendUser, extras = {}) {
     avatar: backendUser.avatar_url || backendUser.display_name?.trim().split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2) || '?',
     settings: backendUser.settings || {},
     joinedAt: backendUser.created_at,
+    headline: backendUser.headline || '',
+    bio: backendUser.bio || '',
+    github: backendUser.github_username || '',
+    website: backendUser.website_url || '',
+    authProvider: backendUser.auth_provider || 'local',
     mekScore: extras.mekScore ?? 0,
     xp: backendUser.xp ?? 0,
     badges: backendUser.badges ?? [],
@@ -189,6 +194,20 @@ export const useAuth = create((set, get) => {
         console.error('Failed to update settings remotely', err)
         // In a strict environment, we might revert the optimistic update here.
       }
+    },
+
+    // Profile edits and avatar changes return the user; keep the learning stats we already have
+    applyUser: (backendUser) => {
+      const cu = get().currentUser
+      const fresh = mapUser(backendUser)
+      const keep = ['mekScore', 'lessonsCompleted', 'passedModules', 'currentStreak', 'longestStreak', 'progress']
+      set({ currentUser: { ...fresh, ...(cu ? Object.fromEntries(keep.map((k) => [k, cu[k]])) : {}) } })
+    },
+
+    updateProfile: async (data) => {
+      const res = await authApi.updateProfile(data)
+      get().applyUser(res.user)
+      return res.user
     },
 
     clearError: () => set({ authError: null }),

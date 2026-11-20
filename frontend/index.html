@@ -19,6 +19,8 @@
           var resolved = t === 'dark' ? 'dark' : (t === 'system' && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
           document.documentElement.setAttribute('data-theme', resolved);
           document.documentElement.style.colorScheme = resolved;
+          var f = localStorage.getItem('vibeskool_font');
+          if (f === 'geist') document.documentElement.setAttribute('data-font', 'geist');
           var m = document.querySelector('meta[name="theme-color"]');
           if (m) m.setAttribute('content', resolved === 'dark' ? '#0F1115' : '#FFFFFF');
         } catch(e) {}

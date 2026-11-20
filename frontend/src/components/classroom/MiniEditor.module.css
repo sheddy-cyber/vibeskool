@@ -1,0 +1,4 @@
+.shell { border: 1px solid var(--border-default); border-radius: 12px; overflow: hidden; }
+.shell :global(.cm-editor) { font-size: 13px; }
+.shell :global(.cm-editor.cm-focused) { outline: none; }
+.shell:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-dim); }

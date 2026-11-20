@@ -297,13 +297,15 @@ function ModuleBlock({ pathId, module: m, nextId, open, onToggle }) {
                 {m.deliverables}
               </p>
             )}
-            <Link to={checkHref(pathId, m.id)} className={styles.checkLink} data-passed={m.passed}>
-              {m.passed ? (
-                <><Icon name="check" size={15} /> Skill check passed · retake</>
-              ) : (
-                <>{ready ? 'Take the skill check' : 'Skill check'} <Icon name="arrowRight" size={15} /></>
-              )}
-            </Link>
+            {m.hasCheck && (
+              <Link to={checkHref(pathId, m.id)} className={styles.checkLink} data-passed={m.passed}>
+                {m.passed ? (
+                  <><Icon name="check" size={15} /> Skill check passed · retake</>
+                ) : (
+                  <>{ready ? 'Take the skill check' : 'Skill check'} <Icon name="arrowRight" size={15} /></>
+                )}
+              </Link>
+            )}
           </div>
         </div>
       </div>
@@ -314,6 +316,7 @@ function ModuleBlock({ pathId, module: m, nextId, open, onToggle }) {
 function Summary({ model }) {
   const next = model.next
   const passed = model.modules.filter((m) => m.passed).length
+  const checks = model.modules.filter((m) => m.hasCheck).length
   return (
     <aside className={styles.summary} aria-label="Your progress">
       <div className={styles.sumTop}>
@@ -350,7 +353,7 @@ function Summary({ model }) {
       )}
 
       <dl className={styles.sumFacts}>
-        <div><dt>Skill checks passed</dt><dd>{passed} of {model.modules.length}</dd></div>
+        {checks > 0 && <div><dt>Skill checks passed</dt><dd>{passed} of {checks}</dd></div>}
         <div><dt>Total length</dt><dd>{formatMinutes(model.totalMinutes)}</dd></div>
       </dl>
     </aside>

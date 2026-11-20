@@ -1,12 +1,11 @@
 # VibeSkool API (Django)
 
-The VibeSkool backend, built with Django and Django REST Framework. It is replacing the
-Express server in `../backend` one area at a time and keeps the same API, so the React
-app works with either.
+The VibeSkool backend, built with Django and Django REST Framework. It serves
+everything the React app in `../frontend` uses.
 
 - **Accounts:** email and password sign-in, Google sign-in, and profiles. Tokens are
-  JWTs that both servers accept, and bcrypt passwords from the Express database still
-  work (they are upgraded on the next sign-in).
+  JWTs. Accounts imported from the earlier Express server keep their passwords (bcrypt
+  hashes are upgraded on the next sign-in).
 - **Learning:** paths, lessons, progress, streaks, XP and skill checks. Skill checks are
   graded on the server, so the answers never reach the browser.
 - **Classrooms:** where a tutor and their students work together:
@@ -23,6 +22,21 @@ app works with either.
     through the API, so permissions are checked in one place
   - feedback that follows the code: when a student hands in changed code, a line
     comment moves with its line, or is marked outdated if that line was edited
+- **Course studio (tutors):** tutors build their own courses (modules, lessons,
+  exercises) alone or as a team. A course belongs to its team: other tutors can't see
+  or touch it. The owner invites tutors by email (the reply never reveals whether an
+  account exists), can hand over ownership, and decides which of their classes see the
+  course once it's published. Saving over a teammate's newer changes is refused, so
+  nobody silently overwrites anyone. VibeSkool's own (official) courses are read-only
+  except for admins. All the rules live in `apps/learning/access.py`.
+- **Tutor overview:** one place for what needs a tutor across their classes.
+- **Showcase:** students and tutors share what they built: a live site, a GitHub repo,
+  or both, with an optional preview image. Projects credit everyone who worked on them
+  (collaborators come from people you share a class with), can be drafts, get
+  appreciations and comments, and can be featured by the tutor of the class they were
+  built in. Uploaded images are checked, resized and re-encoded, which also strips
+  location data from photos.
+- **Profiles:** headline, bio, GitHub, website and photo; learning stats can be hidden.
 - **Admin (CMS):** lessons, paths, skill-check questions and answers, classes,
   submissions and users, all editable at `/admin`.
 
@@ -32,15 +46,19 @@ app works with either.
 cd backend-django
 python -m venv .venv
 .venv\Scripts\python -m pip install -r requirements.txt
-copy .env.example .env          # then fill in JWT_SECRET (same as backend/.env)
+copy .env.example .env          # then fill in JWT_SECRET and DATABASE_URL
 .venv\Scripts\python manage.py migrate
 .venv\Scripts\python manage.py seed_content   # paths, lessons, skill checks
 .venv\Scripts\python manage.py seed_demo      # optional: demo class, tutor and students
+.venv\Scripts\python manage.py seed_showcase  # optional: demo projects (after seed_demo)
 .venv\Scripts\python manage.py runserver 8000   # Daphne: HTTP and WebSockets
 ```
 
-To run the React app against Django instead of Express, use `npm run dev:django` in
-`frontend/`.
+`npm run dev` in the project root starts this API and the React app together.
+
+Without `DATABASE_URL` the API uses a local SQLite file (`db.sqlite3`).
+`import_express` is a one-time tool that copied the old Express server's tables into
+Django's; it's only needed if you're moving another copy of that database.
 
 `seed_demo` creates `admin@`, `tutor@`, and `ada@`, `tunde@`, `mira@`, `leo@` and `ife@`
 accounts at `demo.vibeskool.test`. Their password comes from `DEMO_PASSWORD`, or the
@@ -51,6 +69,14 @@ default in `apps/classrooms/management/commands/seed_demo.py`. It only runs with
 - Admin: http://localhost:8000/admin
 
 ## Production
+
+Uploads (project previews, avatars) go to `media/` on local disk. On a host whose
+disk is wiped on redeploy, switch the storage backend to object storage (S3, Supabase
+Storage) and set `MEDIA_ORIGIN` to where the files are served from.
+
+Exercise code runs on a Piston server (`PISTON_URL`). The public one is invite-only
+since February 2026, so production needs a self-hosted Piston (it runs in Docker).
+Tutors' "Check my solution" for JavaScript runs in the browser and doesn't need it.
 
 Run under an ASGI server so WebSockets work, and set `REDIS_URL` when there is more
 than one process (without it, live updates use an in-memory layer that only works
@@ -73,8 +99,11 @@ daphne -b 0.0.0.0 -p $PORT config.asgi:application
 ```
 config/            settings, URLs
 apps/accounts/     User model, JWT authentication, sign-in views, permissions
-apps/learning/     paths, lessons, progress, streaks, skill checks (+ seed_content)
+apps/learning/     courses, lessons, progress, skill checks, exercises, AI tutor,
+                   studio.py (course studio), access.py (who sees and edits what)
 apps/classrooms/   classes, stream, assignments, feedback, insights, nudges, live.py (+ seed_demo)
+apps/showcase/     projects, collaborators, appreciations, comments (+ seed_showcase)
+apps/images.py     upload checks, resizing and metadata stripping
 seed/              lesson content and skill-check questions as JSON
 ```
 

@@ -2,7 +2,7 @@ import React, { useEffect } from 'react'
 import { Outlet, useLocation } from 'react-router-dom'
 import { useStore } from '@/lib/store'
 import { useAuth } from '@/lib/auth'
-import { getStoredTheme, applyTheme } from '@/lib/theme'
+import { getStoredTheme, applyTheme, applyFont, getStoredFont } from '@/lib/theme'
 import Topbar from './Topbar'
 import Sidebar from './Sidebar'
 import CommandPalette from './CommandPalette'
@@ -17,6 +17,12 @@ export default function AppLayout() {
   useEffect(() => {
     applyTheme(getStoredTheme())
   }, [])
+
+  // Your font follows your account: on a new device, use the one you picked
+  const accountFont = currentUser?.settings?.font
+  useEffect(() => {
+    if (accountFont && accountFont !== getStoredFont()) applyFont(accountFont)
+  }, [accountFont])
 
   // Close the mobile drawer whenever the route changes
   useEffect(() => {

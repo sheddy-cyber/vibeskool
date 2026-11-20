@@ -1,5 +1,5 @@
-"""Shapes match what the React app already reads from the Express API
-(e.g. `name` for a path title, `lessons_data`, camelCase lesson fields)."""
+"""Shapes match what the React app reads (e.g. `name` for a path title,
+`lessons_data`, camelCase lesson fields)."""
 from rest_framework import serializers
 
 from .models import Lesson, Question, SkillCheck, SkillPath
@@ -19,23 +19,28 @@ class PathSerializer(serializers.ModelSerializer):
     name = serializers.CharField(source='title')
     lessons_data = serializers.SerializerMethodField()
     order_index = serializers.IntegerField(source='order', required=False)
+    official = serializers.BooleanField(source='is_official', read_only=True)
+    status = serializers.CharField(read_only=True)
 
     class Meta:
         model = SkillPath
-        fields = ['id', 'icon', 'name', 'description', 'color', 'tag', 'lessons_data', 'modules', 'order_index', 'classroom']
-        extra_kwargs = {'classroom': {'required': False}}
-
-    def validate_classroom(self, room):
-        request = self.context.get('request')
-        if room and request and not room.is_tutor(request.user):
-            raise serializers.ValidationError("You can only add paths to classes you teach")
-        return room
+        fields = ['id', 'icon', 'name', 'description', 'color', 'tag', 'lessons_data', 'modules', 'order_index',
+                  'official', 'status']
 
     def get_lessons_data(self, path):
         lessons = getattr(path, 'visible_lessons', None)
         if lessons is None:
             lessons = path.lessons.all()
         return LessonSummarySerializer(lessons, many=True).data
+
+    def to_representation(self, obj):
+        data = super().to_representation(obj)
+        # Tell the app which modules have a skill check, so it only links to real ones
+        checks = self.context.get('check_ids')
+        if checks is None:
+            checks = self.context['check_ids'] = set(SkillCheck.objects.values_list('module_id', flat=True))
+        data['modules'] = [{**m, 'has_check': m.get('id') in checks} for m in (data.get('modules') or []) if isinstance(m, dict)]
+        return data
 
 
 class LessonListSerializer(serializers.ModelSerializer):

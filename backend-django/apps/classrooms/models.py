@@ -88,6 +88,17 @@ class Post(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)
     edited_at = models.DateTimeField(null=True, blank=True)
 
+    # The tutor's take on the code: their edited version and notes on its lines.
+    # The student's own code stays in `code`; `review_base` is the code the
+    # tutor started from, so the changes can be shown even if the student edits
+    # theirs later.
+    review_code = models.TextField(blank=True)
+    review_base = models.TextField(blank=True)
+    review_notes = models.JSONField(default=list, blank=True, help_text='[{"line": 1-based line in review_code, "body": "…"}]')
+    reviewed_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL,
+                                    related_name='code_reviews')
+    reviewed_at = models.DateTimeField(null=True, blank=True)
+
     class Meta:
         ordering = ['-pinned', '-created_at']
 

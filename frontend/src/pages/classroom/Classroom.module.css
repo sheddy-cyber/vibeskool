@@ -800,3 +800,26 @@ button.miniRow:hover { background: var(--bg-raised); }
 .note { padding: 12px 14px; border-radius: 12px; background: var(--bg-raised); font-size: 14px; line-height: 1.55; white-space: pre-wrap; }
 .linkOut { display: inline-flex; align-items: center; gap: 8px; font-weight: 600; color: var(--accent-text); overflow-wrap: anywhere; }
 .linkOut:hover { text-decoration: underline; }
+
+/* Tutor editing the code in a student's post */
+.reviewEditor {
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+  border: 1px solid var(--accent);
+  border-radius: 14px;
+  background: var(--bg-surface);
+  box-shadow: 0 0 0 3px var(--accent-dim);
+}
+.reviewHead { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; }
+.reviewTitle { display: inline-flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 650; color: var(--text-primary); }
+.reviewHint { font-size: 13px; color: var(--text-tertiary); }
+.reviewFoot { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 8px; padding-top: 2px; }
+.reviewAudience {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-right: auto;
+  font-size: 12.5px;
+  color: var(--text-secondary);
+}

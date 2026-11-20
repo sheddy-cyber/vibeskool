@@ -18,7 +18,7 @@ class ClassroomTestCase(APITestCase):
         self.room = Classroom.objects.create(teacher=self.tutor, name='Evening cohort')
         Membership.objects.create(classroom=self.room, student=self.ada)
         Membership.objects.create(classroom=self.room, student=self.ben)
-        path = SkillPath.objects.create(id='web', title='Web')
+        path = SkillPath.objects.create(id='web', title='Web', is_official=True, status='published')
         self.lesson = Lesson.objects.create(id='l1', path=path, title='One')
 
     def as_(self, user):

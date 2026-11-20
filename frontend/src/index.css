@@ -1,4 +1,5 @@
 @import '@fontsource-variable/exo-2';
+@import '@fontsource-variable/geist';
 @import '@fontsource/geist-mono/400.css';
 @import '@fontsource/geist-mono/500.css';
 @import '@fontsource/geist-mono/600.css';
@@ -209,6 +210,13 @@
   /* ── Frosted Glass & Surface ───────────────────────────────── */
   --glass-bg:         rgba(17, 20, 30, 0.85);
   --glass-border:     rgba(255, 255, 255, 0.08);
+}
+
+/* Font choice (Settings → Appearance). Exo 2 is the default; Geist is the
+   alternative. Set on <html data-font> before first paint (see index.html). */
+:root[data-font="geist"] {
+  --font-display: 'Geist Variable', 'Geist', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-sans:    'Geist Variable', 'Geist', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
 }
 
 

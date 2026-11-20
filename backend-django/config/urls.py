@@ -1,3 +1,5 @@
+from django.conf import settings
+from django.conf.urls.static import static
 from django.contrib import admin
 from django.http import JsonResponse
 from django.urls import include, path
@@ -28,8 +30,18 @@ urlpatterns = [
     path('api/progress/', include(learning.progress_urls)),
     path('api/progress', include(learning.progress_urls[:1])),
     path('api/skill-checks/', include(learning.skill_check_urls)),
+    path('api/ai/', include(learning.ai_urls)),
+    path('api/studio/', include(learning.studio_urls)),
+    path('api/teaching/', include('apps.classrooms.teaching_urls')),
+    path('api/exercises/', include(learning.exercise_urls)),
+    path('api/exercises', include(learning.exercise_urls[:1])),
     path('api/classrooms/', include(classrooms.urlpatterns)),
     path('api/classrooms', include(classrooms.urlpatterns[:1])),
+    path('api/showcase/', include('apps.showcase.urls')),
+    path('api/people/', include('apps.accounts.people_urls')),
     path('api/schema', SpectacularAPIView.as_view(), name='schema'),
     path('api/docs', SpectacularSwaggerView.as_view(url_name='schema'), name='docs'),
 ]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

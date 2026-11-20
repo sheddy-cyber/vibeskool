@@ -18,10 +18,10 @@ const PAGES = [
 ]
 
 const TEACHER_PAGES = [
-  { label: 'Teaching overview', to: '/app/teacher/dashboard', icon: 'chart' },
+  { label: 'Teaching overview', to: '/app/teaching', icon: 'chart' },
   { label: 'My classes', to: '/app/classrooms', icon: 'board' },
-  { label: 'Content editor', to: '/app/teacher/cms', icon: 'pen' },
-  { label: 'Exercises', to: '/app/teacher/exercises', icon: 'checklist' },
+  { label: 'Your courses', to: '/app/teaching/courses', icon: 'pen' },
+  { label: 'Exercises', to: '/app/teaching/exercises', icon: 'checklist' },
 ]
 
 function matches(haystack, tokens) {

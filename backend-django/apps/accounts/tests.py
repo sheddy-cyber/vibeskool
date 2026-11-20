@@ -53,7 +53,7 @@ class AuthTests(APITestCase):
         for key in ('lessonsCompleted', 'passedModules', 'mekScore', 'currentStreak', 'longestStreak'):
             self.assertIn(key, res.data)
 
-    def test_tokens_from_the_express_server_still_work(self):
+    def test_tokens_from_the_old_server_still_work(self):
         user = User.objects.create_user('old@example.com', 'secret123', display_name='Old Timer')
         token = jwt.encode(
             {'id': str(user.id), 'email': user.email, 'role': 'student',
@@ -63,7 +63,7 @@ class AuthTests(APITestCase):
         self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {token}')
         self.assertEqual(self.client.get('/api/auth/me').status_code, 200)
 
-    def test_express_bcrypt_passwords_still_work(self):
+    def test_imported_bcrypt_passwords_still_work(self):
         import bcrypt
         user = User.objects.create_user('legacy@example.com', display_name='Legacy')
         legacy_hash = bcrypt.hashpw(b'oldpass1', bcrypt.gensalt(rounds=4)).decode()

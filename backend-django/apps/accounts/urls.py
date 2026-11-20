@@ -8,4 +8,5 @@ urlpatterns = [
     path('google', views.GoogleView.as_view(), name='auth-google'),
     path('me', views.MeView.as_view(), name='auth-me'),
     path('profile', views.ProfileView.as_view(), name='auth-profile'),
+    path('avatar', views.AvatarView.as_view(), name='auth-avatar'),
 ]

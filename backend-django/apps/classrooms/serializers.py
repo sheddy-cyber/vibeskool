@@ -12,8 +12,7 @@ def viewer(ctx):
 
 
 class ClassroomSerializer(serializers.ModelSerializer):
-    """Keeps the Express field names (teacher_name, member_count…) so the
-    current pages keep working. The invite code and AI settings are for the tutor only."""
+    """A class as the frontend reads it. The invite code and AI settings are for the tutor only."""
 
     teacher_id = serializers.UUIDField(read_only=True)
     teacher_name = serializers.CharField(source='teacher.display_name', read_only=True)
@@ -100,17 +99,68 @@ class PostSerializer(serializers.ModelSerializer):
     )
     replies = ReplySerializer(many=True, read_only=True)
     resolved = serializers.BooleanField(required=False)
+    code_review = serializers.SerializerMethodField()
 
     class Meta:
         model = Post
         fields = ['id', 'kind', 'author', 'title', 'body', 'code', 'code_language', 'lesson', 'lessonId',
-                  'is_private', 'pinned', 'resolved', 'resolved_at', 'replies', 'created_at', 'edited_at']
+                  'is_private', 'pinned', 'resolved', 'resolved_at', 'replies', 'code_review',
+                  'created_at', 'edited_at']
         read_only_fields = ['resolved_at', 'created_at', 'edited_at']
 
     def validate_body(self, value):
         if not value.strip():
             raise serializers.ValidationError('Write something first')
         return value.strip()
+
+    def get_code_review(self, post):
+        if not post.reviewed_at:
+            return None
+        return {
+            'code': post.review_code,
+            'base': post.review_base,
+            'notes': post.review_notes or [],
+            'by': PublicUserSerializer(post.reviewed_by).data if post.reviewed_by else None,
+            'at': post.reviewed_at,
+            # The student changed their code after the tutor's edit
+            'outdated': post.review_base != post.code,
+        }
+
+
+class CodeReviewSerializer(serializers.Serializer):
+    """The tutor's edited version of a post's code, with notes on its lines."""
+    MAX_CODE = 40_000
+    MAX_NOTES = 60
+
+    code = serializers.CharField(allow_blank=True, trim_whitespace=False, max_length=MAX_CODE)
+    notes = serializers.ListField(child=serializers.DictField(), required=False, default=list)
+
+    def validate(self, attrs):
+        code = attrs['code']
+        if not code.strip():
+            raise serializers.ValidationError({'code': 'The code can’t be empty'})
+        line_count = len(code.split('\n'))
+        notes, seen = [], set()
+        if len(attrs['notes']) > self.MAX_NOTES:
+            raise serializers.ValidationError({'notes': f'Up to {self.MAX_NOTES} notes'})
+        for n in attrs['notes']:
+            body = str(n.get('body', '')).strip()
+            try:
+                line = int(n.get('line'))
+            except (TypeError, ValueError):
+                raise serializers.ValidationError({'notes': 'Each note needs a line number'})
+            if not body:
+                continue
+            if not 1 <= line <= line_count:
+                raise serializers.ValidationError({'notes': f'Line {line} isn’t in the code'})
+            if len(body) > 1000:
+                raise serializers.ValidationError({'notes': 'Keep each note under 1000 characters'})
+            if line in seen:
+                raise serializers.ValidationError({'notes': f'Line {line} has two notes; combine them'})
+            seen.add(line)
+            notes.append({'line': line, 'body': body})
+        attrs['notes'] = sorted(notes, key=lambda x: x['line'])
+        return attrs
 
 
 class AssignmentSerializer(serializers.ModelSerializer):

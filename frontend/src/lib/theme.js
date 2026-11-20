@@ -88,3 +88,28 @@ export function applyTheme(themePreference) {
 export function initTheme() {
   return applyTheme(getStoredTheme())
 }
+
+// ─── Font ───────────────────────────────────────────────────────────────────
+// 'exo' (default) or 'geist'. Stored per browser so the right font is set
+// before the first paint, and synced to the account so it follows you.
+
+export const FONTS = ['exo', 'geist']
+
+export function getStoredFont() {
+  try {
+    const f = localStorage.getItem('vibeskool_font')
+    return FONTS.includes(f) ? f : 'exo'
+  } catch (e) {
+    return 'exo'
+  }
+}
+
+export function applyFont(font) {
+  const f = FONTS.includes(font) ? font : 'exo'
+  if (typeof document !== 'undefined') {
+    if (f === 'exo') document.documentElement.removeAttribute('data-font')
+    else document.documentElement.setAttribute('data-font', f)
+  }
+  try { localStorage.setItem('vibeskool_font', f) } catch (e) {}
+  return f
+}

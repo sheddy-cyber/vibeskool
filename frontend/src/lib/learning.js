@@ -74,6 +74,8 @@ export function buildPathModel(path, completedIds = new Set(), passedModules = n
       short: shortModuleName(ls[0]?.part) || def.title || `Module ${i + 1}`,
       goal: def.goal || null,
       deliverables: def.deliverables || null,
+      // Only modules with a question bank get a skill check
+      hasCheck: def.has_check !== false,
       minutes: ls.reduce((sum, l) => sum + (minutes(l.duration) || 0), 0),
       lessons: ls,
       total: ls.length,

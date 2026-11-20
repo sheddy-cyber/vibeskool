@@ -12,7 +12,7 @@ export default function SignInPage() {
 
   useEffect(() => {
     if (currentUser) {
-      navigate(currentUser.role === 'teacher' ? '/app/teacher/dashboard' : '/app/dashboard', { replace: true })
+      navigate(currentUser.role === 'teacher' ? '/app/teaching' : '/app/dashboard', { replace: true })
     }
   }, [currentUser, navigate])
 

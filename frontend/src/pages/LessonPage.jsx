@@ -599,7 +599,7 @@ export default function LessonPage() {
                   </div>
                 </div>
 
-                {moduleDone && mod && !mod.passed ? (
+                {moduleDone && mod && mod.hasCheck && !mod.passed ? (
                   <div className={styles.upNext}>
                     <span className={styles.upLabel}>Module {mod.index + 1} is done</span>
                     <span className={styles.upTitle}>Take the skill check</span>

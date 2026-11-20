@@ -9,7 +9,7 @@ from .services import touch_streak
 
 
 def make_content():
-    path = SkillPath.objects.create(id='web', title='Web', order=0, is_default=True, modules=[{'id': 'm0'}])
+    path = SkillPath.objects.create(id='web', title='Web', order=0, is_default=True, modules=[{'id': 'm0'}], is_official=True, status='published')
     Lesson.objects.create(id='l1', path=path, title='One', order=0, sections=[{'type': 'text'}], terminal_mission='ls')
     Lesson.objects.create(id='l2', path=path, title='Two', order=1)
     Lesson.objects.create(id='draft', path=path, title='Draft', order=2, published=False)
@@ -40,15 +40,18 @@ class ContentTests(APITestCase):
         self.assertEqual(self.client.get('/api/lessons/draft').status_code, 404)
         self.assertEqual(self.client.get('/api/lessons/nope').data, {'error': 'Lesson not found'})
 
-    def test_only_tutors_write_lessons(self):
+    def test_nobody_but_admins_edits_official_courses(self):
         student = User.objects.create_user('s@x.com', 'secret123', display_name='S')
         self.client.force_authenticate(student)
         self.assertEqual(self.client.post('/api/lessons', {'id': 'l9', 'pathId': 'web', 'title': 'x'}, format='json').status_code, 403)
         tutor = User.objects.create_user('t@x.com', 'secret123', display_name='T', role='teacher')
         self.client.force_authenticate(tutor)
-        res = self.client.post('/api/lessons', {'id': 'l9', 'pathId': 'web', 'title': 'New', 'sections': []}, format='json')
-        self.assertEqual(res.status_code, 201)
-        res = self.client.put('/api/lessons/l9', {'title': 'Renamed'}, format='json')
+        self.assertEqual(self.client.post('/api/lessons', {'id': 'l9', 'pathId': 'web', 'title': 'New'}, format='json').status_code, 403)
+        self.assertEqual(self.client.put('/api/lessons/l1', {'title': 'Hijacked'}, format='json').status_code, 403)
+        self.assertEqual(self.client.delete('/api/paths/web').status_code, 403)
+        admin = User.objects.create_superuser('a@x.com', 'secret123', display_name='A')
+        self.client.force_authenticate(admin)
+        res = self.client.put('/api/lessons/l1', {'title': 'Renamed'}, format='json')
         self.assertEqual(res.data['lesson']['title'], 'Renamed')
 
 

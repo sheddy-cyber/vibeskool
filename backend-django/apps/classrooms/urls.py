@@ -12,11 +12,11 @@ urlpatterns = [
     path('<uuid:pk>/members/<uuid:student_id>', v.MemberDetailView.as_view(), name='classroom-member'),
     path('<uuid:pk>/leaderboard', v.LeaderboardView.as_view(), name='classroom-leaderboard'),
     path('<uuid:pk>/stats', v.StatsView.as_view(), name='classroom-stats'),
-    path('<uuid:pk>/analytics', v.AnalyticsView.as_view(), name='classroom-analytics'),
     path('<uuid:pk>/insights', v.InsightsView.as_view(), name='classroom-insights'),
     # Stream
     path('<uuid:pk>/posts', v.PostListView.as_view(), name='classroom-posts'),
     path('<uuid:pk>/posts/<int:post_id>', v.PostDetailView.as_view(), name='classroom-post'),
+    path('<uuid:pk>/posts/<int:post_id>/code-review', v.CodeReviewView.as_view(), name='classroom-post-code-review'),
     path('<uuid:pk>/posts/<int:post_id>/replies', v.ReplyListView.as_view(), name='classroom-replies'),
     path('<uuid:pk>/replies/<int:reply_id>', v.ReplyDetailView.as_view(), name='classroom-reply'),
     path('<uuid:pk>/replies/<int:reply_id>/accept', v.AcceptReplyView.as_view(), name='classroom-reply-accept'),

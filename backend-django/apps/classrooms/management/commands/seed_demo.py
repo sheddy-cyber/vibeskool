@@ -67,6 +67,8 @@ class Command(BaseCommand):
         now = timezone.now()
         User.objects.create_superuser(f'admin@{DOMAIN}', password, display_name='Demo Admin')
         tutor = User.objects.create_user(f'tutor@{DOMAIN}', password, display_name='Grace Nwosu', role='teacher')
+        # A second tutor, to try building a course together
+        User.objects.create_user(f'kofi@{DOMAIN}', password, display_name='Kofi Mensah', role='teacher')
         room = Classroom.objects.create(
             teacher=tutor, name='Web Foundations · Evening cohort',
             description='Tuesdays and Thursdays, 6–8pm. From "what is a server" to your first deployed site.',
@@ -141,6 +143,6 @@ class Command(BaseCommand):
 
         self.stdout.write(self.style.SUCCESS(
             f'Demo class "{room.name}" ready (invite code {room.invite_code}).\n'
-            f'Admin site: admin@{DOMAIN}. Tutor: tutor@{DOMAIN}. Students: {", ".join(s.email for s in students)}.\n'
+            f'Admin site: admin@{DOMAIN}. Tutors: tutor@{DOMAIN}, kofi@{DOMAIN}. Students: {", ".join(s.email for s in students)}.\n'
             f'Password: the DEMO_PASSWORD env var, or the default in this command.'
         ))

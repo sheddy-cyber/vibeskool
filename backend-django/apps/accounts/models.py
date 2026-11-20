@@ -52,6 +52,12 @@ class User(AbstractBaseUser, PermissionsMixin):
     google_id = models.CharField(max_length=64, unique=True, null=True, blank=True)
     auth_provider = models.CharField(max_length=10, choices=Provider.choices, default=Provider.LOCAL)
     settings = models.JSONField(default=dict, blank=True)
+    # Profile
+    headline = models.CharField(max_length=80, blank=True, help_text='e.g. Learning full-stack, one build at a time')
+    bio = models.TextField(max_length=500, blank=True)
+    github_username = models.CharField(max_length=39, blank=True)
+    website_url = models.URLField(max_length=300, blank=True)
+    avatar_file = models.ImageField(upload_to='avatars/', blank=True, help_text='Uploaded photo; avatar_url points at it.')
     xp = models.PositiveIntegerField(default=0)
     badges = models.JSONField(default=list, blank=True)
 

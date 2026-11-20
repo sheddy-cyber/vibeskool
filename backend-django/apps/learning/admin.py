@@ -1,7 +1,9 @@
 from django.contrib import admin
 from django.db.models import Count
 
-from .models import Lesson, LessonCompletion, Option, PassedModule, Question, SkillCheck, SkillPath, Streak
+from .models import (
+    CourseInvite, CourseMember, Exercise, ExerciseSubmission, Lesson, LessonCompletion, Option, PassedModule, Question, SkillCheck, SkillPath, Streak,
+)
 
 
 class LessonInline(admin.TabularInline):
@@ -12,15 +14,23 @@ class LessonInline(admin.TabularInline):
     ordering = ('order',)
 
 
+class TeamInline(admin.TabularInline):
+    model = CourseMember
+    fields = ('user', 'role', 'added_at')
+    readonly_fields = ('added_at',)
+    raw_id_fields = ('user',)
+    extra = 0
+
+
 @admin.register(SkillPath)
 class SkillPathAdmin(admin.ModelAdmin):
-    list_display = ('title', 'id', 'tag', 'lesson_count', 'order', 'is_default', 'classroom')
+    list_display = ('title', 'id', 'is_official', 'status', 'lesson_count', 'order', 'is_default')
     list_editable = ('order',)
-    list_filter = ('is_default', 'tag')
-    search_fields = ('title', 'id', 'description')
+    list_filter = ('is_official', 'status', 'is_default', 'tag')
+    search_fields = ('title', 'id', 'description', 'team__user__display_name')
     prepopulated_fields = {'id': ('title',)}
-    autocomplete_fields = ('classroom',)
-    inlines = [LessonInline]
+    filter_horizontal = ('classes',)
+    inlines = [TeamInline, LessonInline]
 
     def get_queryset(self, request):
         return super().get_queryset(request).annotate(_lessons=Count('lessons'))
@@ -130,3 +140,25 @@ class StreakAdmin(admin.ModelAdmin):
     list_display = ('student', 'current', 'longest', 'last_active')
     search_fields = ('student__email', 'student__display_name')
     raw_id_fields = ('student',)
+
+
+@admin.register(Exercise)
+class ExerciseAdmin(admin.ModelAdmin):
+    list_display = ('title', 'lesson', 'type', 'language', 'order', 'created_at')
+    list_filter = ('type', 'language', 'lesson__path')
+    search_fields = ('title', 'instructions')
+    raw_id_fields = ('lesson', 'teacher')
+
+
+@admin.register(ExerciseSubmission)
+class ExerciseSubmissionAdmin(admin.ModelAdmin):
+    list_display = ('exercise', 'student', 'passed', 'score', 'submitted_at')
+    list_filter = ('passed',)
+    raw_id_fields = ('exercise', 'student')
+
+
+@admin.register(CourseInvite)
+class CourseInviteAdmin(admin.ModelAdmin):
+    list_display = ('email', 'course', 'invited_by', 'created_at')
+    search_fields = ('email', 'course__title')
+    raw_id_fields = ('course', 'invited_by')

@@ -1,190 +1,159 @@
-import React, { useEffect } from 'react'
-import { useStore } from '@/lib/store'
+import React, { useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import Icon from '@/components/icons/Icons'
 import { useAuth } from '@/lib/auth'
+import { useStore } from '@/lib/store'
+import { applyFont, getStoredFont, getStoredTheme } from '@/lib/theme'
+import ui from './classroom/Classroom.module.css'
 import styles from './SettingsPage.module.css'
-import { FadeUp, RevealOnScroll } from '@/components/ui/Motion'
-import { Sun, Moon, Monitor } from 'lucide-react'
 
 const THEMES = [
-  {
-    id: 'light',
-    label: 'Light',
-    desc: 'The Luminous Atelier — pure white canvas & daylight diffusion',
-    icon: Sun,
-  },
-  {
-    id: 'dark',
-    label: 'Dark',
-    desc: 'The Obsidian Nocturne — deep cosmic void & bioluminescent glow',
-    icon: Moon,
-  },
-  {
-    id: 'system',
-    label: 'System',
-    desc: 'Dynamic Sync — mirrors your operating system color scheme',
-    icon: Monitor,
-  },
+  { id: 'light', label: 'Light' },
+  { id: 'dark', label: 'Dark' },
+  { id: 'system', label: 'Match my device' },
 ]
 
-const FONT_SIZES = [
-  { id: 'sm', label: 'Small',  size: '13.5px' },
-  { id: 'md', label: 'Medium', size: '14.5px' },
-  { id: 'lg', label: 'Large',  size: '16.5px' },
+const FONTS = [
+  { id: 'exo', label: 'Exo 2', note: 'The VibeSkool look. Rounded and friendly.', family: "'Exo 2 Variable', 'Exo 2', sans-serif" },
+  { id: 'geist', label: 'Geist', note: 'Neutral and crisp, close to a code editor.', family: "'Geist Variable', 'Geist', sans-serif" },
 ]
 
-function ToggleRow({ label, description, value, onChange }) {
+function ThemePreview({ id }) {
   return (
-    <div className={styles.toggleRow}>
-      <div>
-        <span className={styles.toggleLabel}>{label}</span>
-        {description && <p className={styles.toggleDesc}>{description}</p>}
+    <span className={styles.themePreview} data-theme-preview={id} aria-hidden="true">
+      <span className={styles.tpSide} />
+      <span className={styles.tpMain}>
+        <span className={styles.tpLine} style={{ width: '62%' }} />
+        <span className={styles.tpLine} style={{ width: '84%' }} />
+        <span className={styles.tpCard} />
+      </span>
+    </span>
+  )
+}
+
+function Row({ title, description, children, stack = false }) {
+  return (
+    <div className={styles.row} data-stack={stack || undefined}>
+      <div className={styles.rowText}>
+        <h3 className={styles.rowTitle}>{title}</h3>
+        {description && <p className={styles.rowDesc}>{description}</p>}
       </div>
-      <button
-        className={`${styles.toggle} ${value ? styles.toggleOn : ''}`}
-        onClick={() => onChange(!value)}
-        aria-label={label}
-      >
-        <span className={styles.toggleThumb} />
-      </button>
+      <div className={styles.rowControl}>{children}</div>
     </div>
   )
 }
 
+function Switch({ checked, onChange, label }) {
+  return (
+    <button type="button" role="switch" aria-checked={checked} aria-label={label} className={styles.switch} onClick={() => onChange(!checked)}>
+      <span />
+    </button>
+  )
+}
+
 export default function SettingsPage() {
-  const { settings: storeSettings, updateSettings } = useStore()
-  const { currentUser, updateUserSettings } = useAuth()
-  // Use persisted user settings when available
-  const settings = currentUser?.settings || storeSettings
-  function updateAllSettings(patch) {
+  const navigate = useNavigate()
+  const { settings: local, updateSettings } = useStore()
+  const { currentUser, updateUserSettings, signOut } = useAuth()
+  const settings = { ...local, ...(currentUser?.settings || {}) }
+  const [font, setFont] = useState(getStoredFont())
+
+  const save = (patch) => {
     updateSettings(patch)
     updateUserSettings(patch)
   }
 
-  function setFontSize(id) {
-    const found = FONT_SIZES.find(f => f.id === id)
-    if (found) document.documentElement.style.setProperty('--font-size-base', found.size)
-    updateAllSettings({ fontSize: id })
+  const theme = settings.theme || getStoredTheme()
+  const goal = Math.min(6, Math.max(1, Number(settings.dailyGoal) || 2))
+  const showStats = settings.showStats !== false
+  const student = currentUser?.role === 'student'
+
+  const chooseFont = (id) => {
+    setFont(applyFont(id))
+    save({ font: id })
   }
 
-  const currentTheme = settings.theme || 'dark'
-
   return (
-    <div className={styles.page}>
-      <FadeUp delay={0}><div className={styles.header}>
-        <h1 className={styles.title}>Settings</h1>
-        <p className={styles.sub}>Customise your VibeSkool experience.</p>
-      </div></FadeUp>
-
-      <RevealOnScroll delay={40} y={14}><section className={styles.section}>
-        <h2 className={styles.sectionTitle}>Appearance</h2>
-
-        <div className={styles.settingRow}>
-          <span className={styles.settingRowLabel}>Interface Theme</span>
-          <span className={styles.settingRowSub}>Select how VibeSkool illuminates your workstation</span>
-          <div className={styles.themeGrid}>
-            {THEMES.map((t) => {
-              const Icon = t.icon
-              const isActive = currentTheme === t.id
-              return (
-                <button
-                  key={t.id}
-                  type="button"
-                  className={`${styles.themeCard} ${isActive ? styles.themeCardActive : ''}`}
-                  onClick={() => updateAllSettings({ theme: t.id })}
-                >
-                  <div className={styles.themeIconWrap}>
-                    <Icon size={18} />
-                  </div>
-                  <div className={styles.themeMeta}>
-                    <span className={styles.themeTitle}>{t.label}</span>
-                    <span className={styles.themeDesc}>{t.desc}</span>
-                  </div>
-                </button>
-              )
-            })}
-          </div>
+    <div className={ui.page} style={{ maxWidth: 860 }}>
+      <header className={ui.head}>
+        <div className={ui.headText}>
+          <h1 className={ui.title}>Settings</h1>
+          <p className={ui.lead}>How VibeSkool looks and behaves for you. Changes save straight away and follow you to other devices.</p>
         </div>
+      </header>
 
-        <div className={styles.settingRow}>
-          <span className={styles.settingRowLabel}>Font size</span>
-          <span className={styles.settingRowSub}>Affects lesson content and the Lab</span>
-          <div className={styles.fontSizeRow}>
-            {FONT_SIZES.map((f) => (
-              <button
-                key={f.id}
-                className={`${styles.fontSizeBtn} ${settings.fontSize === f.id ? styles.fontSizeBtnActive : ''}`}
-                onClick={() => setFontSize(f.id)}
-                style={{ fontSize: f.size }}
-              >
-                Aa — {f.label}
+      <section className={`${ui.card} ${styles.section}`} aria-labelledby="appearance">
+        <h2 id="appearance" className={styles.sectionTitle}>Appearance</h2>
+
+        <Row title="Theme" description="Dark is the default. “Match my device” follows your system setting." stack>
+          <div className={styles.options} role="radiogroup" aria-label="Theme">
+            {THEMES.map((t) => (
+              <button key={t.id} type="button" role="radio" aria-checked={theme === t.id} className={styles.option} onClick={() => save({ theme: t.id })}>
+                <ThemePreview id={t.id} />
+                <span className={styles.optionLabel}>
+                  {theme === t.id && <Icon name="check" size={15} />}
+                  {t.label}
+                </span>
               </button>
             ))}
           </div>
-        </div>
-      </section></RevealOnScroll>
+        </Row>
 
-      <RevealOnScroll delay={0} y={14}><section className={styles.section}>
-        <h2 className={styles.sectionTitle}>Learning preferences</h2>
-        <ToggleRow
-          label="Show MEK progress bar"
-          description="Display your Minimum Effective Knowledge score on lesson pages"
-          value={settings.showMekBar}
-          onChange={(v) => updateAllSettings({ showMekBar: v })}
-        />
-        <ToggleRow
-          label="Compact sidebar"
-          description="Show only icons in the sidebar — more space for content"
-          value={settings.compactSidebar}
-          onChange={(v) => updateAllSettings({ compactSidebar: v })}
-        />
-        <ToggleRow
-          label="Terminal typing sounds"
-          description="Subtle click sound when typing in the Lab"
-          value={settings.terminalSound}
-          onChange={(v) => updateAllSettings({ terminalSound: v })}
-        />
-      </section></RevealOnScroll>
-
-      <RevealOnScroll delay={0} y={14}><section className={styles.section}>
-        <h2 className={styles.sectionTitle}>Developer API Keys</h2>
-        <div className={styles.inputRow}>
-          <div className={styles.inputMeta}>
-            <span className={styles.inputLabel}>Anthropic API Key</span>
-            <p className={styles.inputDesc}>
-              Powers the AI Tutor with Claude. Stored securely in your browser's local state.
-            </p>
+        <Row title="Font" description="Used for everything except code, which always uses Geist Mono." stack>
+          <div className={styles.options} data-cols="2" role="radiogroup" aria-label="Font">
+            {FONTS.map((f) => (
+              <button key={f.id} type="button" role="radio" aria-checked={font === f.id} className={styles.option} onClick={() => chooseFont(f.id)}>
+                <span className={styles.fontSample} style={{ fontFamily: f.family }}>
+                  <span className={styles.fontAa}>Aa</span>
+                  <span className={styles.fontLine}>Build it, ship it, share it.</span>
+                </span>
+                <span className={styles.optionLabel}>
+                  {font === f.id && <Icon name="check" size={15} />}
+                  {f.label}
+                  {f.id === 'exo' && <span className={styles.default}>Default</span>}
+                </span>
+                <span className={styles.optionNote}>{f.note}</span>
+              </button>
+            ))}
           </div>
-          <div className={styles.inputWrapper}>
-            <input
-              type="password"
-              className={styles.apiKeyInput}
-              value={settings.anthropicKey || ''}
-              onChange={(e) => updateAllSettings({ anthropicKey: e.target.value })}
-              placeholder="sk-ant-api03-..."
-            />
-          </div>
-        </div>
-      </section></RevealOnScroll>
+        </Row>
+      </section>
 
-      <RevealOnScroll delay={0} y={14}><section className={styles.section}>
-        <h2 className={styles.sectionTitle}>About</h2>
-        <div className={styles.aboutRow}>
-          <span className={styles.aboutLabel}>Platform</span>
-          <span className={styles.aboutValue}>VibeSkool</span>
-        </div>
-        <div className={styles.aboutRow}>
-          <span className={styles.aboutLabel}>Version</span>
-          <span className={styles.aboutValue}>0.1.0 — MVP</span>
-        </div>
-        <div className={styles.aboutRow}>
-          <span className={styles.aboutLabel}>Stack</span>
-          <span className={styles.aboutValue}>React + Vite + Node.js + Socket.IO</span>
-        </div>
-        <div className={styles.aboutRow}>
-          <span className={styles.aboutLabel}>Philosophy</span>
-          <span className={styles.aboutValue}>Minimum Effective Knowledge</span>
-        </div>
-      </section></RevealOnScroll>
+      {student && (
+        <section className={`${ui.card} ${styles.section}`} aria-labelledby="learning">
+          <h2 id="learning" className={styles.sectionTitle}>Learning</h2>
+          <Row title="Daily goal" description="How many lessons you aim to finish each day. Your home page tracks it.">
+            <div className={styles.stepper}>
+              <button type="button" onClick={() => save({ dailyGoal: goal - 1 })} disabled={goal <= 1} aria-label="Fewer lessons">−</button>
+              <output aria-live="polite">{goal} lesson{goal === 1 ? '' : 's'}</output>
+              <button type="button" onClick={() => save({ dailyGoal: goal + 1 })} disabled={goal >= 6} aria-label="More lessons">+</button>
+            </div>
+          </Row>
+        </section>
+      )}
+
+      <section className={`${ui.card} ${styles.section}`} aria-labelledby="privacy">
+        <h2 id="privacy" className={styles.sectionTitle}>Privacy</h2>
+        {student && (
+          <Row title="Show my learning stats on my profile" description="Lessons finished, skill checks, streak and XP. Turn off to keep them to yourself; you'll still see them.">
+            <Switch checked={showStats} onChange={(v) => save({ showStats: v })} label="Show my learning stats on my profile" />
+          </Row>
+        )}
+        <Row title="Your profile" description="Your name, photo, headline and projects are visible to people signed in to VibeSkool. Your email never is.">
+          <Link to="/app/profile" className={`${ui.btnGhost} ${ui.sm}`}>View profile</Link>
+        </Row>
+      </section>
+
+      <section className={`${ui.card} ${styles.section}`} aria-labelledby="account">
+        <h2 id="account" className={styles.sectionTitle}>Account</h2>
+        <Row title="Email" description={currentUser?.email} />
+        <Row title="Signed in with" description={currentUser?.authProvider === 'google' ? 'Google' : 'Email and password'} />
+        <Row title="Sign out" description="Signs you out on this device.">
+          <button type="button" className={`${ui.btnGhost} ${ui.sm}`} onClick={() => { signOut(); navigate('/signin') }}>
+            <Icon name="logout" size={15} /> Sign out
+          </button>
+        </Row>
+      </section>
     </div>
   )
 }

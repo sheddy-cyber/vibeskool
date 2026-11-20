@@ -3,11 +3,11 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "concurrently \"npm run dev --prefix frontend\" \"npm run dev --prefix backend\" --names \"frontend,backend\" --prefix-colors \"cyan,yellow\"",
+    "dev": "concurrently \"npm run dev --prefix frontend\" \"cd backend-django && .venv\\Scripts\\python manage.py runserver 8000\" --names \"frontend,django\" --prefix-colors \"cyan,green\"",
     "dev:frontend": "npm run dev --prefix frontend",
-    "dev:backend":  "npm run dev --prefix backend",
-    "install:all":  "npm install && npm install --prefix frontend && npm install --prefix backend",
-    "build":        "npm run build --prefix frontend"
+    "dev:backend": "cd backend-django && .venv\\Scripts\\python manage.py runserver 8000",
+    "install:all": "npm install && npm install --prefix frontend",
+    "build": "npm run build --prefix frontend"
   },
   "devDependencies": {
     "concurrently": "^9.0.1"

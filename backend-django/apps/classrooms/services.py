@@ -70,10 +70,11 @@ def class_insights(classroom):
     sub_last = dict(Submission.objects.filter(assignment__classroom=classroom, student_id__in=ids).values('student_id')
                     .annotate(last=Max('submitted_at')).values_list('student_id', 'last'))
 
-    # Questions still waiting on the tutor: unresolved, and the tutor hasn't replied
+    # Questions still waiting on the tutor: unresolved, and the tutor hasn't
+    # replied or worked on the code yet
     tutor_replied = Reply.objects.filter(post=OuterRef('pk'), author=classroom.teacher)
     waiting = list(Post.objects.filter(classroom=classroom, kind=Post.Kind.QUESTION, resolved_at__isnull=True)
-                   .exclude(author=classroom.teacher).exclude(Exists(tutor_replied))
+                   .exclude(author=classroom.teacher).exclude(Exists(tutor_replied)).filter(reviewed_at__isnull=True)
                    .select_related('author', 'lesson').order_by('created_at'))
     waiting_by_student = {}
     for q in waiting:

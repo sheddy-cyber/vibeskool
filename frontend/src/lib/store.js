@@ -67,12 +67,8 @@ export const useStore = create((set, get) => ({
 
   // Settings
   settings: {
-    fontSize:       'md',
-    terminalSound:  false,
-    showMekBar:     true,
-    compactSidebar: false,
-    anthropicKey:   '',       // Anthropic API key
-    dailyGoal:      2,        // daily lesson goal target
+    dailyGoal:      2,        // lessons a day the home page tracks
+    showStats:      true,     // learning stats on your public profile
     ...getSavedSettings(),
     theme:          getSavedSettings()?.theme || getStoredTheme() || 'dark',
   },

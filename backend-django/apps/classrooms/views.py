@@ -1,5 +1,5 @@
 from django.db import IntegrityError, transaction
-from django.db.models import Avg, Count, Prefetch, Q
+from django.db.models import Count, Prefetch, Q
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from rest_framework import status
@@ -17,8 +17,32 @@ from .live import broadcast
 from .models import Assignment, Classroom, FeedbackComment, Membership, Nudge, Post, Reply, Submission
 from .serializers import (
     AssignmentSerializer, ClassroomSerializer, FeedbackCommentSerializer, MemberSerializer, NudgeSerializer,
-    PostSerializer, ReplySerializer, ReviewSerializer, SubmissionSerializer,
+    CodeReviewSerializer, PostSerializer, ReplySerializer, ReviewSerializer, SubmissionSerializer,
 )
+
+
+def check_lesson(user, lesson, room=None):
+    """A lesson tied to a post or an assignment must be one the person can see.
+
+    For assignments, the class's students must be able to open it too. If it
+    comes from the tutor's own published course, that course is shared with the
+    class automatically.
+    """
+    if not lesson:
+        return
+    from rest_framework import serializers
+    from apps.learning import access
+    if not access.visible_lessons(user).filter(pk=lesson.pk).exists():
+        raise serializers.ValidationError({'lessonId': 'Lesson not found'})
+    if room is None or access.lesson_visible_to_class(lesson, room):
+        return
+    course = lesson.path
+    if not (lesson.published and course.is_published):
+        raise serializers.ValidationError({'lessonId': 'Publish the lesson and its course first, so your students can open it'})
+    if course.can_edit(user) and room.teacher_id == user.id:
+        course.classes.add(room)
+        return
+    raise serializers.ValidationError({'lessonId': "Students in this class can't see that lesson's course"})
 
 
 def with_counts(qs):
@@ -103,7 +127,7 @@ class ClassroomDetailView(ClassroomScoped):
     def get(self, request, pk):
         room = self.classroom
         data = ClassroomSerializer(room, context=self.ctx()).data
-        data['path_count'] = room.paths.count()
+        data['path_count'] = room.courses.filter(status='published').count()
         data['members'] = MemberSerializer(self.members(), many=True, context=self.ctx()).data
         if not self.tutor:
             Membership.objects.filter(classroom=room, student=request.user).update(last_seen_at=timezone.now())
@@ -190,21 +214,6 @@ class StatsView(ClassroomScoped):
         })
 
 
-class AnalyticsView(ClassroomScoped):
-    """Kept for the current tutor page (same shape as the Express route)."""
-    tutor_only = True
-
-    def get(self, request, pk):
-        members = self.classroom.memberships
-        avg = members.aggregate(v=Avg('student__xp'))['v'] or 0
-        return Response({
-            'totalStudents': members.count(),
-            'avgXp': round(avg),
-            # Exercises move over from the Express server in a later step
-            'difficultExercises': [],
-        })
-
-
 class InsightsView(ClassroomScoped):
     """Who needs help: per-student signals, most urgent first, plus questions waiting on the tutor."""
     tutor_only = True
@@ -226,7 +235,7 @@ class PostListView(ClassroomScoped):
     PAGE = 30
 
     def visible(self):
-        qs = self.classroom.posts.select_related('author', 'lesson').prefetch_related(
+        qs = self.classroom.posts.select_related('author', 'lesson', 'reviewed_by').prefetch_related(
             Prefetch('replies', queryset=Reply.objects.select_related('author')))
         if not self.tutor:
             qs = qs.filter(Q(is_private=False) | Q(author=self.request.user))
@@ -252,6 +261,7 @@ class PostListView(ClassroomScoped):
     def post(self, request, pk):
         s = PostSerializer(data=request.data, context=self.ctx())
         s.is_valid(raise_exception=True)
+        check_lesson(request.user, s.validated_data.get('lesson'))
         kind = s.validated_data.get('kind', Post.Kind.POST)
         if kind == Post.Kind.ANNOUNCEMENT and not self.tutor:
             raise PermissionDenied('Only the tutor can post announcements.')
@@ -268,7 +278,7 @@ class PostListView(ClassroomScoped):
 
 class PostDetailView(ClassroomScoped):
     def get_post(self, post_id):
-        post = get_object_or_404(Post.objects.select_related('author', 'lesson'), pk=post_id, classroom=self.classroom)
+        post = get_object_or_404(Post.objects.select_related('author', 'lesson', 'reviewed_by'), pk=post_id, classroom=self.classroom)
         if not post.visible_to(self.request.user, self.tutor):
             raise NotFound('Post not found')
         return post
@@ -311,6 +321,50 @@ class PostDetailView(ClassroomScoped):
         broadcast(self.classroom.id, 'stream', 'post.deleted', id=post.id)
         post.delete()
         return Response({'success': True})
+
+
+class CodeReviewView(PostDetailView):
+    """The tutor edits the code in someone's post and leaves notes on its lines.
+
+    PUT {code, notes: [{line, body}]} saves the tutor's version (the student's
+    own code is kept, so everyone can see what changed). DELETE takes it back.
+    Everyone who can see the post sees the tutor's version; only the tutor can
+    change it. Everyone else answers in the replies.
+    """
+
+    def check(self, post_id):
+        self.require_tutor()
+        post = self.get_post(post_id)
+        if not post.code.strip():
+            raise PermissionDenied('This post has no code to edit.')
+        if post.author_id == self.request.user.id:
+            raise PermissionDenied('Edit your own code in the post itself.')
+        return post
+
+    def put(self, request, pk, post_id):
+        post = self.check(post_id)
+        s = CodeReviewSerializer(data=request.data)
+        s.is_valid(raise_exception=True)
+        post.review_code = s.validated_data['code']
+        post.review_notes = s.validated_data['notes']
+        post.review_base = post.code
+        post.reviewed_by = request.user
+        post.reviewed_at = timezone.now()
+        post.save(update_fields=['review_code', 'review_notes', 'review_base', 'reviewed_by', 'reviewed_at'])
+        broadcast(self.classroom.id, 'stream', 'post.updated', id=post.id)
+        return Response({'post': PostSerializer(post, context=self.ctx()).data})
+
+    patch = put  # (the parent's `patch` would edit the post itself)
+
+    def delete(self, request, pk, post_id):
+        post = self.check(post_id)
+        post.review_code = post.review_base = ''
+        post.review_notes = []
+        post.reviewed_by = None
+        post.reviewed_at = None
+        post.save(update_fields=['review_code', 'review_notes', 'review_base', 'reviewed_by', 'reviewed_at'])
+        broadcast(self.classroom.id, 'stream', 'post.updated', id=post.id)
+        return Response({'post': PostSerializer(post, context=self.ctx()).data})
 
 
 class ReplyListView(ClassroomScoped):
@@ -384,6 +438,7 @@ class AssignmentListView(ClassroomScoped):
         self.require_tutor()
         s = AssignmentSerializer(data=request.data)
         s.is_valid(raise_exception=True)
+        check_lesson(request.user, s.validated_data.get('lesson'), self.classroom)
         a = s.save(classroom=self.classroom, created_by=request.user)
         broadcast(self.classroom.id, 'work', 'assignment.created', assignmentId=a.id)
         return Response({'assignment': AssignmentSerializer(a).data}, status=status.HTTP_201_CREATED)
@@ -419,6 +474,8 @@ class AssignmentDetailView(ClassroomScoped):
         self.require_tutor()
         s = AssignmentSerializer(self.get_assignment(aid), data=request.data, partial=True)
         s.is_valid(raise_exception=True)
+        if 'lesson' in s.validated_data:
+            check_lesson(request.user, s.validated_data['lesson'], self.classroom)
         a = s.save()
         broadcast(self.classroom.id, 'work', 'assignment.updated', assignmentId=a.id)
         return Response({'assignment': AssignmentSerializer(a).data})

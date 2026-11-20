@@ -3,9 +3,9 @@ import react from '@vitejs/plugin-react'
 import { fileURLToPath, URL } from 'node:url'
 
 export default defineConfig(({ mode }) => {
-  // `npm run dev:django` sends /api to the Django server instead of Express
+  // The dev server sends /api and /ws (live updates) to the Django API
   const env = loadEnv(mode, process.cwd(), '')
-  const apiTarget = env.API_TARGET || 'http://localhost:4000'
+  const apiTarget = env.API_TARGET || 'http://localhost:8000'
 
   return {
     plugins: [react()],
@@ -41,14 +41,10 @@ export default defineConfig(({ mode }) => {
           changeOrigin: true,
         },
         // Live class updates (Django Channels)
-      '/ws': {
-        target: apiTarget,
-        ws: true,
-        changeOrigin: true,
-      },
-      '/socket.io': {
-          target: 'http://localhost:4000',
+        '/ws': {
+          target: apiTarget,
           ws: true,
+          changeOrigin: true,
         },
       },
     },

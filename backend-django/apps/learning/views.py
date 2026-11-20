@@ -1,43 +1,30 @@
 import random
 
 from django.conf import settings
-from django.db.models import Prefetch, Q
+from django.db.models import Prefetch
 from django.shortcuts import get_object_or_404
 from rest_framework import status
+from rest_framework.exceptions import NotFound, PermissionDenied
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from apps.accounts.permissions import IsAdmin, IsTutor
+from apps.accounts.permissions import IsTutor
 
-from . import services
+from . import access, services
 from .models import Lesson, LessonCompletion, PassedModule, SkillCheck, SkillPath, Streak
 from .serializers import (
     LessonListSerializer, LessonSerializer, PathSerializer, QuestionPublicSerializer, SkillCheckSerializer,
 )
 
 
-def visible_paths(user):
-    """Public paths, plus paths made for classes the user belongs to or teaches."""
-    qs = SkillPath.objects.all()
-    if not (user and user.is_authenticated):
-        return qs.filter(classroom__isnull=True)
-    if user.is_admin:
-        return qs
-    return qs.filter(
-        Q(classroom__isnull=True) | Q(classroom__teacher=user) | Q(classroom__memberships__student=user)
-    ).distinct()
+def with_lessons(courses, user):
+    lessons = access.visible_lessons(user).order_by('order')
+    return courses.prefetch_related(Prefetch('lessons', queryset=lessons, to_attr='visible_lessons'))
 
 
-def lessons_for(user):
-    qs = Lesson.objects.select_related('path')
-    if not (user and user.is_authenticated and user.is_tutor):
-        qs = qs.filter(published=True)
-    return qs
-
-
-class TutorWritesMixin:
-    """Anyone may read; tutors write; only admins delete paths."""
+class ReadOpenWriteTutor:
+    """Anyone may read; writing needs a tutor, and then the per-course checks below."""
 
     def get_permissions(self):
         if self.request.method in ('GET', 'HEAD', 'OPTIONS'):
@@ -45,81 +32,94 @@ class TutorWritesMixin:
         return [IsAuthenticated(), IsTutor()]
 
 
-# ── Paths ─────────────────────────────────────────────────────────────
-class PathListView(TutorWritesMixin, APIView):
+def editable_course_or_403(user, pk):
+    course = get_object_or_404(SkillPath, pk=pk)
+    if not course.can_edit(user):
+        raise PermissionDenied("You can only change courses you're on the team of.")
+    return course
+
+
+# ── Paths (courses) ───────────────────────────────────────────────────
+class PathListView(ReadOpenWriteTutor, APIView):
     def get(self, request):
-        lessons = lessons_for(request.user).order_by('order')
-        paths = visible_paths(request.user).prefetch_related(Prefetch('lessons', queryset=lessons, to_attr='visible_lessons'))
-        return Response({'paths': PathSerializer(paths, many=True).data})
+        courses = with_lessons(access.visible_courses(request.user), request.user)
+        return Response({'paths': PathSerializer(courses, many=True, context={'request': request}).data})
 
     def post(self, request):
-        s = PathSerializer(data=request.data, context={'request': request})
-        s.is_valid(raise_exception=True)
-        if SkillPath.objects.filter(pk=s.validated_data['id']).exists():
-            return Response({'error': 'A path with that id already exists'}, status=status.HTTP_409_CONFLICT)
-        path = s.save(created_by=request.user)
-        return Response({'path': PathSerializer(path).data}, status=status.HTTP_201_CREATED)
+        """Create a tutor course with you as its owner (the studio uses /api/studio/courses)."""
+        from .studio import create_course
+        course = create_course(request.user, request.data)
+        return Response({'path': PathSerializer(course, context={'request': request}).data}, status=status.HTTP_201_CREATED)
 
 
-class PathDetailView(TutorWritesMixin, APIView):
-    def get_permissions(self):
-        if self.request.method == 'DELETE':
-            return [IsAuthenticated(), IsAdmin()]
-        return super().get_permissions()
-
+class PathDetailView(ReadOpenWriteTutor, APIView):
     def get(self, request, pk):
-        lessons = lessons_for(request.user).order_by('order')
-        qs = visible_paths(request.user).prefetch_related(Prefetch('lessons', queryset=lessons, to_attr='visible_lessons'))
-        path = qs.filter(pk=pk).first()
-        if not path:
+        course = with_lessons(access.visible_courses(request.user), request.user).filter(pk=pk).first()
+        if not course:
             return Response({'error': 'Path not found'}, status=status.HTTP_404_NOT_FOUND)
-        return Response({'path': PathSerializer(path).data})
+        return Response({'path': PathSerializer(course, context={'request': request}).data})
 
     def put(self, request, pk):
-        path = get_object_or_404(SkillPath, pk=pk)
-        s = PathSerializer(path, data=request.data, partial=True, context={'request': request})
+        course = editable_course_or_403(request.user, pk)
+        s = PathSerializer(course, data=request.data, partial=True, context={'request': request})
         s.is_valid(raise_exception=True)
         s.validated_data.pop('id', None)
-        path = s.save()
-        return Response({'path': PathSerializer(path).data})
+        return Response({'path': PathSerializer(s.save(), context={'request': request}).data})
 
     def delete(self, request, pk):
-        get_object_or_404(SkillPath, pk=pk).delete()
+        course = get_object_or_404(SkillPath, pk=pk)
+        if not course.can_manage(request.user):
+            raise PermissionDenied('Only the course owner can delete it.')
+        course.delete()
         return Response({'success': True})
 
 
 # ── Lessons ───────────────────────────────────────────────────────────
-class LessonListView(TutorWritesMixin, APIView):
+class LessonListView(ReadOpenWriteTutor, APIView):
     def get(self, request):
-        lessons = lessons_for(request.user).filter(path__in=visible_paths(request.user)).order_by('path__order', 'order')
+        lessons = access.visible_lessons(request.user).select_related('path').order_by('path__order', 'path__title', 'order')
         return Response({'lessons': LessonListSerializer(lessons, many=True).data})
 
     def post(self, request):
         s = LessonSerializer(data=request.data)
         s.is_valid(raise_exception=True)
+        course = s.validated_data['path']
+        if not course.can_edit(request.user):
+            raise PermissionDenied("You can only add lessons to courses you're on the team of.")
         if Lesson.objects.filter(pk=s.validated_data['id']).exists():
             return Response({'error': 'A lesson with that id already exists'}, status=status.HTTP_409_CONFLICT)
-        lesson = s.save(created_by=request.user)
+        lesson = s.save(created_by=request.user, updated_by=request.user)
         return Response({'lesson': LessonSerializer(lesson).data}, status=status.HTTP_201_CREATED)
 
 
-class LessonDetailView(TutorWritesMixin, APIView):
+class LessonDetailView(ReadOpenWriteTutor, APIView):
     def get(self, request, pk):
-        lesson = lessons_for(request.user).filter(pk=pk, path__in=visible_paths(request.user)).first()
+        lesson = access.visible_lessons(request.user).filter(pk=pk).select_related('path').first()
         if not lesson:
             return Response({'error': 'Lesson not found'}, status=status.HTTP_404_NOT_FOUND)
         return Response({'lesson': LessonSerializer(lesson).data})
 
+    def editable(self, request, pk):
+        lesson = get_object_or_404(Lesson.objects.select_related('path'), pk=pk)
+        if not lesson.path.can_edit(request.user):
+            # Don't reveal drafts that exist in other people's courses
+            if not access.visible_lessons(request.user).filter(pk=pk).exists():
+                raise NotFound('Lesson not found')
+            raise PermissionDenied("You can only change lessons in courses you're on the team of.")
+        return lesson
+
     def put(self, request, pk):
-        lesson = get_object_or_404(Lesson, pk=pk)
+        lesson = self.editable(request, pk)
         s = LessonSerializer(lesson, data=request.data, partial=True)
         s.is_valid(raise_exception=True)
         s.validated_data.pop('id', None)
-        lesson = s.save()
-        return Response({'lesson': LessonSerializer(lesson).data})
+        target = s.validated_data.get('path')
+        if target and target.pk != lesson.path_id and not target.can_edit(request.user):
+            raise PermissionDenied("You can only move lessons into courses you're on the team of.")
+        return Response({'lesson': LessonSerializer(s.save(updated_by=request.user)).data})
 
     def delete(self, request, pk):
-        get_object_or_404(Lesson, pk=pk).delete()
+        self.editable(request, pk).delete()
         return Response({'success': True})
 
 
@@ -158,7 +158,7 @@ class CompleteLessonView(APIView):
         lesson_id = request.data.get('lessonId')
         if not lesson_id:
             return Response({'error': 'lessonId is required'}, status=status.HTTP_400_BAD_REQUEST)
-        lesson = lessons_for(request.user).filter(pk=lesson_id).first()
+        lesson = access.visible_lessons(request.user).filter(pk=lesson_id).first()
         if not lesson:
             return Response({'error': 'Lesson not found'}, status=status.HTTP_404_NOT_FOUND)
         result = services.complete_lesson(request.user, lesson)

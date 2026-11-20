@@ -3,7 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate, useParams } from 'react-router-
 import AppLayout from '@/components/layout/AppLayout'
 import ScrollToTop from '@/components/layout/ScrollToTop'
 import SmoothScroll from '@/components/layout/SmoothScroll'
-import { ProtectedRoute, AdminRoute, TeacherRoute } from '@/components/layout/ProtectedRoute'
+import { ProtectedRoute, TeacherRoute } from '@/components/layout/ProtectedRoute'
 
 import LandingPage from '@/pages/LandingPage'
 import SignInPage from '@/pages/SignInPage'
@@ -18,12 +18,15 @@ import SettingsPage from '@/pages/SettingsPage'
 import ClassroomsPage from '@/pages/classroom/ClassroomsPage'
 import ClassroomPage from '@/pages/classroom/ClassroomPage'
 import AssignmentPage from '@/pages/classroom/AssignmentPage'
-import ShowcasePage from '@/pages/community/ShowcasePage'
+import ShowcasePage from '@/pages/showcase/ShowcasePage'
+import ProjectPage from '@/pages/showcase/ProjectPage'
+import ProjectEditor from '@/pages/showcase/ProjectEditor'
 
-import TeacherDashboard from '@/pages/teacher/TeacherDashboard'
-import ExerciseBuilder from '@/pages/teacher/ExerciseBuilder'
-import MultiplayerIDE from '@/pages/teacher/MultiplayerIDE'
-import AdminCMSPage from '@/pages/AdminCMSPage'
+import OverviewPage from '@/pages/teaching/OverviewPage'
+import CoursesPage from '@/pages/teaching/CoursesPage'
+import CoursePage from '@/pages/teaching/CoursePage'
+import LessonEditor from '@/pages/teaching/LessonEditor'
+import ExercisesPage from '@/pages/teaching/ExercisesPage'
 import PrivacyPage from '@/pages/PrivacyPage'
 import TermsPage from '@/pages/TermsPage'
 import NotFoundPage from '@/pages/NotFoundPage'
@@ -77,6 +80,10 @@ export default function App() {
             <Route path="classrooms/:classroomId" element={<ClassroomPage />} />
             <Route path="classrooms/:classroomId/assignments/:assignmentId" element={<AssignmentPage />} />
             <Route path="showcase" element={<ShowcasePage />} />
+            <Route path="showcase/new" element={<ProjectEditor />} />
+            <Route path="showcase/:projectId" element={<ProjectPage />} />
+            <Route path="showcase/:projectId/edit" element={<ProjectEditor key="edit" />} />
+            <Route path="people/:personId" element={<ProfilePage />} />
             {/* The class forum became the class stream */}
             <Route path="forum/:classroomId" element={<ToClass />} />
             <Route path="classrooms/:classroomId/forum" element={<ToClass />} />
@@ -86,25 +93,29 @@ export default function App() {
             <Route path="settings" element={<SettingsPage />} />
 
             {/* Teacher routes */}
-            <Route path="teacher/dashboard" element={<TeacherRoute><TeacherDashboard /></TeacherRoute>} />
+            {/* Tutors: overview, courses they build, exercises */}
+            <Route path="teaching" element={<TeacherRoute><OverviewPage /></TeacherRoute>} />
+            <Route path="teaching/courses" element={<TeacherRoute><CoursesPage /></TeacherRoute>} />
+            <Route path="teaching/courses/:courseId" element={<TeacherRoute><CoursePage /></TeacherRoute>} />
+            <Route path="teaching/courses/:courseId/lessons/:lessonId" element={<TeacherRoute><LessonEditor /></TeacherRoute>} />
+            <Route path="teaching/exercises" element={<TeacherRoute><ExercisesPage /></TeacherRoute>} />
+            <Route path="teacher/dashboard" element={<Navigate to="/app/teaching" replace />} />
             <Route path="teacher/classrooms" element={<Navigate to="/app/classrooms" replace />} />
-            <Route path="teacher/cms" element={<TeacherRoute><AdminCMSPage /></TeacherRoute>} />
-            <Route path="teacher/exercises" element={<TeacherRoute><ExerciseBuilder /></TeacherRoute>} />
-            <Route path="teacher/workspace/:studentId" element={<TeacherRoute><MultiplayerIDE /></TeacherRoute>} />
-            <Route path="teacher/multiplayer/:sessionId" element={<TeacherRoute><MultiplayerIDE /></TeacherRoute>} />
+            <Route path="teacher/cms" element={<Navigate to="/app/teaching/courses" replace />} />
+            <Route path="teacher/exercises" element={<Navigate to="/app/teaching/exercises" replace />} />
 
             {/* Admin routes */}
-            <Route path="admin/cms" element={<AdminRoute><AdminCMSPage /></AdminRoute>} />
+            <Route path="admin/cms" element={<Navigate to="/app/teaching/courses" replace />} />
 
             {/* Inside app fallback 404 */}
             <Route path="*" element={<NotFoundPage />} />
           </Route>
 
           {/* Legacy / Top-level Teacher aliases */}
-          <Route path="/teacher/dashboard" element={<Navigate to="/app/teacher/dashboard" replace />} />
+          <Route path="/teacher/dashboard" element={<Navigate to="/app/teaching" replace />} />
           <Route path="/teacher/classrooms" element={<Navigate to="/app/classrooms" replace />} />
-          <Route path="/teacher/cms" element={<Navigate to="/app/teacher/cms" replace />} />
-          <Route path="/teacher/exercises" element={<Navigate to="/app/teacher/exercises" replace />} />
+          <Route path="/teacher/cms" element={<Navigate to="/app/teaching/courses" replace />} />
+          <Route path="/teacher/exercises" element={<Navigate to="/app/teaching/exercises" replace />} />
 
           {/* Global Catch-all 404 */}
           <Route path="*" element={<NotFoundPage />} />

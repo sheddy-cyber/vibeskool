@@ -1,8 +1,7 @@
 """Bearer-token sign-in for the API.
 
 Tokens are plain HS256 JWTs carrying {id, email, role}, the same format the
-Express server issued, so a student who signed in before the move stays
-signed in after it.
+old server issued, so tokens from before the move to Django stay valid.
 """
 from datetime import datetime, timezone
 

@@ -21,15 +21,16 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument('--overwrite', action='store_true', help='Replace lessons and questions that already exist.')
+        parser.add_argument('--skill-checks-only', action='store_true', help='Leave paths and lessons alone (e.g. after importing them).')
 
     @transaction.atomic
-    def handle(self, *args, overwrite=False, **opts):
+    def handle(self, *args, overwrite=False, skill_checks_only=False, **opts):
         content = json.loads((SEED_DIR / 'content.json').read_text(encoding='utf-8'))
         new_paths = new_lessons = 0
-        default_path = None
-        for p in content['paths']:
+        default_path = SkillPath.objects.filter(is_default=True).first()
+        for p in ([] if skill_checks_only else content['paths']):
             lessons = p.pop('lessons')
-            path, created = SkillPath.objects.update_or_create(id=p['id'], defaults=p)
+            path, created = SkillPath.objects.update_or_create(id=p['id'], defaults={**p, 'is_official': True, 'status': 'published'})
             new_paths += created
             if path.is_default:
                 default_path = path

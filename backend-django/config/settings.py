@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     'apps.accounts',
     'apps.learning',
     'apps.classrooms',
+    'apps.showcase',
 ]
 
 MIDDLEWARE = [
@@ -97,16 +98,32 @@ CHANNEL_LAYERS = {
     )
 }
 
+# The app runs under ASGI (Daphne), where each request may get a new thread.
+# Persistent per-thread connections (CONN_MAX_AGE > 0) would then pile up, one
+# per request, until the database refuses more (Supabase's session pooler
+# allows 15). So connections go back to a small shared pool after every
+# request instead.
 DATABASES = {
-    'default': dj_database_url.config(
-        default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}",
-        conn_max_age=600,
-    )
+    'default': dj_database_url.config(default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}", conn_max_age=0)
 }
+if DATABASES['default']['ENGINE'].endswith('postgresql'):
+    options = DATABASES['default'].setdefault('OPTIONS', {})
+    options.setdefault('sslmode', 'require')
+    options['pool'] = {
+        'min_size': 1,
+        'max_size': int(os.environ.get('DB_POOL_SIZE', '5')),
+        'timeout': 15,      # wait this long for a free connection before failing
+        'max_idle': 120,    # hand idle connections back to the database
+    }
+    if str(DATABASES['default'].get('PORT')) == '6543':
+        # Supabase's transaction pooler: no server-side cursors or prepared
+        # statements. (Prefer the session pooler, :5432.)
+        DATABASES['default']['DISABLE_SERVER_SIDE_CURSORS'] = True
+        options['prepare_threshold'] = None
 
 AUTH_USER_MODEL = 'accounts.User'
 
-# Existing accounts were hashed with bcrypt by the Express server; Django can
+# Accounts imported from the old server were hashed with bcrypt; Django can
 # verify those and upgrades them to its default hasher on the next sign-in.
 PASSWORD_HASHERS = [
     'django.contrib.auth.hashers.PBKDF2PasswordHasher',
@@ -116,6 +133,8 @@ PASSWORD_HASHERS = [
 
 TESTING = 'test' in sys.argv[1:2]
 if TESTING:
+    # Never create test databases on a real server (e.g. Supabase)
+    DATABASES = {'default': {'ENGINE': 'django.db.backends.sqlite3', 'NAME': ':memory:'}}
     # Hashing is deliberately slow; tests don't need that
     PASSWORD_HASHERS = ['django.contrib.auth.hashers.MD5PasswordHasher', *PASSWORD_HASHERS[1:]]
 
@@ -129,6 +148,15 @@ USE_I18N = True
 USE_TZ = True
 
 STATIC_URL = 'static/'
+
+# Uploads (project previews, avatars). Local disk in development; in production
+# point MEDIA_ORIGIN at wherever /media is served from, or swap the storage
+# backend for object storage (S3, Supabase Storage) so files survive redeploys.
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
+MEDIA_ORIGIN = os.environ.get('MEDIA_ORIGIN', 'http://localhost:8000' if DEBUG else '')
+DATA_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024
+FILE_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 STORAGES = {
     'default': {'BACKEND': 'django.core.files.storage.FileSystemStorage'},
@@ -156,13 +184,18 @@ SPECTACULAR_SETTINGS = {
     'SERVE_INCLUDE_SCHEMA': False,
 }
 
-# Tokens are shared with the Express server during the move, so the same
-# secret and lifetime are used and existing sign-ins keep working.
+# Same token format, secret and lifetime as the old server, so sign-ins from
+# before the move to Django keep working.
 JWT_SECRET = os.environ.get('JWT_SECRET') or SECRET_KEY
 JWT_ALGORITHM = 'HS256'
 JWT_LIFETIME = timedelta(days=7)
 
 GOOGLE_CLIENT_ID = os.environ.get('GOOGLE_CLIENT_ID', '')
+
+# AI tutor (Gemini) and the sandbox that runs exercise code (Piston)
+GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY', '')
+GEMINI_MODEL = os.environ.get('GEMINI_MODEL', 'gemini-2.5-flash')
+PISTON_URL = os.environ.get('PISTON_URL', 'https://emkc.org/api/v2/piston')
 
 FRONTEND_URL = os.environ.get('FRONTEND_URL', 'http://localhost:5173')
 CORS_ALLOWED_ORIGINS = env_list('CORS_ALLOWED_ORIGINS', FRONTEND_URL)
