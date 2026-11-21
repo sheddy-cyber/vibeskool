@@ -6,13 +6,14 @@ services:
     name: vibeskool-api
     runtime: python
     rootDir: backend-django
-    # Starter or above: free instances sleep when idle, which drops live
-    # class updates, and they can't run the pre-deploy migration step.
-    plan: starter
+    # Free plan. It sleeps after 15 minutes without visits (the first visit
+    # after that takes up to a minute), and it has no pre-deploy step, so
+    # database updates run as the server starts. Moving to Starter later:
+    # change the plan here, and move "migrate" into a preDeployCommand.
+    plan: free
     region: frankfurt
     buildCommand: pip install -r requirements.txt && python manage.py collectstatic --noinput
-    preDeployCommand: python manage.py migrate --noinput
-    startCommand: daphne --proxy-headers -b 0.0.0.0 -p $PORT config.asgi:application
+    startCommand: python manage.py migrate --noinput && daphne --proxy-headers -b 0.0.0.0 -p $PORT config.asgi:application
     healthCheckPath: /api/health
     autoDeploy: true
     envVars:
@@ -51,14 +52,10 @@ services:
         sync: false
       - key: STORAGE_PUBLIC_URL
         sync: false
-      - key: EMAIL_HOST
-        sync: false
-      - key: EMAIL_HOST_USER
-        sync: false
-      - key: EMAIL_HOST_PASSWORD
-        sync: false
+      - key: BREVO_API_KEY
+        sync: false   # email over HTTPS; the free plan blocks SMTP ports
       - key: DEFAULT_FROM_EMAIL
-        sync: false
+        sync: false   # e.g. VibeSkool <vibeskool.app@gmail.com>, a sender verified in Brevo
       - key: SENTRY_DSN
         sync: false
       - key: ADMIN_PATH

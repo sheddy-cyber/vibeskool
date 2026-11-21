@@ -254,11 +254,14 @@ JWT_LIFETIME = timedelta(days=7)
 PASSWORD_RESET_TIMEOUT = 60 * 60
 
 # Email (password resets, tutor approvals). Printed to the console in
-# development; any SMTP provider in production (e.g. Resend: smtp.resend.com,
-# user "resend", password = an API key).
+# development. In production: Brevo's API (BREVO_API_KEY), or any SMTP server.
+# BREVO_API_KEY sends through Brevo's web API: use it on Render's free plan,
+# which blocks the SMTP ports. Otherwise EMAIL_HOST for any SMTP server.
 EMAIL_HOST = os.environ.get('EMAIL_HOST', '')
+BREVO_API_KEY = os.environ.get('BREVO_API_KEY', '')
 EMAIL_BACKEND = (
-    'django.core.mail.backends.smtp.EmailBackend' if EMAIL_HOST
+    'apps.accounts.brevo.BrevoEmailBackend' if BREVO_API_KEY
+    else 'django.core.mail.backends.smtp.EmailBackend' if EMAIL_HOST
     else 'django.core.mail.backends.console.EmailBackend'
 )
 EMAIL_PORT = int(os.environ.get('EMAIL_PORT') or 587)
