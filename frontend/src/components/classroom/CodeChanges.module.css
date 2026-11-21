@@ -302,3 +302,9 @@
 @media (max-width: 560px) {
   .inline { margin-left: 14px; max-width: calc(100% - 28px); }
 }
+
+/* A finger-sized target around the small + on touch screens */
+@media (hover: none) {
+  .add { position: relative; }
+  .add::after { content: ''; position: absolute; inset: -9px; }
+}

@@ -12,7 +12,7 @@ const ROLE_COPY = {
     artText: 'Short lessons that show you what to ask for, how to read what comes back, and how to fix it.',
   },
   teacher: {
-    hint: 'Run classes, follow progress and pair with students live.',
+    hint: 'We approve every tutor by hand, usually within a day. You can start learning while you wait.',
     artTitle: 'Teach without the setup.',
     artText: 'Share one join code. Your students code in the browser and you see where each of them is.',
   },
@@ -24,12 +24,14 @@ export default function SignUpPage() {
   const initialRole = searchParams.get('role') === 'teacher' ? 'teacher' : 'student'
 
   const { signUp, currentUser, authError, authLoading, clearError } = useAuth()
-  const [form, setForm] = useState({ email: '', password: '', displayName: '', role: initialRole })
+  const [form, setForm] = useState({ email: '', password: '', displayName: '', role: initialRole, teachingNote: '' })
 
   useEffect(() => {
-    if (currentUser) {
-      navigate(currentUser.role === 'teacher' ? '/app/teaching' : '/app/dashboard', { replace: true })
-    }
+    if (!currentUser) return
+    if (currentUser.role === 'teacher') navigate('/app/teaching', { replace: true })
+    // Asked to teach: Settings shows where the request stands
+    else if (currentUser.tutorStatus === 'pending') navigate('/app/settings?section=teaching', { replace: true })
+    else navigate('/app/dashboard', { replace: true })
   }, [currentUser, navigate])
 
   function handleSubmit(e) {
@@ -87,7 +89,7 @@ export default function SignUpPage() {
         </div>
         <p className={styles.roleHint}>{copy.hint}</p>
 
-        <GoogleAuthButton isSignUp={true} role={form.role} />
+        <GoogleAuthButton isSignUp={true} role={form.role} teachingNote={form.teachingNote} />
 
         <form className={styles.form} onSubmit={handleSubmit}>
           <Field id="name" label="Name">
@@ -114,17 +116,30 @@ export default function SignUpPage() {
               required
             />
           </Field>
-          <Field id="password" label="Password" hint={<span className={styles.labelHint}>At least 6 characters</span>}>
+          <Field id="password" label="Password" hint={<span className={styles.labelHint}>At least 8 characters</span>}>
             <PasswordInput
               id="password"
               value={form.password}
               onChange={set('password')}
               autoComplete="new-password"
-              minLength={6}
+              minLength={8}
             />
           </Field>
+          {isTutor && (
+            <Field id="teachingNote" label="What would you like to teach?" hint={<span className={styles.labelHint}>Optional</span>}>
+              <textarea
+                id="teachingNote"
+                className={styles.input}
+                placeholder="e.g. I run a coding club and want to teach JavaScript basics"
+                value={form.teachingNote}
+                onChange={set('teachingNote')}
+                maxLength={1000}
+                rows={3}
+              />
+            </Field>
+          )}
           <button className={styles.submit} type="submit" disabled={authLoading}>
-            {authLoading ? 'Creating your account…' : isTutor ? 'Create tutor account' : 'Create account'}
+            {authLoading ? 'Creating your account…' : isTutor ? 'Create account and ask to teach' : 'Create account'}
           </button>
         </form>
       </div>

@@ -15,12 +15,13 @@ lessons_urls = [
 progress_urls = [
     path('', views.ProgressView.as_view(), name='progress'),
     path('complete', views.CompleteLessonView.as_view(), name='progress-complete'),
-    path('pass-module', views.PassModuleView.as_view(), name='progress-pass-module'),
 ]
 
 skill_check_urls = [
-    path('<str:module_id>', views.SkillCheckView.as_view(), name='skill-check'),
-    path('<str:module_id>/grade', views.GradeSkillCheckView.as_view(), name='skill-check-grade'),
+    path('attempts/<uuid:pk>/answer', views.AnswerView.as_view(), name='skill-check-answer'),
+    path('attempts/<uuid:pk>/finish', views.FinishAttemptView.as_view(), name='skill-check-finish'),
+    path('<str:module_id>/attempts', views.StartAttemptView.as_view(), name='skill-check-start'),
+    path('<str:module_id>', views.SkillCheckInfoView.as_view(), name='skill-check'),
 ]
 
 ai_urls = [

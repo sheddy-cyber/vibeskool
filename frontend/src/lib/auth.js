@@ -15,6 +15,9 @@ function mapUser(backendUser, extras = {}) {
     github: backendUser.github_username || '',
     website: backendUser.website_url || '',
     authProvider: backendUser.auth_provider || 'local',
+    // '', 'pending', 'approved' or 'declined': asking to teach waits for an admin
+    tutorStatus: backendUser.tutor_status || '',
+    tutorRequestedAt: backendUser.tutor_requested_at || null,
     mekScore: extras.mekScore ?? 0,
     xp: backendUser.xp ?? 0,
     badges: backendUser.badges ?? [],
@@ -49,15 +52,15 @@ export const useAuth = create((set, get) => {
     authError: null,
     authLoading: false,
 
-    signUp: async ({ name, displayName, email, password, role }) => {
+    signUp: async ({ name, displayName, email, password, role, teachingNote }) => {
       set({ authLoading: true, authError: null })
       try {
         const resolvedName = (displayName || name || '').trim()
         if (!resolvedName || !email?.trim() || !password?.trim()) {
           throw new Error('Please fill in all fields.')
         }
-        if (password.length < 6) {
-          throw new Error('Password must be at least 6 characters.')
+        if (password.length < 8) {
+          throw new Error('Password must be at least 8 characters.')
         }
 
         const data = await authApi.signup({
@@ -65,6 +68,7 @@ export const useAuth = create((set, get) => {
           password,
           displayName: resolvedName,
           role: role || 'student',
+          teachingNote: role === 'teacher' ? (teachingNote || '').trim() : undefined,
         })
         
         setToken(data.token)
@@ -102,14 +106,14 @@ export const useAuth = create((set, get) => {
       }
     },
 
-    signInWithGoogle: async ({ credential, role }) => {
+    signInWithGoogle: async ({ credential, role, teachingNote }) => {
       set({ authLoading: true, authError: null })
       try {
         if (!credential) {
           throw new Error('Google credential token is required.')
         }
 
-        const data = await authApi.googleAuth({ credential, role })
+        const data = await authApi.googleAuth({ credential, role, teachingNote: role === 'teacher' ? (teachingNote || '').trim() : undefined })
         setToken(data.token)
         
         try {

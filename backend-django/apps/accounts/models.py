@@ -61,6 +61,21 @@ class User(AbstractBaseUser, PermissionsMixin):
     xp = models.PositiveIntegerField(default=0)
     badges = models.JSONField(default=list, blank=True)
 
+    # Tutors are approved by an admin. Until then the account is a student's.
+    class TutorStatus(models.TextChoices):
+        NONE = '', 'Not requested'
+        PENDING = 'pending', 'Waiting for approval'
+        APPROVED = 'approved', 'Approved'
+        DECLINED = 'declined', 'Declined'
+
+    tutor_status = models.CharField(max_length=10, choices=TutorStatus.choices, default='', blank=True, db_index=True)
+    tutor_request_note = models.TextField(max_length=1000, blank=True, help_text='What they told us they want to teach.')
+    tutor_requested_at = models.DateTimeField(null=True, blank=True)
+
+    # Sign-in tokens issued before this moment stop working (set when the
+    # password changes, so a reset signs out every other device).
+    tokens_valid_after = models.DateTimeField(null=True, blank=True, editable=False)
+
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False, help_text='Can sign in to this admin site.')
     created_at = models.DateTimeField(default=timezone.now, editable=False)
@@ -77,6 +92,14 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return f'{self.display_name} <{self.email}>'
+
+    def revoke_tokens(self):
+        """Sign out every device: tokens issued before now stop working.
+
+        Whole seconds, because a token's issue time is in whole seconds and one
+        issued straight afterwards (to keep this device signed in) must pass.
+        """
+        self.tokens_valid_after = timezone.now().replace(microsecond=0)
 
     @property
     def is_tutor(self):

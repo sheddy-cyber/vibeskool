@@ -8,7 +8,7 @@ from django.db import transaction
 from django.db.models import F
 from django.utils import timezone
 
-from .models import LessonCompletion, PassedModule, SkillCheck, Streak
+from .models import LessonCompletion, PassedModule, Streak
 
 LESSON_XP = 10
 MODULE_XP = 50
@@ -84,23 +84,3 @@ def pass_module(user, module_id, score):
     touch_streak(user)
     passed = list(PassedModule.objects.filter(student=user).values_list('module_id', flat=True))
     return {'success': True, 'passedModules': passed, 'xpAwarded': MODULE_XP if created else 0}
-
-
-def grade_skill_check(check, answers):
-    """answers: {question_key: option_id}. Returns the result per question and the score."""
-    questions = check.questions.prefetch_related('options').filter(key__in=answers.keys())
-    results, right = [], 0
-    for q in questions:
-        chosen = answers.get(q.key)
-        correct = next((o for o in q.options.all() if o.correct), None)
-        ok = correct is not None and str(chosen) == str(correct.id)
-        right += ok
-        results.append({
-            'question': q.key,
-            'correct': ok,
-            'correctOption': correct.id if correct else None,
-            'explanation': q.explanation,
-        })
-    total = len(results)
-    score = round(right / total * 100) if total else 0
-    return {'score': score, 'right': right, 'total': total, 'passed': total > 0 and score >= SkillCheck.PASS_MARK, 'results': results}

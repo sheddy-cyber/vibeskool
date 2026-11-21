@@ -1,14 +1,13 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useStore } from '@/lib/store'
-import { progressApi } from '@/lib/api'
+import { skillCheckApi } from '@/lib/api'
 import { buildPathModel } from '@/lib/learning'
-import { QUIZ_QUESTIONS } from '@/lib/quiz_questions'
-import { buildAttempt, PASS_MARK } from '@/lib/quiz'
+import { PASS_MARK, splitQuestion } from '@/lib/quiz'
 import Icon from '@/components/icons/Icons'
 import CodeBlock from '@/components/lesson/CodeBlock'
 import styles from './SkillCheckPage.module.css'
-import { confirmDialog } from '@/lib/dialog'
+import { confirmDialog, notify } from '@/lib/dialog'
 
 const LETTERS = ['A', 'B', 'C', 'D', 'E', 'F']
 const SECONDS_PER_QUESTION = 30
@@ -71,26 +70,51 @@ export default function SkillCheckPage() {
   useEffect(() => { if (!paths?.length) fetchPaths() }, [paths?.length, fetchPaths])
 
   const pathId = paramPathId || 'full-stack-web'
-  const source = QUIZ_QUESTIONS[moduleId] || []
 
+  const [info, setInfo] = useState(null) // { questionCount } from the server, or { error }
   const [phase, setPhase] = useState('intro') // intro | quiz | results
+  const [attempt, setAttempt] = useState(null) // { id, questions } from the server
   const [attemptNo, setAttemptNo] = useState(0)
   const [idx, setIdx] = useState(0)
   const [picks, setPicks] = useState([])
+  const [reveals, setReveals] = useState([]) // per question: { correctOption, explanation }
+  const [busy, setBusy] = useState(null) // 'start' | 'answer' | 'finish'
+  const [result, setResult] = useState(null) // the server's mark
   const [save, setSave] = useState({ state: 'idle' }) // idle | saving | saved | error
   const [openReview, setOpenReview] = useState(() => new Set())
   const nextRef = useRef(null)
   const cardRef = useRef(null)
 
-  // A fresh deal of answer positions for every attempt
-  const questions = useMemo(() => buildAttempt(source), [source, attemptNo]) // eslint-disable-line react-hooks/exhaustive-deps
-
   useEffect(() => {
+    let live = true
+    setInfo(null)
     setPhase('intro')
+    setAttempt(null)
     setIdx(0)
     setPicks([])
+    setReveals([])
+    setResult(null)
     setSave({ state: 'idle' })
+    skillCheckApi.info(moduleId)
+      .then((d) => { if (live) setInfo(d) })
+      .catch((err) => { if (live) setInfo({ error: err?.message || 'Could not load this skill check' }) })
+    return () => { live = false }
   }, [moduleId])
+
+  // The attempt's questions, with answers filled in only once each is given
+  const questions = useMemo(() => (attempt?.questions || []).map((sq, i) => {
+    const reveal = reveals[i]
+    const { prompt, code } = splitQuestion(sq.question)
+    return {
+      id: sq.id,
+      topic: sq.topic,
+      prompt,
+      code,
+      explanation: reveal?.explanation || '',
+      options: sq.options.map((o) => ({ id: o.id, text: o.text, correct: reveal ? o.id === reveal.correctOption : undefined })),
+      answer: reveal ? sq.options.findIndex((o) => o.id === reveal.correctOption) : -1,
+    }
+  }), [attempt, reveals])
 
   /* Module context */
   const path = (paths || []).find((p) => p.id === pathId)
@@ -103,36 +127,60 @@ export default function SkillCheckPage() {
   const alreadyPassed = passedSet.has(moduleId)
   const modNumber = mod ? mod.index + 1 : Number(String(moduleId).replace(/\D/g, '')) + 1
 
-  /* Scoring */
-  const total = questions.length
-  const answered = picks.filter((p) => p !== undefined).length
-  const correctCount = picks.reduce((n, p, i) => n + (p !== undefined && questions[i]?.options[p]?.correct ? 1 : 0), 0)
-  const pct = total ? Math.round((correctCount / total) * 100) : 0
-  const passed = pct >= PASS_MARK
+  /* Scoring: the server's, once finished */
+  const total = questions.length || info?.questionCount || 0
+  const answered = reveals.filter(Boolean).length
+  const correctCount = result ? result.right : reveals.reduce((n, r, i) => n + (r && questions[i]?.options[picks[i]]?.correct ? 1 : 0), 0)
+  const pct = result ? result.score : 0
+  const passMark = result?.passMark ?? info?.passMark ?? PASS_MARK
+  const passed = Boolean(result?.passed)
 
   const q = questions[idx]
   const pick = picks[idx]
-  const isAnswered = pick !== undefined
+  const isAnswered = Boolean(reveals[idx])
   const isLast = idx + 1 >= total
 
-  const choose = useCallback((i) => {
-    if (phase !== 'quiz' || picks[idx] !== undefined) return
-    setPicks((p) => {
-      const n = [...p]
-      n[idx] = i
-      return n
-    })
-  }, [phase, picks, idx])
+  const choose = useCallback(async (i) => {
+    if (phase !== 'quiz' || busy || picks[idx] !== undefined || !attempt) return
+    const option = attempt.questions[idx]?.options[i]
+    if (!option) return
+    const at = idx
+    setPicks((p) => { const n = [...p]; n[at] = i; return n })
+    setBusy('answer')
+    try {
+      const res = await skillCheckApi.answer(attempt.id, attempt.questions[at].id, option.id)
+      setReveals((r) => { const n = [...r]; n[at] = { correctOption: res.correctOption, explanation: res.explanation }; return n })
+    } catch (err) {
+      setPicks((p) => { const n = [...p]; n[at] = undefined; return n })
+      notify({ title: "Couldn't check that answer", body: err?.message, tone: 'error' })
+    } finally {
+      setBusy(null)
+    }
+  }, [phase, busy, picks, idx, attempt])
 
-  const advance = useCallback(() => {
-    if (picks[idx] === undefined) return
-    if (isLast) {
+  const finish = useCallback(async () => {
+    setBusy('finish')
+    setSave({ state: 'saving' })
+    try {
+      const res = await skillCheckApi.finish(attempt.id)
+      setResult(res)
+      setSave({ state: 'saved' })
       setPhase('results')
       window.scrollTo({ top: 0, behavior: 'instant' })
-    } else {
-      setIdx((i) => i + 1)
+      if (res.passed) fetchProgress()
+    } catch (err) {
+      setSave({ state: 'error', message: err?.message })
+      notify({ title: "Couldn't mark your answers", body: err?.message || 'Check your connection and try again.', tone: 'error' })
+    } finally {
+      setBusy(null)
     }
-  }, [picks, idx, isLast])
+  }, [attempt, fetchProgress])
+
+  const advance = useCallback(() => {
+    if (!reveals[idx] || busy) return
+    if (isLast) finish()
+    else setIdx((i) => i + 1)
+  }, [reveals, idx, isLast, busy, finish])
 
   // Move focus to the next button once an answer is in, so Enter continues
   useEffect(() => {
@@ -155,7 +203,7 @@ export default function SkillCheckPage() {
       if (/^[1-9]$/.test(k)) i = Number(k) - 1
       else if (/^[a-z]$/.test(k)) i = k.charCodeAt(0) - 97
       if (i >= 0 && i < n) { e.preventDefault(); choose(i); return }
-      if ((k === 'enter' || k === 'arrowright') && picks[idx] !== undefined) {
+      if ((k === 'enter' || k === 'arrowright') && reveals[idx]) {
         if (k === 'enter' && document.activeElement === nextRef.current) return // the button handles it
         e.preventDefault()
         advance()
@@ -163,32 +211,29 @@ export default function SkillCheckPage() {
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [phase, q, choose, advance, picks, idx])
+  }, [phase, q, choose, advance, reveals, idx])
 
-  /* Save a pass */
-  const savePass = useCallback(async () => {
-    setSave({ state: 'saving' })
+  // A new attempt from the server: fresh questions, answer positions dealt again
+  const start = async () => {
+    if (busy) return
+    setBusy('start')
     try {
-      await progressApi.passModule(moduleId, pct)
-      await fetchProgress()
-      setSave({ state: 'saved' })
+      const res = await skillCheckApi.start(moduleId)
+      setAttempt({ id: res.attempt, questions: res.questions })
+      setAttemptNo((n) => n + 1)
+      setIdx(0)
+      setPicks([])
+      setReveals([])
+      setResult(null)
+      setSave({ state: 'idle' })
+      setOpenReview(new Set())
+      setPhase('quiz')
+      window.scrollTo({ top: 0, behavior: 'instant' })
     } catch (err) {
-      setSave({ state: 'error', message: err?.message })
+      notify({ title: "Couldn't start the skill check", body: err?.message || 'Check your connection and try again.', tone: 'error' })
+    } finally {
+      setBusy(null)
     }
-  }, [moduleId, pct, fetchProgress])
-
-  useEffect(() => {
-    if (phase === 'results' && passed && save.state === 'idle') savePass()
-  }, [phase, passed, save.state, savePass])
-
-  const start = () => {
-    setAttemptNo((n) => n + 1)
-    setIdx(0)
-    setPicks([])
-    setSave({ state: 'idle' })
-    setOpenReview(new Set())
-    setPhase('quiz')
-    window.scrollTo({ top: 0, behavior: 'instant' })
   }
 
   const exit = async () => {
@@ -199,14 +244,28 @@ export default function SkillCheckPage() {
     navigate(`/app/paths/${pathId}`)
   }
 
+  /* ── Loading ──────────────────────────────────────────────── */
+  if (!info) {
+    return (
+      <div className={styles.page}>
+        <Link to={`/app/paths/${pathId}`} className={styles.back}><Icon name="arrowLeft" size={15} /> Back to the path</Link>
+        <div className={styles.card} aria-busy="true"><p className={styles.lead}>Loading the skill check…</p></div>
+      </div>
+    )
+  }
+
   /* ── No questions ─────────────────────────────────────────── */
-  if (!source.length) {
+  if (info.error || !info.questionCount) {
     return (
       <div className={styles.page}>
         <Link to={`/app/paths/${pathId}`} className={styles.back}><Icon name="arrowLeft" size={15} /> Back to the path</Link>
         <div className={styles.card}>
-          <h1 className={styles.title}>This skill check is on its way</h1>
-          <p className={styles.lead}>There are no questions for this module yet. Carry on with the lessons in the meantime.</p>
+          <h1 className={styles.title}>{info.error ? 'This skill check didn’t load' : 'This skill check is on its way'}</h1>
+          <p className={styles.lead}>
+            {info.error
+              ? `${info.error}. Check your connection and refresh the page.`
+              : 'There are no questions for this module yet. Carry on with the lessons in the meantime.'}
+          </p>
           <div className={styles.actions}>
             <Link to={`/app/paths/${pathId}`} className={styles.btnPrimary}>Back to the path</Link>
           </div>
@@ -238,7 +297,7 @@ export default function SkillCheckPage() {
           <dl className={styles.facts}>
             <div><dt><Icon name="list" size={16} /> Questions</dt><dd>{total}</dd></div>
             <div><dt><Icon name="clock" size={16} /> About</dt><dd>{minutes} min</dd></div>
-            <div><dt><Icon name="target" size={16} /> To pass</dt><dd>{PASS_MARK}%</dd></div>
+            <div><dt><Icon name="target" size={16} /> To pass</dt><dd>{passMark}%</dd></div>
           </dl>
 
           {mod && lessonsLeft > 0 && (
@@ -252,8 +311,8 @@ export default function SkillCheckPage() {
           )}
 
           <div className={styles.actions}>
-            <button type="button" className={`${styles.btnPrimary} ${styles.btnLg}`} onClick={start}>
-              Start the skill check <Icon name="arrowRight" size={17} />
+            <button type="button" className={`${styles.btnPrimary} ${styles.btnLg}`} onClick={start} disabled={busy === 'start'}>
+              {busy === 'start' ? 'Starting…' : <>Start the skill check <Icon name="arrowRight" size={17} /></>}
             </button>
             <span className={styles.keysHint}>
               Answer with <kbd>A</kbd>–<kbd>D</kbd> or <kbd>1</kbd>–<kbd>4</kbd>, then <kbd>Enter</kbd> to continue
@@ -273,7 +332,7 @@ export default function SkillCheckPage() {
       else n.add(i)
       return n
     })
-    const need = Math.ceil((PASS_MARK / 100) * total)
+    const need = Math.ceil((passMark / 100) * total)
 
     return (
       <div className={styles.page}>
@@ -292,11 +351,7 @@ export default function SkillCheckPage() {
               </p>
               {passed && (
                 <p className={styles.saveNote} data-state={save.state} role="status">
-                  {save.state === 'saving' && 'Saving your result…'}
                   {save.state === 'saved' && <><Icon name="check" size={14} /> Saved to your progress</>}
-                  {save.state === 'error' && (
-                    <>We couldn't save this. <button type="button" className={styles.linkBtn} onClick={savePass}>Try again</button></>
-                  )}
                 </p>
               )}
             </div>
@@ -425,8 +480,9 @@ export default function SkillCheckPage() {
                 aria-checked={pick === i}
                 className={styles.option}
                 data-state={state}
+                data-pending={busy === 'answer' && pick === i ? true : undefined}
                 onClick={() => choose(i)}
-                disabled={isAnswered}
+                disabled={isAnswered || busy === 'answer'}
               >
                 <span className={styles.letter}>
                   {state === 'right' ? <Icon name="check" size={15} /> : state === 'wrong' ? <Icon name="close" size={15} /> : LETTERS[i]}
@@ -453,9 +509,9 @@ export default function SkillCheckPage() {
             type="button"
             className={styles.btnPrimary}
             onClick={advance}
-            disabled={!isAnswered}
+            disabled={!isAnswered || busy === 'finish'}
           >
-            {isLast ? 'See your result' : 'Next question'} <Icon name="arrowRight" size={16} />
+            {busy === 'finish' ? 'Marking…' : <>{isLast ? 'See your result' : 'Next question'} <Icon name="arrowRight" size={16} /></>}
           </button>
         </div>
       </div>

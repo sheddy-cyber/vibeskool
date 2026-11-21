@@ -1,15 +1,13 @@
 """Exercises: practice tasks on a lesson, checked against test cases.
 
-Code runs on a Piston server (PISTON_URL), never on this one. Web (HTML)
-exercises are checked visually in the browser, so they pass on submit.
+Code runs in a sandbox elsewhere (Judge0 or Piston, see runner.py), never
+on this one. Web (HTML) exercises are checked visually in the browser, so
+they pass on submit.
 """
 import json
 import logging
 
-import requests
-from django.conf import settings
 from django.db.models import F
-from django.shortcuts import get_object_or_404
 from rest_framework import serializers, status
 from rest_framework.exceptions import NotFound, PermissionDenied
 from rest_framework.response import Response
@@ -18,10 +16,11 @@ from rest_framework.views import APIView
 
 from . import access
 from .models import Exercise, ExerciseSubmission, Lesson
+from .runner import RunnerError, RunnerUnavailable, run_cases
 
 log = logging.getLogger(__name__)
 PASS_XP = 20
-RUNTIMES = {'javascript': '18.15.0', 'python': '3.10.0'}
+NOT_SET_UP = "Checking code isn't set up on this server yet. Ask your tutor."
 
 
 class ExerciseSerializer(serializers.ModelSerializer):
@@ -59,42 +58,20 @@ class RunThrottle(UserRateThrottle):
     rate = '30/min'
 
 
-def run_code(language, code):
-    """Run code on Piston and return (stdout, stderr)."""
-    res = requests.post(
-        f"{settings.PISTON_URL.rstrip('/')}/execute",
-        json={
-            'language': language, 'version': RUNTIMES.get(language, '*'),
-            'files': [{'content': code}], 'compile_timeout': 10000, 'run_timeout': 3000,
-        },
-        timeout=20,
-    )
-    res.raise_for_status()
-    run = res.json().get('run', {})
-    return (run.get('stdout') or '').strip(), run.get('stderr') or ''
-
-
 def check(exercise, code):
     """Returns (passed, score, feedback_json)."""
     if exercise.language in ('html', 'web') or exercise.type != Exercise.Type.CODING:
         return True, 100, json.dumps([{'input': 'Visual', 'actual': 'OK', 'expected': 'OK', 'passed': True}])
-    cases = exercise.test_cases or []
+    cases = [tc for tc in (exercise.test_cases or []) if isinstance(tc, dict)]
     if not cases:
         return True, 100, 'No test cases defined. Submission accepted.'
+    outputs = run_cases(exercise.language, code, cases)
     results, passed = [], 0
-    for tc in cases:
-        # Each test prints one expression after the student's code; that output is compared
-        expr = tc.get('input', '')
-        if not expr:
-            full = code
-        elif exercise.language == 'javascript':
-            full = f"{code}\nconsole.log({expr});"
-        else:
-            full = f"{code}\nprint({expr})"
-        out, err = run_code(exercise.language, full)
-        ok = out == str(tc.get('expected_output', '')).strip()
+    for tc, (actual, error) in zip(cases, outputs):
+        ok = not error and actual == str(tc.get('expected_output', '')).strip()
         passed += ok
-        results.append({'input': tc.get('input'), 'expected': tc.get('expected_output'), 'actual': out, 'passed': ok, 'stderr': err})
+        results.append({'input': tc.get('input'), 'expected': tc.get('expected_output'), 'actual': actual,
+                        'passed': ok, 'stderr': error})
     score = round(passed / len(cases) * 100)
     return score == 100, score, json.dumps(results)
 
@@ -165,7 +142,9 @@ class SubmitView(APIView):
         code = str(request.data.get('code') or '')[:20000]
         try:
             passed, score, feedback = check(ex, code)
-        except (requests.RequestException, ValueError):
+        except RunnerUnavailable:
+            return Response({'error': NOT_SET_UP}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
+        except (RunnerError, ValueError):
             log.exception('Code runner failed')
             return Response({'error': "Couldn't run your code right now. Try again in a moment."}, status=status.HTTP_502_BAD_GATEWAY)
         first_pass = passed and not ExerciseSubmission.objects.filter(exercise=ex, student=request.user, passed=True).exists()
@@ -207,7 +186,10 @@ class CheckView(APIView):
         draft = Exercise(type=Exercise.Type.CODING, language=str(request.data.get('language') or 'javascript'), test_cases=cases)
         try:
             passed, score, feedback = check(draft, str(request.data.get('code') or '')[:20000])
-        except (requests.RequestException, ValueError):
+        except RunnerUnavailable:
+            return Response({'error': NOT_SET_UP}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
+        except (RunnerError, ValueError):
+            log.exception('Code runner failed')
             return Response({'error': "Couldn't run the code right now. Try again in a moment."},
                             status=status.HTTP_502_BAD_GATEWAY)
         try:

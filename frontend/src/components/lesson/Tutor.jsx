@@ -187,6 +187,7 @@ export default function Tutor({ lesson, sections, pending, onPendingUsed }) {
           onKeyDown={onKey}
           placeholder="Ask a question about this lesson"
           aria-label="Message the tutor"
+          enterKeyHint="send"
         />
         <button type="submit" className={styles.send} disabled={!input.trim() || loading} aria-label="Send">
           <Icon name="send" size={17} />

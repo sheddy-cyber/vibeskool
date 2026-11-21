@@ -97,6 +97,7 @@
 /* Switch */
 .switch {
   position: relative;
+  flex-shrink: 0; /* a squeezed switch looks broken */
   width: 44px;
   height: 26px;
   padding: 0;
@@ -142,3 +143,8 @@
 .stepper button:hover:not(:disabled) { background: var(--bg-raised); }
 .stepper button:disabled { color: var(--text-tertiary); cursor: default; }
 .stepper output { min-width: 92px; text-align: center; font-size: 14px; font-weight: 600; font-variant-numeric: tabular-nums; }
+
+/* Asking to teach */
+.teachForm { width: 100%; max-width: 34rem; }
+.teachForm .textarea { min-height: 88px; }
+.teachActions { display: flex; justify-content: flex-end; gap: 8px; margin-top: -4px; padding-bottom: 6px; }

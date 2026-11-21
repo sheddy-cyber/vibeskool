@@ -2,7 +2,7 @@
 `lessons_data`, camelCase lesson fields)."""
 from rest_framework import serializers
 
-from .models import Lesson, Question, SkillCheck, SkillPath
+from .models import Lesson, SkillCheck, SkillPath
 
 
 class LessonSummarySerializer(serializers.ModelSerializer):
@@ -71,22 +71,6 @@ class LessonSerializer(serializers.ModelSerializer):
             if key in attrs and attrs[key] is None:
                 attrs[key] = ''
         return attrs
-
-
-class OptionPublicSerializer(serializers.Serializer):
-    id = serializers.IntegerField()
-    text = serializers.CharField()
-
-
-class QuestionPublicSerializer(serializers.ModelSerializer):
-    """A question without its answer; grading happens on the server."""
-    id = serializers.CharField(source='key')
-    question = serializers.CharField(source='prompt')
-    options = OptionPublicSerializer(many=True)
-
-    class Meta:
-        model = Question
-        fields = ['id', 'topic', 'question', 'options']
 
 
 class SkillCheckSerializer(serializers.ModelSerializer):

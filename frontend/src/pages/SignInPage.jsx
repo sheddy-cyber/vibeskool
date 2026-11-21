@@ -58,7 +58,7 @@ export default function SignInPage() {
               required
             />
           </Field>
-          <Field id="password" label="Password">
+          <Field id="password" label="Password" hint={<Link to="/forgot-password" className={styles.smallLink}>Forgot password?</Link>}>
             <PasswordInput
               id="password"
               value={form.password}

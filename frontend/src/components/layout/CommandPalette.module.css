@@ -148,3 +148,22 @@ kbd {
   .rowHint { display: none; }
   .foot { display: none; }
 }
+
+/* Touch screens have no Esc key: a plain Cancel closes the search instead */
+.cancel {
+  display: none;
+  flex-shrink: 0;
+  height: 36px;
+  padding: 0 4px 0 8px;
+  border: 0;
+  background: none;
+  color: var(--accent-text);
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+}
+@media (hover: none) and (pointer: coarse) {
+  .escKey { display: none; }
+  .cancel { display: block; }
+}

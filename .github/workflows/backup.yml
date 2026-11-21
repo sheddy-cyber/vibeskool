@@ -1,0 +1,64 @@
+# Nightly database backup.
+#
+# Dumps the app's tables (the public schema) from Supabase, encrypts the dump
+# with a passphrase only you know, and keeps it as a workflow artifact for 30
+# days. Encrypted, because artifacts can be downloaded by anyone who can see
+# the repository. Restore steps are in DEPLOYING.md.
+#
+# Needs two repository secrets (Settings -> Secrets and variables -> Actions):
+#   BACKUP_DATABASE_URL  Supabase session pooler address (same as DATABASE_URL)
+#   BACKUP_PASSPHRASE    a long random passphrase; keep a copy somewhere safe
+name: Database backup
+
+on:
+  schedule:
+    - cron: '17 2 * * *'   # 02:17 UTC every night
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check the secrets are set
+        id: ready
+        env:
+          DB: ${{ secrets.BACKUP_DATABASE_URL }}
+          PASS: ${{ secrets.BACKUP_PASSPHRASE }}
+        run: |
+          if [ -z "$DB" ] || [ -z "$PASS" ]; then
+            echo "::notice::Backups are off: add BACKUP_DATABASE_URL and BACKUP_PASSPHRASE secrets to turn them on."
+            echo "ok=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "ok=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Dump and encrypt
+        if: steps.ready.outputs.ok == 'true'
+        env:
+          DB: ${{ secrets.BACKUP_DATABASE_URL }}
+          PASS: ${{ secrets.BACKUP_PASSPHRASE }}
+        run: |
+          set -euo pipefail
+          stamp=$(date -u +%Y-%m-%d)
+          echo "STAMP=$stamp" >> "$GITHUB_ENV"
+          # pg_dump from Postgres 17 can read older servers too
+          docker run --rm -e DB postgres:17 sh -c \
+            'pg_dump "$DB" --schema=public --no-owner --no-privileges --format=custom' > dump.pgc
+          test -s dump.pgc
+          echo "Dump size: $(du -h dump.pgc | cut -f1)"
+          gpg --batch --yes --pinentry-mode loopback --passphrase "$PASS" \
+            --symmetric --cipher-algo AES256 --output "vibeskool-$stamp.pgc.gpg" dump.pgc
+          rm dump.pgc
+
+      - name: Keep for 30 days
+        if: steps.ready.outputs.ok == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: vibeskool-db-${{ env.STAMP }}
+          path: vibeskool-*.pgc.gpg
+          retention-days: 30
+          if-no-files-found: error

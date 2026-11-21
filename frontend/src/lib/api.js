@@ -108,9 +108,14 @@ const query = (params = {}) => {
 // ============================================================================
 
 export const authApi = {
-  signup: ({ email, password, displayName, role }) => post('/api/auth/signup', { email, password, displayName, role }),
+  signup: ({ email, password, displayName, role, teachingNote }) => post('/api/auth/signup', { email, password, displayName, role, teachingNote }),
   login: ({ email, password }) => post('/api/auth/login', { email, password }),
-  googleAuth: ({ credential, role }) => post('/api/auth/google', { credential, role }),
+  googleAuth: ({ credential, role, teachingNote }) => post('/api/auth/google', { credential, role, teachingNote }),
+  requestPasswordReset: (email) => post('/api/auth/password-reset', { email }),
+  resetPassword: ({ uid, token, password }) => post('/api/auth/password-reset/confirm', { uid, token, password }),
+  // Tutors are approved by an admin; until then the account is a student's
+  requestTutorAccess: (note) => post('/api/auth/tutor-request', { note }),
+  cancelTutorRequest: () => del('/api/auth/tutor-request'),
   getMe: () => get('/api/auth/me'),
   updateProfile: (data) => put('/api/auth/profile', data),
   uploadAvatar: (file) => upload('/api/auth/avatar', { avatar: file }),
@@ -195,7 +200,15 @@ export const contentApi = {
 export const progressApi = {
   get: () => get('/api/progress'),
   completeLesson: (lessonId, pathId) => post('/api/progress/complete', { lessonId, pathId }),
-  passModule: (moduleId, score) => post('/api/progress/pass-module', { moduleId, score }),
+};
+
+/* Skill checks are marked on the server: each answer is locked in when given
+   and the score comes from those, so a pass can't be made up in the browser. */
+export const skillCheckApi = {
+  info: (moduleId) => get(`/api/skill-checks/${moduleId}`),
+  start: (moduleId) => post(`/api/skill-checks/${moduleId}/attempts`),
+  answer: (attemptId, question, option) => post(`/api/skill-checks/attempts/${attemptId}/answer`, { question, option }),
+  finish: (attemptId) => post(`/api/skill-checks/attempts/${attemptId}/finish`),
 };
 
 export const exerciseApi = {

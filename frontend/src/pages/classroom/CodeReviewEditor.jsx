@@ -6,6 +6,7 @@ import { Segmented } from '@/components/classroom/Parts'
 import { classroomApi } from '@/lib/api'
 import { errorText } from '@/lib/classroom'
 import { confirmDialog, notify } from '@/lib/dialog'
+import { isTouch } from '@/lib/device'
 import { detectLanguage } from '@/lib/highlight'
 import { moveNotes } from '@/lib/lineDiff'
 import styles from './Classroom.module.css'
@@ -95,7 +96,7 @@ export default function CodeReviewEditor({ room, post, onSaved, onCancel }) {
       ) : (
         <>
           <CodeChanges base={post.code} code={draft} notes={notes} onNotesChange={setNotes} by={review?.by} initialView="changes" />
-          <p className={styles.reviewHint}>Hover a line and press + to explain it. Notes sit under their line.</p>
+          <p className={styles.reviewHint}>{isTouch() ? 'Tap + beside a line to explain it.' : 'Hover a line and press + to explain it.'} Notes sit under their line.</p>
         </>
       )}
 

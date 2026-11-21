@@ -95,11 +95,10 @@ For demo data, run `manage.py seed_demo` and `manage.py seed_showcase` in
 
 ## Deploying
 
-- **Frontend:** a static Vite build (`npm run build` in `frontend/`, output in `dist/`).
-  Set `VITE_API_URL` to the API's address and `VITE_GOOGLE_CLIENT_ID`.
-- **Backend:** run Django under an ASGI server (`daphne config.asgi:application`) with
-  `DJANGO_DEBUG` off. See `backend-django/README.md` for the environment variables,
-  uploads storage, Redis for live updates, and the code runner for exercises.
+The app runs on Vercel, the API and Redis on Render (`render.yaml`), and the
+database and uploads on Supabase. [DEPLOYING.md](DEPLOYING.md) walks through
+it step by step: email, the Judge0 code runner, error reports, nightly
+encrypted backups, and a checklist for after launch.
 
 ## License
 

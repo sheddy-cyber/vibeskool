@@ -382,3 +382,46 @@ a.tagPill:hover { color: var(--text-primary); background: var(--bg-overlay); }
 }
 .saveNote { flex: 1 1 0; min-width: 160px; margin-right: auto; font-size: 13px; line-height: 1.4; color: var(--text-tertiary); }
 .saveBar > a, .saveBar > button { flex-shrink: 0; }
+
+/* ── Phones ──────────────────────────────────────────────── */
+@media (max-width: 560px) {
+  /* Whose projects across the top; search and sort share the next line */
+  .toolbar { gap: 10px 8px; }
+  .toolbar > [role="radiogroup"] { flex: 0 0 100%; }
+  .search { flex: 1 1 0; min-width: 0; max-width: none; }
+  .sort { width: 112px !important; flex: 0 0 auto; margin-left: 0; padding-right: 30px !important; }
+  .search input { height: 42px; min-height: 42px; }
+  /* Tags: one row you swipe along, edge to edge, instead of three wrapped rows */
+  .tags {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    margin: 0 -16px 18px;
+    padding: 0 16px 2px;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+    scroll-padding: 0 16px;
+  }
+  .tags::-webkit-scrollbar { display: none; }
+  .tagChip { flex-shrink: 0; height: 34px; }
+
+  /* Editor: the form first, the preview after it */
+  .previewCol { order: 1 !important; }
+  /* Save bar: one solid row pinned to the bottom, the note dropped */
+  .saveBar {
+    flex-wrap: nowrap;
+    margin: 6px calc(50% - 50vw) 0;
+    padding: 10px 16px calc(10px + env(safe-area-inset-bottom));
+    border-top: 1px solid var(--border-subtle);
+    background: var(--bg-canvas, var(--bg-base));
+  }
+  .saveNote { display: none; }
+  .saveBar > a, .saveBar > button { flex: 1 1 0; min-width: 0; justify-content: center; padding-left: 10px; padding-right: 10px; }
+}
+
+/* The site/code buttons carry the address; on narrow screens it shortens with
+   "…" rather than pushing the page wider than the screen */
+.links > a { max-width: 100%; min-width: 0; }
+.linkSub { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+@media (max-width: 560px) {
+  .links > a { flex: 1 1 100%; justify-content: flex-start; }
+}

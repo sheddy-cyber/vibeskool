@@ -90,10 +90,10 @@ export function initTheme() {
 }
 
 // ─── Font ───────────────────────────────────────────────────────────────────
-// 'exo' (default) or 'geist'. Stored per browser so the right font is set
-// before the first paint, and synced to the account so it follows you.
+// 'exo' (default), 'geist' or 'serif'. Stored per browser so the right font
+// is set before the first paint, and synced to the account so it follows you.
 
-export const FONTS = ['exo', 'geist']
+export const FONTS = ['exo', 'geist', 'serif']
 
 export function getStoredFont() {
   try {

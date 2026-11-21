@@ -299,6 +299,7 @@ const Terminal = forwardRef(function Terminal({
               autoCapitalize="off"
               autoCorrect="off"
               aria-label={`Command input. Current folder ${prompt.path}`}
+              enterKeyHint="go"
             />
           </label>
         )}

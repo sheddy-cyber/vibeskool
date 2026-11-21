@@ -176,6 +176,34 @@ class Option(models.Model):
         return self.text[:80]
 
 
+class SkillCheckAttempt(models.Model):
+    """One go at a skill check, kept on the server so the score can't be made up.
+
+    The questions and the order of their options are fixed when it starts.
+    Each answer is locked in when given (that's when the student sees whether
+    it was right), and the score is worked out here from those answers.
+    """
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    student = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='skill_check_attempts')
+    skill_check = models.ForeignKey('SkillCheck', on_delete=models.CASCADE, related_name='attempts')
+    # [{"key": "m0-q3", "options": [12, 9, 10, 11]}] in the order shown
+    questions = models.JSONField(default=list)
+    # {"m0-q3": 9}
+    answers = models.JSONField(default=dict, blank=True)
+    started_at = models.DateTimeField(default=timezone.now)
+    finished_at = models.DateTimeField(null=True, blank=True)
+    score = models.PositiveSmallIntegerField(null=True, blank=True)
+    passed = models.BooleanField(default=False)
+
+    class Meta:
+        ordering = ['-started_at']
+        indexes = [models.Index(fields=['student', 'skill_check', '-started_at'])]
+
+    def __str__(self):
+        return f'{self.student} · {self.skill_check_id} · {self.score if self.score is not None else "in progress"}'
+
+
 class Exercise(models.Model):
     """A practice task attached to a lesson. Coding exercises are checked against test cases."""
 

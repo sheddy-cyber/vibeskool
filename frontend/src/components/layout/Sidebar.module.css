@@ -331,13 +331,24 @@
   .sidebar {
     width: min(300px, 86vw);
     transform: translateX(-102%);
-    transition: transform 260ms cubic-bezier(0.22, 1, 0.36, 1);
+    /* Hidden from taps, Tab and screen readers while closed; it stays
+       visible until the slide-out has finished */
+    visibility: hidden;
+    transition: transform 260ms cubic-bezier(0.22, 1, 0.36, 1), visibility 0s linear 260ms;
     box-shadow: none;
+    overscroll-behavior: contain;
   }
   .open {
     transform: translateX(0);
+    visibility: visible;
+    transition: transform 260ms cubic-bezier(0.22, 1, 0.36, 1), visibility 0s;
     box-shadow: 0 24px 60px -12px rgba(16, 24, 40, 0.35);
   }
+  /* Thumb-sized rows in the drawer */
+  .item { height: 44px; }
+  .search { height: 44px; }
+  .menuItem { min-height: 44px; }
+  .closeBtn { width: 40px; height: 40px; }
   .closeBtn { display: grid; }
   .collapseBtn { display: none; }
   .search kbd { display: none; }

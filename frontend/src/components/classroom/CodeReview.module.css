@@ -282,3 +282,10 @@
 .block :global(.tok-meta) { color: var(--t-cm); }
 .block :global(.tok-url) { color: var(--t-fn); }
 .block :global(.tok-command) { color: var(--t-fn); font-weight: 600; }
+
+/* Touch screens can't hover: the + is always there, with a finger-sized target */
+@media (hover: none) {
+  .add { opacity: 0.75; transform: none; position: relative; }
+  .add::after { content: ''; position: absolute; inset: -9px; }
+}
+@media (hover: none) and (pointer: coarse) { .hint { display: none; } }

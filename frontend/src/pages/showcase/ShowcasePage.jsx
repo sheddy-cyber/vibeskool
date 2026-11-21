@@ -134,7 +134,7 @@ export default function ShowcasePage() {
       {hero && <FeaturedHero project={hero} />}
 
       <div className={styles.toolbar}>
-        <Segmented value={scope} onChange={(v) => setParam('scope', v)} options={SCOPES} label="Whose projects" />
+        <Segmented value={scope} onChange={(v) => setParam('scope', v)} options={SCOPES} label="Whose projects" block />
         <label className={styles.search}>
           <Icon name="search" size={16} className={styles.searchIcon} />
           <input
@@ -148,7 +148,7 @@ export default function ShowcasePage() {
         </label>
         <select className={`${ui.select} ${styles.sort}`} value={sort} onChange={(e) => setParam('sort', e.target.value)} aria-label="Sort">
           <option value="new">Newest</option>
-          <option value="popular">Most appreciated</option>
+          <option value="popular">Popular</option>
         </select>
       </div>
 

@@ -2,7 +2,12 @@ import logging
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.contrib.auth.tokens import default_token_generator
 from django.db import transaction
+from django.utils import timezone
+from django.utils.encoding import force_bytes, force_str
+from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
+from django.core.exceptions import ValidationError as DjangoValidationError
 from rest_framework import status
 from rest_framework.exceptions import NotFound
 from rest_framework.parsers import FormParser, MultiPartParser
@@ -17,9 +22,11 @@ from apps.images import avatar as make_avatar
 from apps.learning.services import student_summary
 from apps.media_urls import media_url
 
+from . import emails
 from .authentication import issue_token
 from .models import initials
-from .serializers import LoginSerializer, ProfileSerializer, SignupSerializer, UserSerializer
+from .serializers import (LoginSerializer, PasswordResetConfirmSerializer, PasswordResetSerializer, ProfileSerializer,
+                          SignupSerializer, TutorRequestSerializer, UserSerializer, check_password)
 
 User = get_user_model()
 log = logging.getLogger(__name__)
@@ -27,6 +34,20 @@ log = logging.getLogger(__name__)
 
 class AuthThrottle(AnonRateThrottle):
     rate = '30/min'
+
+
+class ResetThrottle(AnonRateThrottle):
+    scope = 'password-reset'
+    rate = '5/hour'
+
+
+def request_tutor_access(user, note=''):
+    """Put the account in the queue for an admin to approve. It stays a student's until then."""
+    user.tutor_status = User.TutorStatus.PENDING
+    user.tutor_request_note = (note or '').strip()[:1000]
+    user.tutor_requested_at = timezone.now()
+    user.save(update_fields=['tutor_status', 'tutor_request_note', 'tutor_requested_at', 'updated_at'])
+    transaction.on_commit(lambda: emails.tutor_request_received(user))
 
 
 def signed_in(user, code=status.HTTP_200_OK):
@@ -46,12 +67,15 @@ class SignupView(APIView):
                 return Response({'error': 'Email already exists'}, status=status.HTTP_409_CONFLICT)
             s.is_valid(raise_exception=True)
         d = s.validated_data
-        user = User.objects.create_user(
-            email=d['email'],
-            password=d['password'],
-            display_name=d['displayName'].strip(),
-            role=d['role'],
-        )
+        with transaction.atomic():
+            user = User.objects.create_user(
+                email=d['email'],
+                password=d['password'],
+                display_name=d['displayName'].strip(),
+                role=User.Role.STUDENT,
+            )
+            if d['role'] == 'teacher':
+                request_tutor_access(user, d.get('teachingNote', ''))
         return signed_in(user, status.HTTP_201_CREATED)
 
 
@@ -112,16 +136,84 @@ class GoogleView(APIView):
                 if changed:
                     user.save(update_fields=changed)
             else:
-                role = request.data.get('role')
                 user = User.objects.create_user(
                     email=email,
                     display_name=name,
                     avatar_url=picture or initials(name),
-                    role=role if role in ('student', 'teacher') else 'student',
+                    role=User.Role.STUDENT,
                     google_id=google_id,
                     auth_provider=User.Provider.GOOGLE,
                 )
+                if request.data.get('role') == 'teacher':
+                    request_tutor_access(user, str(request.data.get('teachingNote') or ''))
         return signed_in(user)
+
+
+class PasswordResetView(APIView):
+    """POST {email}: email a link to choose a new password.
+
+    Always answers the same way, so it can't be used to find out who has an account.
+    """
+    permission_classes = [AllowAny]
+    authentication_classes = []
+    throttle_classes = [ResetThrottle]
+
+    def post(self, request):
+        s = PasswordResetSerializer(data=request.data)
+        s.is_valid(raise_exception=True)
+        user = User.objects.filter(email__iexact=s.validated_data['email'].strip(), is_active=True).first()
+        if user:
+            uid = urlsafe_base64_encode(force_bytes(user.pk))
+            token = default_token_generator.make_token(user)
+            link = f"{settings.FRONTEND_URL.rstrip('/')}/reset-password?uid={uid}&token={token}"
+            emails.password_reset(user, link)
+        return Response({'ok': True})
+
+
+class PasswordResetConfirmView(APIView):
+    """POST {uid, token, password}: set the new password and sign in. Signs out other devices."""
+    permission_classes = [AllowAny]
+    authentication_classes = []
+    throttle_classes = [AuthThrottle]
+
+    def post(self, request):
+        s = PasswordResetConfirmSerializer(data=request.data)
+        s.is_valid(raise_exception=True)
+        d = s.validated_data
+        try:
+            user = User.objects.get(pk=force_str(urlsafe_base64_decode(d['uid'])), is_active=True)
+        except (User.DoesNotExist, ValueError, TypeError, OverflowError, DjangoValidationError):
+            user = None
+        if not user or not default_token_generator.check_token(user, d['token']):
+            return Response({'error': 'This link has expired or was already used. Ask for a new one.'},
+                            status=status.HTTP_400_BAD_REQUEST)
+        check_password(d['password'], user=user)
+        user.set_password(d['password'])
+        user.revoke_tokens()
+        user.save()
+        return signed_in(user)
+
+
+class TutorRequestView(APIView):
+    """POST {note}: ask to become a tutor. DELETE: take the request back."""
+
+    def post(self, request):
+        user = request.user
+        if user.role != User.Role.STUDENT:
+            return Response({'error': 'You can already teach.'}, status=status.HTTP_409_CONFLICT)
+        if user.tutor_status == User.TutorStatus.PENDING:
+            return Response({'error': 'Your request is already waiting for approval.'}, status=status.HTTP_409_CONFLICT)
+        s = TutorRequestSerializer(data=request.data)
+        s.is_valid(raise_exception=True)
+        request_tutor_access(user, s.validated_data.get('note', ''))
+        return Response({'user': UserSerializer(user).data})
+
+    def delete(self, request):
+        user = request.user
+        if user.tutor_status == User.TutorStatus.PENDING:
+            user.tutor_status = User.TutorStatus.NONE
+            user.save(update_fields=['tutor_status', 'updated_at'])
+        return Response({'user': UserSerializer(user).data})
 
 
 class MeView(APIView):

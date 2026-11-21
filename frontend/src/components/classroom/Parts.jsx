@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import Icon from '@/components/icons/Icons'
 import { initials } from '@/lib/classroom'
@@ -92,10 +92,76 @@ export function Modal({ title, description, onClose, children, footer, wide = fa
   )
 }
 
-/** Segmented control for 2–4 choices. */
-export function Segmented({ value, onChange, options, label }) {
+const PHONE = '(max-width: 560px)'
+
+/* A "more actions" menu. A small popover under its button on wide screens;
+   on phones a sheet that slides up from the bottom, with big rows and a
+   Cancel, because a popover pinned to a button near the screen edge gets
+   cut off and is hard to hit with a thumb.
+   items: [{ label, icon, onClick, tone: 'danger' }] */
+export function ActionMenu({ items, label = 'More actions', icon = 'list', buttonClassName, className, title }) {
+  const [open, setOpen] = useState(false)
+  const [sheet, setSheet] = useState(false)
+  const wrapRef = useRef(null)
+  const sheetRef = useRef(null)
+
+  useEffect(() => {
+    if (!open) return undefined
+    const close = (e) => {
+      if (wrapRef.current?.contains(e.target) || sheetRef.current?.contains(e.target)) return
+      setOpen(false)
+    }
+    const esc = (e) => { if (e.key === 'Escape') setOpen(false) }
+    document.addEventListener('mousedown', close)
+    document.addEventListener('keydown', esc)
+    let prev
+    if (sheet) {
+      prev = document.body.style.overflow
+      document.body.style.overflow = 'hidden'
+      sheetRef.current?.querySelector('button')?.focus({ preventScroll: true })
+    }
+    return () => {
+      document.removeEventListener('mousedown', close)
+      document.removeEventListener('keydown', esc)
+      if (sheet) document.body.style.overflow = prev
+    }
+  }, [open, sheet])
+
+  if (!items.length) return null
+  const pick = (it) => { setOpen(false); it.onClick() }
+  const toggle = () => {
+    setSheet(window.matchMedia(PHONE).matches)
+    setOpen((v) => !v)
+  }
+  const rows = items.map((it) => (
+    <button key={it.label} type="button" role="menuitem" data-tone={it.tone} onClick={() => pick(it)}>
+      <Icon name={it.icon} size={17} /> {it.label}
+    </button>
+  ))
+
   return (
-    <div className={styles.segmented} role="radiogroup" aria-label={label}>
+    <div className={className ? `${styles.menuWrap} ${className}` : styles.menuWrap} ref={wrapRef}>
+      <button type="button" className={buttonClassName || styles.iconBtn} onClick={toggle} aria-label={label} title={title} aria-haspopup="menu" aria-expanded={open}>
+        <Icon name={icon} size={17} />
+      </button>
+      {open && !sheet && <div className={styles.menu} role="menu">{rows}</div>}
+      {open && sheet && createPortal(
+        <div className={styles.sheetScrim} onMouseDown={(e) => { if (e.target === e.currentTarget) setOpen(false) }}>
+          <div className={styles.sheet} role="menu" aria-label={label} ref={sheetRef}>
+            {rows}
+            <button type="button" className={styles.sheetCancel} onClick={() => setOpen(false)}>Cancel</button>
+          </div>
+        </div>,
+        document.body,
+      )}
+    </div>
+  )
+}
+
+/** Segmented control for 2–4 choices. */
+export function Segmented({ value, onChange, options, label, block = false }) {
+  return (
+    <div className={styles.segmented} role="radiogroup" aria-label={label} data-block={block || undefined}>
       {options.map((o) => (
         <button
           key={o.value}

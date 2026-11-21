@@ -8,6 +8,8 @@ import { ProtectedRoute, TeacherRoute } from '@/components/layout/ProtectedRoute
 import LandingPage from '@/pages/LandingPage'
 import SignInPage from '@/pages/SignInPage'
 import SignUpPage from '@/pages/SignUpPage'
+import ForgotPasswordPage from '@/pages/ForgotPasswordPage'
+import ResetPasswordPage from '@/pages/ResetPasswordPage'
 import DashboardPage from '@/pages/DashboardPage'
 import PathsPage from '@/pages/PathsPage'
 import LessonPage from '@/pages/LessonPage'
@@ -49,6 +51,8 @@ export default function App() {
           <Route path="/signin" element={<SignInPage />} />
           <Route path="/login" element={<Navigate to="/signin" replace />} />
           <Route path="/signup" element={<SignUpPage />} />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+          <Route path="/reset-password" element={<ResetPasswordPage />} />
           <Route path="/privacy" element={<PrivacyPage />} />
           <Route path="/terms" element={<TermsPage />} />
 

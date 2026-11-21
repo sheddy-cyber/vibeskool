@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import CodeMirror, { EditorView } from '@uiw/react-codemirror'
 import { html } from '@codemirror/lang-html'
@@ -12,6 +12,7 @@ import { classroomApi } from '@/lib/api'
 import { useAuth } from '@/lib/auth'
 import { dueLabel, errorText, KIND, OPEN_STATUSES, STATUS, timeAgo } from '@/lib/classroom'
 import { confirmDialog, notify } from '@/lib/dialog'
+import { isTouch } from '@/lib/device'
 import { detectLanguage } from '@/lib/highlight'
 import { LiveProvider, useLive } from '@/lib/live'
 import { AssignmentModal } from './Classwork'
@@ -238,7 +239,7 @@ function StudentView({ room, assignment, reload }) {
 }
 
 /* ── Tutor view ───────────────────────────────────────────── */
-function Review({ room, sid, onReviewed }) {
+function Review({ room, sid, onReviewed, onLoaded }) {
   const [sub, setSub] = useState(null)
   const [error, setError] = useState(null)
   const [score, setScore] = useState('')
@@ -249,6 +250,8 @@ function Review({ room, sid, onReviewed }) {
     .catch((err) => setError(errorText(err))), [room.id, sid])
 
   useEffect(() => { setSub(null); setError(null); load() }, [load])
+  const loaded = Boolean(sub)
+  useEffect(() => { if (loaded) onLoaded?.() }, [loaded]) // eslint-disable-line react-hooks/exhaustive-deps
   useLive(['work'], (e) => { if (e.topic === 'poll' || e.topic === '*' || e.data?.submissionId === sid) load() })
 
   const comment = async (data) => {
@@ -293,7 +296,7 @@ function Review({ room, sid, onReviewed }) {
       </div>
       {sub.note && <p className={styles.note}><strong>Note from {sub.student.display_name.split(' ')[0]}:</strong> {sub.note}</p>}
       {sub.code
-        ? <CodeReview code={sub.code} comments={sub.comments} onComment={comment} title="Hover a line and press + to comment on it" />
+        ? <CodeReview code={sub.code} comments={sub.comments} onComment={comment} title={isTouch() ? 'Tap + beside a line to comment on it' : 'Hover a line and press + to comment on it'} />
         : sub.link && <a href={sub.link} target="_blank" rel="noreferrer" className={styles.linkOut}><Icon name="arrowUpRight" size={16} />{sub.link}</a>}
       <Feedback comments={sub.comments} onSend={comment} placeholder="Overall feedback for the student…" />
       <div className={styles.verdict}>
@@ -322,10 +325,25 @@ function TutorView({ room, assignment, reload }) {
   const current = roster.find((r) => r.student.id === picked && r.submissionId)
     || withWork.find((r) => r.status === 'submitted') || withWork[0]
 
+  const rosterRef = useRef(null)
+  const detailRef = useRef(null)
+  const scrollOnLoad = useRef(false)
   const pick = (id) => {
     const next = new URLSearchParams(params)
     next.set('student', id)
     setParams(next, { replace: true })
+    scrollOnLoad.current = true
+  }
+  // When the list sits above the work (phones), bring the picked student's
+  // work into view once it has loaded (before that the page is too short)
+  const showWork = () => {
+    if (!scrollOnLoad.current) return
+    scrollOnLoad.current = false
+    const list = rosterRef.current?.getBoundingClientRect()
+    const detail = detailRef.current
+    if (list && detail && detail.getBoundingClientRect().top >= list.bottom - 1) {
+      detail.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }
   }
 
   const order = { submitted: 0, changes_requested: 1, missing: 2, not_started: 3, approved: 4, done: 5 }
@@ -340,7 +358,7 @@ function TutorView({ room, assignment, reload }) {
         </details>
       )}
       <div className={styles.reviewLayout}>
-        <ul className={`${styles.card} ${styles.roster}`} aria-label="Students">
+        <ul className={`${styles.card} ${styles.roster}`} aria-label="Students" ref={rosterRef}>
           {sorted.map((r) => (
             <li key={r.student.id}>
               <button
@@ -360,7 +378,7 @@ function TutorView({ room, assignment, reload }) {
           ))}
           {roster.length === 0 && <li className={styles.muted} style={{ padding: 10 }}>No students in this class yet.</li>}
         </ul>
-        <div>
+        <div ref={detailRef} style={{ scrollMarginTop: 'calc(var(--app-top, 56px) + 12px)' }}>
           {assignment.kind === 'lesson' ? (
             <div className={styles.card}>
               <Empty icon="book" title="Done by finishing the lesson">
@@ -368,7 +386,7 @@ function TutorView({ room, assignment, reload }) {
               </Empty>
             </div>
           ) : current ? (
-            <Review key={current.submissionId} room={room} sid={current.submissionId} onReviewed={reload} />
+            <Review key={current.submissionId} room={room} sid={current.submissionId} onReviewed={reload} onLoaded={showWork} />
           ) : (
             <div className={styles.card}>
               <Empty icon="clock" title="Nothing handed in yet">Work shows up here as students hand it in.</Empty>

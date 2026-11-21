@@ -9,7 +9,7 @@ from .models import User
 
 class AuthTests(APITestCase):
     def signup(self, **kw):
-        data = {'email': 'Sam@Example.com', 'password': 'secret123', 'displayName': 'Sam Lee', 'role': 'student', **kw}
+        data = {'email': 'Sam@Example.com', 'password': 'tidal-orbit-maple-42', 'displayName': 'Sam Lee', 'role': 'student', **kw}
         return self.client.post('/api/auth/signup', data, format='json')
 
     def test_signup_returns_user_and_token(self):
@@ -28,13 +28,13 @@ class AuthTests(APITestCase):
         self.assertEqual(res.data, {'error': 'Email already exists'})
         res = self.signup(email='new@example.com', password='123')
         self.assertEqual(res.status_code, 400)
-        self.assertEqual(res.data['error'], 'Password must be at least 6 characters')
+        self.assertEqual(res.data['error'], 'Password must be at least 8 characters')
         res = self.signup(email='other@example.com', role='admin')
         self.assertEqual(res.data['error'], 'Role must be student or teacher')
 
     def test_login(self):
         self.signup()
-        ok = self.client.post('/api/auth/login', {'email': 'SAM@example.com', 'password': 'secret123'}, format='json')
+        ok = self.client.post('/api/auth/login', {'email': 'SAM@example.com', 'password': 'tidal-orbit-maple-42'}, format='json')
         self.assertEqual(ok.status_code, 200)
         bad = self.client.post('/api/auth/login', {'email': 'sam@example.com', 'password': 'nope'}, format='json')
         self.assertEqual(bad.status_code, 401)
@@ -54,7 +54,7 @@ class AuthTests(APITestCase):
             self.assertIn(key, res.data)
 
     def test_tokens_from_the_old_server_still_work(self):
-        user = User.objects.create_user('old@example.com', 'secret123', display_name='Old Timer')
+        user = User.objects.create_user('old@example.com', 'tidal-orbit-maple-42', display_name='Old Timer')
         token = jwt.encode(
             {'id': str(user.id), 'email': user.email, 'role': 'student',
              'exp': datetime.now(timezone.utc) + timedelta(days=1)},
@@ -74,7 +74,7 @@ class AuthTests(APITestCase):
         self.assertFalse(user.password.startswith('bcrypt'), 'hash is upgraded on sign-in')
 
     def test_expired_token(self):
-        user = User.objects.create_user('x@example.com', 'secret123', display_name='X')
+        user = User.objects.create_user('x@example.com', 'tidal-orbit-maple-42', display_name='X')
         token = jwt.encode({'id': str(user.id), 'exp': datetime.now(timezone.utc) - timedelta(minutes=1)},
                            settings.JWT_SECRET, algorithm='HS256')
         self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {token}')

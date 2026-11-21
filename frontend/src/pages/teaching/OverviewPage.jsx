@@ -40,7 +40,7 @@ function AttentionItem({ item }) {
           <span className={styles.rowTitle}>{title}</span>
           <span className={styles.rowSub}>{sub} · {item.classroom.name}</span>
         </span>
-        <span className={styles.rowMeta}>
+        <span className={styles.rowMeta} data-tags={item.kind === 'student' || undefined}>
           {item.kind === 'student'
             ? item.flags.filter((f) => f === 'overdue' || f === 'inactive').map((f) => <Pill key={f} tone={FLAGS[f].tone}>{FLAGS[f].label}</Pill>)
             : <Icon name="chevronRight" size={16} />}

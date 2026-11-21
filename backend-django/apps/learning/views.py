@@ -1,21 +1,22 @@
 import random
 
 from django.conf import settings
+from django.db import transaction
 from django.db.models import Prefetch
 from django.shortcuts import get_object_or_404
+from django.utils import timezone
 from rest_framework import status
 from rest_framework.exceptions import NotFound, PermissionDenied
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.throttling import UserRateThrottle
 from rest_framework.views import APIView
 
 from apps.accounts.permissions import IsTutor
 
 from . import access, services
-from .models import Lesson, LessonCompletion, PassedModule, SkillCheck, SkillPath, Streak
-from .serializers import (
-    LessonListSerializer, LessonSerializer, PathSerializer, QuestionPublicSerializer, SkillCheckSerializer,
-)
+from .models import Lesson, LessonCompletion, PassedModule, Question, SkillCheck, SkillCheckAttempt, SkillPath, Streak
+from .serializers import LessonListSerializer, LessonSerializer, PathSerializer, SkillCheckSerializer
 
 
 def with_lessons(courses, user):
@@ -169,44 +170,140 @@ class CompleteLessonView(APIView):
         return Response(result)
 
 
-class PassModuleView(APIView):
-    def post(self, request):
-        module_id = request.data.get('moduleId')
-        try:
-            score = int(request.data.get('score'))
-        except (TypeError, ValueError):
-            score = -1
-        if not module_id or not 0 <= score <= 100:
-            return Response({'error': 'moduleId and a score from 0 to 100 are required'}, status=status.HTTP_400_BAD_REQUEST)
-        if score < SkillCheck.PASS_MARK:
-            return Response({'error': f'A pass needs {SkillCheck.PASS_MARK}% or more'}, status=status.HTTP_400_BAD_REQUEST)
-        return Response(services.pass_module(request.user, str(module_id), score))
-
-
 # ── Skill checks ──────────────────────────────────────────────────────
-class SkillCheckView(APIView):
-    """GET a fresh attempt: a random set of questions, options shuffled, no answers."""
+class SkillCheckThrottle(UserRateThrottle):
+    scope = 'skill-check'
+    rate = '40/hour'
+
+
+def deal(questions):
+    """Option order for each question, with the right answers spread evenly over A-D.
+
+    Shuffling alone can put the answer on B three times running; dealing the
+    positions (A, B, C, D, A, B, ...) and then shuffling which question gets
+    which keeps position from ever being a clue.
+    """
+    rng = random.SystemRandom()
+    options = [list(q.options.all()) for q in questions]
+    fewest = min((len(o) for o in options), default=1) or 1
+    slots = [i % fewest for i in range(len(questions))]
+    rng.shuffle(slots)
+    dealt = []
+    for q, opts, slot in zip(questions, options, slots):
+        right = [o for o in opts if o.correct][:1]
+        wrong = [o for o in opts if not right or o.id != right[0].id]
+        rng.shuffle(wrong)
+        order = wrong[:]
+        if right:
+            order.insert(min(slot, len(order)), right[0])
+        dealt.append({'key': q.key, 'options': [o.id for o in order]})
+    return dealt
+
+
+def own_attempt(user, pk):
+    attempt = SkillCheckAttempt.objects.select_related('skill_check').filter(pk=pk, student=user).first()
+    if not attempt:
+        raise NotFound('That attempt was not found. Start the skill check again.')
+    return attempt
+
+
+def attempt_result(attempt):
+    """Score the locked-in answers. Unanswered questions count as wrong."""
+    keys = [q['key'] for q in attempt.questions]
+    questions = {q.key: q for q in Question.objects.filter(key__in=keys).prefetch_related('options')}
+    results, right = [], 0
+    for key in keys:
+        q = questions.get(key)
+        correct = next((o.id for o in q.options.all() if o.correct), None) if q else None
+        chosen = attempt.answers.get(key)
+        ok = correct is not None and chosen == correct
+        right += ok
+        results.append({'question': key, 'chosen': chosen, 'correctOption': correct, 'correct': ok,
+                        'explanation': q.explanation if q else ''})
+    total = len(keys)
+    score = round(right / total * 100) if total else 0
+    return {'score': score, 'right': right, 'total': total, 'passed': total > 0 and score >= SkillCheck.PASS_MARK,
+            'passMark': SkillCheck.PASS_MARK, 'results': results}
+
+
+class SkillCheckInfoView(APIView):
+    """GET: what the intro screen shows. No questions."""
 
     def get(self, request, module_id):
-        check = get_object_or_404(SkillCheck, pk=module_id)
-        questions = list(check.questions.prefetch_related('options'))
-        random.shuffle(questions)
-        picked = questions[:check.questions_per_attempt]
-        data = QuestionPublicSerializer(picked, many=True).data
-        for q in data:
-            random.shuffle(q['options'])
-        return Response({'skillCheck': SkillCheckSerializer(check).data, 'questions': data})
+        check = SkillCheck.objects.filter(pk=module_id).first()
+        count = check.questions.count() if check else 0
+        return Response({
+            'skillCheck': SkillCheckSerializer(check).data if check else None,
+            'questionCount': min(count, check.questions_per_attempt) if check else 0,
+            'passMark': SkillCheck.PASS_MARK,
+        })
 
 
-class GradeSkillCheckView(APIView):
-    """POST {answers: {questionId: optionId}} → score, per-question results; records a pass."""
+class StartAttemptView(APIView):
+    """POST: start a skill check. A random set of questions, options in a dealt order, no answers."""
+    throttle_classes = [SkillCheckThrottle]
 
     def post(self, request, module_id):
-        check = get_object_or_404(SkillCheck, pk=module_id)
-        answers = request.data.get('answers')
-        if not isinstance(answers, dict) or not answers:
-            return Response({'error': 'answers is required'}, status=status.HTTP_400_BAD_REQUEST)
-        result = services.grade_skill_check(check, answers)
-        if result['passed']:
-            result['progress'] = services.pass_module(request.user, check.module_id, result['score'])
+        check = SkillCheck.objects.filter(pk=module_id).first()
+        if not check:
+            raise NotFound("This skill check isn't ready yet.")
+        pool = list(check.questions.prefetch_related('options'))
+        picked = random.SystemRandom().sample(pool, min(check.questions_per_attempt, len(pool)))
+        if not picked:
+            raise NotFound("This skill check has no questions yet.")
+        attempt = SkillCheckAttempt.objects.create(student=request.user, skill_check=check, questions=deal(picked))
+        by_key = {q.key: q for q in picked}
+        questions = []
+        for item in attempt.questions:
+            q = by_key[item['key']]
+            text = {o.id: o.text for o in q.options.all()}
+            questions.append({'id': q.key, 'topic': q.topic, 'question': q.prompt,
+                              'options': [{'id': oid, 'text': text[oid]} for oid in item['options']]})
+        return Response({'attempt': str(attempt.id), 'skillCheck': SkillCheckSerializer(check).data,
+                         'questions': questions}, status=status.HTTP_201_CREATED)
+
+
+class AnswerView(APIView):
+    """POST {question, option}: lock in an answer and find out if it was right. One go per question."""
+
+    def post(self, request, pk):
+        own_attempt(request.user, pk)
+        key = str(request.data.get('question') or '')
+        try:
+            option = int(request.data.get('option'))
+        except (TypeError, ValueError):
+            option = None
+        # Row lock, so two quick clicks can't both count
+        with transaction.atomic():
+            attempt = SkillCheckAttempt.objects.select_for_update().get(pk=pk)
+            if attempt.finished_at:
+                return Response({'error': 'This attempt is finished. Start a new one.'}, status=status.HTTP_409_CONFLICT)
+            item = next((q for q in attempt.questions if q['key'] == key), None)
+            if not item:
+                return Response({'error': "That question isn't part of this attempt."}, status=status.HTTP_400_BAD_REQUEST)
+            if option not in item['options']:
+                return Response({'error': 'Pick one of the options.'}, status=status.HTTP_400_BAD_REQUEST)
+            if key in attempt.answers:
+                return Response({'error': 'You already answered that one.'}, status=status.HTTP_409_CONFLICT)
+            attempt.answers = {**attempt.answers, key: option}
+            attempt.save(update_fields=['answers'])
+        q = Question.objects.prefetch_related('options').get(key=key)
+        correct = next((o.id for o in q.options.all() if o.correct), None)
+        return Response({'correct': option == correct, 'correctOption': correct, 'explanation': q.explanation})
+
+
+class FinishAttemptView(APIView):
+    """POST: score the attempt here, from the answers given, and record a pass."""
+
+    def post(self, request, pk):
+        attempt = own_attempt(request.user, pk)
+        result = attempt_result(attempt)
+        if not attempt.finished_at:
+            updated = SkillCheckAttempt.objects.filter(pk=attempt.pk, finished_at__isnull=True).update(
+                finished_at=timezone.now(), score=result['score'], passed=result['passed'])
+            if updated and result['passed']:
+                result['progress'] = services.pass_module(request.user, attempt.skill_check.module_id, result['score'])
+        if 'progress' not in result:
+            result['progress'] = {'passedModules': list(
+                PassedModule.objects.filter(student=request.user).values_list('module_id', flat=True)), 'xpAwarded': 0}
         return Response(result)

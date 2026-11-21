@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import Icon from '@/components/icons/Icons'
-import { Avatar, Empty, Skeleton } from '@/components/classroom/Parts'
+import { ActionMenu, Avatar, Empty, Skeleton } from '@/components/classroom/Parts'
 import { ProjectMedia } from '@/components/showcase/ProjectCard'
 import { useCopy } from '@/components/lesson/CodeBlock'
 import { showcaseApi } from '@/lib/api'
@@ -13,35 +13,6 @@ import styles from './Showcase.module.css'
 
 const ROLE = { teacher: 'Tutor', admin: 'Admin', student: 'Student' }
 
-function Menu({ items }) {
-  const [open, setOpen] = useState(false)
-  const ref = useRef(null)
-  useEffect(() => {
-    if (!open) return undefined
-    const close = (e) => { if (!ref.current?.contains(e.target)) setOpen(false) }
-    const esc = (e) => { if (e.key === 'Escape') setOpen(false) }
-    document.addEventListener('mousedown', close)
-    document.addEventListener('keydown', esc)
-    return () => { document.removeEventListener('mousedown', close); document.removeEventListener('keydown', esc) }
-  }, [open])
-  if (!items.length) return null
-  return (
-    <div className={ui.menuWrap} ref={ref}>
-      <button type="button" className={ui.btnGhost} onClick={() => setOpen((v) => !v)} aria-expanded={open} aria-label="More actions">
-        <Icon name="list" size={16} />
-      </button>
-      {open && (
-        <div className={ui.menu} role="menu">
-          {items.map((it) => (
-            <button key={it.label} type="button" role="menuitem" data-tone={it.tone} onClick={() => { setOpen(false); it.onClick() }}>
-              <Icon name={it.icon} size={16} /> {it.label}
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
-  )
-}
 
 function Comments({ project, me }) {
   const [items, setItems] = useState(null)
@@ -268,7 +239,7 @@ export default function ProjectPage() {
         </div>
         <div className={styles.headActions}>
           {perms.edit && <Link to={`/app/showcase/${project.id}/edit`} className={ui.btnGhost}><Icon name="pen" size={16} /> Edit</Link>}
-          <Menu items={menu} />
+          <ActionMenu items={menu} buttonClassName={ui.btnGhost} />
         </div>
       </header>
 

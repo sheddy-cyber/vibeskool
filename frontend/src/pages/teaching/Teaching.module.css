@@ -244,6 +244,8 @@ a.row:hover { background: var(--bg-raised); }
   overflow-y: auto;
   padding: 26px 30px;
 }
+/* Stacked under the editor: an ordinary block, not a pinned panel */
+@container (max-width: 1000px) { .previewCol { position: static; max-height: none; overflow: visible; padding: 22px 20px; } }
 .previewLabel {
   display: flex;
   align-items: center;
@@ -299,8 +301,10 @@ a.row:hover { background: var(--bg-raised); }
 .passBar span { display: block; height: 100%; background: var(--green); border-radius: inherit; }
 .exStat { display: flex; align-items: center; gap: 10px; font-size: 12.5px; color: var(--text-secondary); white-space: nowrap; font-variant-numeric: tabular-nums; }
 @container (max-width: 640px) {
-  .exRow { grid-template-columns: 38px minmax(0, 1fr); }
-  .exRow > :nth-child(3), .exRow > :nth-child(4) { grid-column: 2; }
+  .exRow { grid-template-columns: 38px minmax(0, 1fr) auto; gap: 6px 14px; padding: 13px 16px; }
+  .exRow > :nth-child(1) { grid-row: 1 / span 2; align-self: start; }
+  .exRow > :nth-child(3) { grid-column: 2; grid-row: 2; }
+  .exRow > :nth-child(4) { grid-column: 3; grid-row: 1 / span 2; }
 }
 
 .cases { display: grid; gap: 8px; }
@@ -313,3 +317,37 @@ a.row:hover { background: var(--bg-raised); }
 .caseOut { grid-column: 1 / -1; margin-top: -2px; font-family: var(--font-mono); font-size: 12px; color: var(--red-text, var(--red)); }
 .codeLabel { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; font-size: 13.5px; font-weight: 600; }
 .runLine { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 10px; font-size: 13px; color: var(--text-secondary); }
+
+/* Phones: titles get two lines instead of an early "…", and a student's
+   flags drop under their name rather than squeezing it */
+@media (max-width: 560px) {
+  .row { flex-wrap: wrap; row-gap: 6px; }
+  .rowTitle { white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+  .rowMeta[data-tags] { flex-basis: 100%; padding-left: 49px; flex-wrap: wrap; gap: 6px; }
+}
+
+/* Phones: the lesson editor's save bar is one solid row along the bottom */
+@media (max-width: 560px) {
+  .saveBar {
+    flex-wrap: nowrap;
+    margin: 4px calc(50% - 50vw) 0;
+    padding: 10px 16px calc(10px + env(safe-area-inset-bottom));
+    border-top: 1px solid var(--border-subtle);
+    background: var(--bg-canvas, var(--bg-base));
+  }
+  .saveState { flex: 1 1 auto; font-size: 12.5px; line-height: 1.35; }
+}
+
+/* Touch screens can't drag lessons; the up/down arrows do it, a bit bigger */
+@media (hover: none) {
+  .grip { display: none; }
+  .tinyBtn { width: 36px; height: 36px; }
+}
+/* Phones: a lesson's title gets the room; its status sits under it */
+@media (max-width: 560px) {
+  .lesson { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px 8px; padding: 12px 10px 12px 14px; }
+  .lesson > .grip { display: none; }
+  .lesson > .lessonLink { grid-column: 1; grid-row: 1; }
+  .lesson > :nth-child(3) { grid-column: 1; grid-row: 2; justify-self: start; }
+  .lesson > .moveBtns { grid-column: 2; grid-row: 1 / span 2; align-self: center; }
+}

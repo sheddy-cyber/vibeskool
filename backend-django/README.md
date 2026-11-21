@@ -65,27 +65,35 @@ accounts at `demo.vibeskool.test`. Their password comes from `DEMO_PASSWORD`, or
 default in `apps/classrooms/management/commands/seed_demo.py`. It only runs with
 `DJANGO_DEBUG=1`.
 
-- API docs: http://localhost:8000/api/docs
-- Admin: http://localhost:8000/admin
+- API docs: http://localhost:8000/api/docs (development only)
+- Admin: http://localhost:8000/admin (or `ADMIN_PATH`)
 
 ## Production
 
-Uploads (project previews, avatars) go to `media/` on local disk. On a host whose
-disk is wiped on redeploy, switch the storage backend to object storage (S3, Supabase
-Storage) and set `MEDIA_ORIGIN` to where the files are served from.
+The full walkthrough (Render, Supabase Storage, email, Judge0, Sentry, backups)
+is in [../DEPLOYING.md](../DEPLOYING.md). In short:
 
-Exercise code runs on a Piston server (`PISTON_URL`). The public one is invite-only
-since February 2026, so production needs a self-hosted Piston (it runs in Docker).
-Tutors' "Check my solution" for JavaScript runs in the browser and doesn't need it.
+- With `DJANGO_DEBUG` off the server refuses to start unless `DJANGO_SECRET_KEY`
+  and `JWT_SECRET` are 32+ random characters, and it turns on HTTPS-only,
+  HSTS and the other security headers. `manage.py check --deploy` is clean.
+- Uploads go to a public Supabase Storage bucket when the `STORAGE_*` variables
+  are set (`move_media_to_storage` copies files from local disk).
+- Exercise code runs on Judge0 (`JUDGE0_KEY`) or a self-hosted Piston (`PISTON_URL`),
+  all test cases in one run. Without either, exercises say checking isn't set up.
+- Skill checks are marked here: answers are locked in one at a time, and the
+  score comes from those.
+- Email goes through any SMTP provider (`EMAIL_*`): password resets, and tutor
+  requests that an admin approves under Users.
+- `/api/health` checks the database, for the host's health check and uptime monitors.
+- `SENTRY_DSN` turns on error reports.
 
 Run under an ASGI server so WebSockets work, and set `REDIS_URL` when there is more
-than one process (without it, live updates use an in-memory layer that only works
-in a single process):
+than one process (live updates and rate limits are shared through it):
 
 ```bash
 python manage.py collectstatic --noinput
 python manage.py migrate
-daphne -b 0.0.0.0 -p $PORT config.asgi:application
+daphne --proxy-headers -b 0.0.0.0 -p $PORT config.asgi:application
 ```
 
 ## Tests

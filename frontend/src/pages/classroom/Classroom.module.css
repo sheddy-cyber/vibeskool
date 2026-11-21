@@ -195,7 +195,7 @@
 
 .classGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 330px), 1fr));
   gap: 16px;
 }
 .classCard {
@@ -319,7 +319,7 @@
 @container (max-width: 860px) {
   .layout { grid-template-columns: minmax(0, 1fr); }
   /* The stream comes first; the strip above it carries the essentials */
-  .aside { position: static; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); align-items: start; }
+  .aside { position: static; grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr)); align-items: start; }
   .layout .strip { display: flex; }
 }
 
@@ -493,6 +493,15 @@ button.miniRow:hover { background: var(--bg-raised); }
 .post[data-pinned] { border-color: var(--accent-border); }
 .postHead { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 12px; }
 .postWho { flex: 1 1 150px; min-width: 0; }
+.postTags { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; }
+.postTags:empty { display: none; }
+/* Phones: the options button stays top-right; tags get their own line under the name */
+@media (max-width: 560px) {
+  .postHead { gap: 8px 10px; }
+  .postWho { flex: 1 1 0; }
+  .postMenu { order: 1; margin-right: -6px; }
+  .postTags { order: 2; flex-basis: 100%; padding-left: 46px; }
+}
 .postName { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 8px; font-size: 14px; font-weight: 650; }
 .postMeta { margin-top: 1px; font-size: 12.5px; color: var(--text-tertiary); display: flex; flex-wrap: wrap; gap: 0 6px; }
 .tag {
@@ -528,38 +537,7 @@ button.miniRow:hover { background: var(--bg-raised); }
 .lessonLink:hover { border-color: var(--border-strong); color: var(--text-primary); }
 .postFoot { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 18px; margin-top: 14px; }
 
-.menuWrap { position: relative; }
-.menu {
-  position: absolute;
-  right: 0;
-  top: calc(100% + 4px);
-  z-index: 20;
-  min-width: 200px;
-  padding: 6px;
-  border: 1px solid var(--border-default);
-  border-radius: 12px;
-  background: var(--bg-surface);
-  box-shadow: 0 16px 40px -12px rgba(16, 24, 40, 0.3);
-}
-.menu button {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  width: 100%;
-  height: 36px;
-  padding: 0 10px;
-  border: 0;
-  border-radius: 8px;
-  background: none;
-  color: var(--text-primary);
-  font-family: inherit;
-  font-size: 14px;
-  text-align: left;
-  cursor: pointer;
-}
-.menu button:hover,
-.menu button:focus-visible { background: var(--bg-raised); outline: none; }
-.menu button[data-tone="danger"] { color: var(--red-text, var(--red)); }
+/* Post and project menus: ActionMenu in components/classroom/Parts */
 
 .replies {
   display: grid;
@@ -586,8 +564,8 @@ button.miniRow:hover { background: var(--bg-raised); }
 :global([data-theme="dark"]) .answer { color: #5CC48A; }
 
 .replyForm { display: flex; align-items: flex-start; gap: 10px; margin-top: 14px; }
-.replyForm .textarea { min-height: 40px; height: 40px; padding: 9px 13px; border-radius: 12px; font-size: 14px; }
-.replyForm[data-active] .textarea { height: auto; min-height: 72px; }
+.replyForm .textarea { min-height: 40px; height: 40px; padding: 9px 13px; border-radius: 12px; font-size: 14px; overflow: hidden; resize: none; }
+.replyForm[data-active] .textarea { height: auto; min-height: 72px; overflow: auto; resize: vertical; }
 .replyFormMain { flex: 1; min-width: 0; }
 .replyFormRow { display: flex; justify-content: flex-end; gap: 8px; margin-top: 8px; }
 .more { margin-top: 10px; }
@@ -631,8 +609,10 @@ button.miniRow:hover { background: var(--bg-raised); }
 .meter [data-k="fix"] { background: var(--amber); }
 .draft { font-size: 12px; font-weight: 650; color: var(--text-tertiary); }
 @container (max-width: 600px) {
-  .workRow { grid-template-columns: 40px minmax(0, 1fr); }
-  .workRow > :nth-child(3), .workRow > :nth-child(4) { grid-column: 2; justify-self: start; }
+  .workRow { grid-template-columns: 40px minmax(0, 1fr) auto; gap: 6px 14px; padding: 14px 16px; }
+  .workRow > :nth-child(1) { grid-row: 1 / span 2; align-self: start; }
+  .workRow > :nth-child(3) { grid-column: 2; grid-row: 2; justify-self: start; }
+  .workRow > :nth-child(4) { grid-column: 3; grid-row: 1 / span 2; }
 }
 
 /* ── People ───────────────────────────────────────────────── */
@@ -758,11 +738,11 @@ button.miniRow:hover { background: var(--bg-raised); }
   gap: 24px;
   align-items: start;
 }
+.roster { list-style: none; padding: 6px; position: sticky; top: 20px; }
 @container (max-width: 780px) {
   .reviewLayout { grid-template-columns: minmax(0, 1fr); }
-  .roster { position: static; display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); }
+  .roster { position: static; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 180px), 1fr)); }
 }
-.roster { list-style: none; padding: 6px; position: sticky; top: 20px; }
 .rosterRow {
   display: flex;
   align-items: center;

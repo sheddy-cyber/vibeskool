@@ -29,6 +29,16 @@ export default function AppLayout() {
     if (useStore.getState().sidebarOpen) toggleSidebar()
   }, [location.pathname]) // eslint-disable-line react-hooks/exhaustive-deps
 
+  // While the drawer is open the page behind it stays put, and Escape closes it
+  useEffect(() => {
+    if (!sidebarOpen) return undefined
+    const prev = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    const onKey = (e) => { if (e.key === 'Escape') toggleSidebar() }
+    window.addEventListener('keydown', onKey)
+    return () => { document.body.style.overflow = prev; window.removeEventListener('keydown', onKey) }
+  }, [sidebarOpen, toggleSidebar])
+
   // Ctrl/⌘ + B collapses or expands the sidebar (not while typing)
   useEffect(() => {
     const onKey = (e) => {

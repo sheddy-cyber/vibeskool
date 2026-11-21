@@ -3,7 +3,7 @@ import { Link, useSearchParams } from 'react-router-dom'
 import Icon from '@/components/icons/Icons'
 import CodeBlock from '@/components/lesson/CodeBlock'
 import CodeChanges from '@/components/classroom/CodeChanges'
-import { Avatar, Empty, Pill, Segmented, Skeleton } from '@/components/classroom/Parts'
+import { ActionMenu, Avatar, Empty, Pill, Segmented, Skeleton } from '@/components/classroom/Parts'
 import { classroomApi, contentApi } from '@/lib/api'
 import { errorText, timeAgo } from '@/lib/classroom'
 import { useLive } from '@/lib/live'
@@ -93,7 +93,7 @@ function Composer({ room, tutor, me, onPosted }) {
 
   return (
     <form className={`${styles.card} ${styles.composer}`} onSubmit={submit}>
-      <Segmented value={kind} onChange={setKind} options={kinds} label="What are you posting?" />
+      <Segmented value={kind} onChange={setKind} options={kinds} label="What are you posting?" block />
       <div className={styles.composerBody}>
         <input
           className={styles.input}
@@ -152,35 +152,6 @@ function Composer({ room, tutor, me, onPosted }) {
 }
 
 /* ── Post ─────────────────────────────────────────────────── */
-function PostMenu({ items }) {
-  const [open, setOpen] = useState(false)
-  const ref = useRef(null)
-  useEffect(() => {
-    if (!open) return
-    const close = (e) => { if (!ref.current?.contains(e.target)) setOpen(false) }
-    const esc = (e) => { if (e.key === 'Escape') setOpen(false) }
-    document.addEventListener('mousedown', close)
-    document.addEventListener('keydown', esc)
-    return () => { document.removeEventListener('mousedown', close); document.removeEventListener('keydown', esc) }
-  }, [open])
-  if (!items.length) return null
-  return (
-    <div className={styles.menuWrap} ref={ref}>
-      <button type="button" className={styles.iconBtn} onClick={() => setOpen((v) => !v)} aria-label="Post options" aria-expanded={open}>
-        <Icon name="list" size={17} />
-      </button>
-      {open && (
-        <div className={styles.menu} role="menu">
-          {items.map((it) => (
-            <button key={it.label} type="button" role="menuitem" data-tone={it.tone} onClick={() => { setOpen(false); it.onClick() }}>
-              <Icon name={it.icon} size={16} /> {it.label}
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
-  )
-}
 
 function ReplyForm({ onSend, placeholder }) {
   const [body, setBody] = useState('')
@@ -337,11 +308,13 @@ function Post({ post, room, tutor, me, onChange, onRemove, focused }) {
             {post.edited_at && <span>· edited</span>}
           </p>
         </div>
-        {post.pinned && <span className={styles.tag} data-tone="accent"><Icon name="flag" size={12} /> Pinned</span>}
-        {post.kind === 'announcement' && !post.pinned && <span className={styles.tag}>Announcement</span>}
-        {question && (post.resolved ? <Pill tone="done">Resolved</Pill> : <Pill tone="warn">Open question</Pill>)}
-        {post.is_private && <span className={styles.tag} title="Only you and the tutor can see this"><Icon name="lock" size={12} /> Private</span>}
-        <PostMenu items={menu} />
+        <span className={styles.postTags}>
+          {post.pinned && <span className={styles.tag} data-tone="accent"><Icon name="flag" size={12} /> Pinned</span>}
+          {post.kind === 'announcement' && !post.pinned && <span className={styles.tag}>Announcement</span>}
+          {question && (post.resolved ? <Pill tone="done">Resolved</Pill> : <Pill tone="warn">Open question</Pill>)}
+          {post.is_private && <span className={styles.tag} title="Only you and the tutor can see this"><Icon name="lock" size={12} /> Private</span>}
+        </span>
+        <ActionMenu items={menu} label="Post options" buttonClassName={styles.iconBtn} className={styles.postMenu} />
       </header>
 
       {post.title && <h3 className={styles.postTitle}>{post.title}</h3>}

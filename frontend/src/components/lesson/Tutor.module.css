@@ -171,3 +171,6 @@
   .hint { display: none; }
   .composer { margin-bottom: 14px; }
 }
+
+/* Keyboard shortcuts mean nothing on a phone keyboard */
+@media (hover: none) and (pointer: coarse) { .hint { display: none; } }

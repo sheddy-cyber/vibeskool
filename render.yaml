@@ -1,0 +1,72 @@
+# Render blueprint for the VibeSkool API (the React app is on Vercel).
+# In Render: New -> Blueprint -> pick this repo. Values marked `sync: false`
+# are asked for when the blueprint is first applied; see DEPLOYING.md.
+services:
+  - type: web
+    name: vibeskool-api
+    runtime: python
+    rootDir: backend-django
+    # Starter or above: free instances sleep when idle, which drops live
+    # class updates, and they can't run the pre-deploy migration step.
+    plan: starter
+    region: frankfurt
+    buildCommand: pip install -r requirements.txt && python manage.py collectstatic --noinput
+    preDeployCommand: python manage.py migrate --noinput
+    startCommand: daphne --proxy-headers -b 0.0.0.0 -p $PORT config.asgi:application
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.14.2
+      - key: DJANGO_DEBUG
+        value: "0"
+      - key: DJANGO_SECRET_KEY
+        generateValue: true
+      - key: JWT_SECRET
+        generateValue: true
+      - key: REDIS_URL
+        fromService:
+          type: keyvalue
+          name: vibeskool-redis
+          property: connectionString
+      - key: DATABASE_URL
+        sync: false   # Supabase session pooler address
+      - key: FRONTEND_URL
+        sync: false   # e.g. https://vibeskool.vercel.app
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: JUDGE0_KEY
+        sync: false
+      - key: STORAGE_BUCKET
+        sync: false
+      - key: STORAGE_ENDPOINT
+        sync: false
+      - key: STORAGE_REGION
+        sync: false
+      - key: STORAGE_ACCESS_KEY
+        sync: false
+      - key: STORAGE_SECRET_KEY
+        sync: false
+      - key: STORAGE_PUBLIC_URL
+        sync: false
+      - key: EMAIL_HOST
+        sync: false
+      - key: EMAIL_HOST_USER
+        sync: false
+      - key: EMAIL_HOST_PASSWORD
+        sync: false
+      - key: DEFAULT_FROM_EMAIL
+        sync: false
+      - key: SENTRY_DSN
+        sync: false
+      - key: ADMIN_PATH
+        sync: false
+
+  - type: keyvalue
+    name: vibeskool-redis
+    plan: free
+    region: frankfurt
+    maxmemoryPolicy: allkeys-lru
+    ipAllowList: []   # only reachable from the API, not the internet

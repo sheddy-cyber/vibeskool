@@ -252,3 +252,32 @@
   .formWrap { padding: 36px 0 28px; margin-top: 0; }
   .title { font-size: 29px; }
 }
+
+/* Calm confirmation (e.g. "Check your email") */
+.notice {
+  margin-bottom: 18px;
+  padding: 14px 16px;
+  border: 1px solid var(--a-line);
+  border-radius: 12px;
+  background: var(--a-soft);
+  color: var(--a-ink);
+  font-size: 14.5px;
+  line-height: 1.5;
+}
+.notice strong { display: block; margin-bottom: 2px; font-weight: 650; }
+.notice p { margin: 0; color: var(--a-muted); }
+
+.smallLink {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--a-link);
+}
+.smallLink:hover { text-decoration: underline; text-underline-offset: 3px; }
+
+textarea.input {
+  height: auto;
+  min-height: 84px;
+  padding: 11px 14px;
+  line-height: 1.5;
+  resize: vertical;
+}

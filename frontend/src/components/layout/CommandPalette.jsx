@@ -52,6 +52,11 @@ export default function CommandPalette() {
     return () => window.removeEventListener('keydown', onKey)
   }, [toggle])
 
+  // Passed modules come with progress; load it if search opens first
+  useEffect(() => {
+    if (open && currentUser && !progress) useStore.getState().fetchProgress?.()
+  }, [open]) // eslint-disable-line react-hooks/exhaustive-deps
+
   useEffect(() => {
     if (!open) return
     setQ('')
@@ -82,6 +87,24 @@ export default function CommandPalette() {
       })
     })
 
+    // Each module's skill check. "skill check", "quiz" or "test" finds them all
+    const checks = []
+    const passedSet = new Set(passedModules || [])
+    ;(paths || []).forEach((p) => {
+      const model = buildPathModel(p, completedIds, passedSet)
+      ;(model?.modules || []).filter((m) => m.hasCheck && m.total > 0).forEach((m) => {
+        checks.push({
+          kind: 'check',
+          label: `Module ${m.index + 1} skill check: ${m.short}`,
+          hint: m.passed ? 'Passed' : (paths.length > 1 ? p.name : `${m.total} lessons`),
+          to: `/app/paths/${p.id}/modules/${m.id}/skill-check`,
+          icon: m.passed ? 'check' : 'checklist',
+          done: m.passed,
+          haystack: `skill check quiz test module ${m.index + 1} ${m.title} ${m.short} ${p.name || ''}`,
+        })
+      })
+    })
+
     if (!tokens.length) {
       const model = buildPathModel(
         pickActivePath(paths || [], completions || []),
@@ -106,12 +129,14 @@ export default function CommandPalette() {
     }
 
     const pageHits = pages.filter((p) => matches(`${p.label} ${p.hint || ''}`, tokens))
+    const checkHits = checks.filter((c) => matches(c.haystack, tokens)).slice(0, 9)
     const lessonHits = lessons
       .filter((l) => matches(l.haystack, tokens))
       .sort((a, b) => Number(matches(b.label, tokens)) - Number(matches(a.label, tokens)))
       .slice(0, 8)
     return [
       pageHits.length && { title: 'Go to', items: pageHits },
+      checkHits.length && { title: 'Skill checks', items: checkHits },
       lessonHits.length && { title: 'Lessons', items: lessonHits },
     ].filter(Boolean)
   }, [q, paths, completedIds, completions, passedModules, isTeacher])
@@ -156,12 +181,13 @@ export default function CommandPalette() {
             value={q}
             onChange={(e) => setQ(e.target.value)}
             onKeyDown={onKeyDown}
-            placeholder="Search lessons and pages"
-            aria-label="Search lessons and pages"
+            placeholder="Search lessons, skill checks and pages"
+            aria-label="Search lessons, skill checks and pages"
             aria-controls="palette-list"
             aria-activedescendant={flat[active] ? `palette-${active}` : undefined}
           />
-          <kbd onClick={hide}>Esc</kbd>
+          <kbd onClick={hide} className={styles.escKey}>Esc</kbd>
+          <button type="button" className={styles.cancel} onClick={hide}>Cancel</button>
         </div>
 
         <div className={styles.list} id="palette-list" role="listbox" ref={listRef}>

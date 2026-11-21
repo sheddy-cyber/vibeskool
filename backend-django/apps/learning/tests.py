@@ -4,7 +4,7 @@ from rest_framework.test import APITestCase
 
 from apps.accounts.models import User
 
-from .models import Lesson, Option, Question, SkillCheck, SkillPath, Streak
+from .models import Lesson, Option, PassedModule, Question, SkillCheck, SkillPath, Streak
 from .services import touch_streak
 
 
@@ -87,20 +87,88 @@ class ProgressTests(APITestCase):
         s.refresh_from_db()
         self.assertEqual((s.current, s.longest), (1, 2))
 
-    def test_pass_module_needs_the_pass_mark(self):
-        self.assertEqual(self.client.post('/api/progress/pass-module', {'moduleId': 'm0', 'score': 50}, format='json').status_code, 400)
-        res = self.client.post('/api/progress/pass-module', {'moduleId': 'm0', 'score': 80}, format='json')
-        self.assertEqual(res.data['passedModules'], ['m0'])
-        self.assertEqual(res.data['xpAwarded'], 50)
+    def test_a_score_cannot_be_posted_directly(self):
+        res = self.client.post('/api/progress/pass-module', {'moduleId': 'm0', 'score': 100}, format='json')
+        self.assertEqual(res.status_code, 404)
+        self.assertFalse(PassedModule.objects.exists())
 
-    def test_skill_check_hides_answers_and_grades_on_the_server(self):
+    def start(self):
+        res = self.client.post('/api/skill-checks/m0/attempts')
+        self.assertEqual(res.status_code, 201)
+        return res.data
+
+    def right_option(self, key):
+        return Question.objects.get(key=key).options.get(correct=True).id
+
+    def test_info_for_the_intro(self):
         res = self.client.get('/api/skill-checks/m0')
-        self.assertEqual(len(res.data['questions']), 2)
-        for q in res.data['questions']:
+        self.assertEqual((res.data['questionCount'], res.data['passMark']), (2, 70))
+        self.assertNotIn('questions', res.data)
+        self.assertEqual(self.client.get('/api/skill-checks/m9').data['questionCount'], 0)
+
+    def test_attempt_hides_answers_until_each_is_given(self):
+        data = self.start()
+        self.assertEqual(len(data['questions']), 2)
+        for q in data['questions']:
+            self.assertNotIn('explanation', q)
             for o in q['options']:
-                self.assertNotIn('correct', o)
-        right = {q.key: q.options.get(correct=True).id for q in Question.objects.all()}
-        res = self.client.post('/api/skill-checks/m0/grade', {'answers': right}, format='json')
-        self.assertEqual(res.data['score'], 100)
-        self.assertTrue(res.data['passed'])
+                self.assertEqual(set(o), {'id', 'text'})
+        q = data['questions'][0]
+        res = self.client.post(f"/api/skill-checks/attempts/{data['attempt']}/answer",
+                               {'question': q['id'], 'option': self.right_option(q['id'])}, format='json')
+        self.assertEqual(res.data, {'correct': True, 'correctOption': self.right_option(q['id']), 'explanation': 'Because.'})
+
+    def test_score_comes_from_the_answers_given_and_records_a_pass(self):
+        data = self.start()
+        for q in data['questions']:
+            self.client.post(f"/api/skill-checks/attempts/{data['attempt']}/answer",
+                             {'question': q['id'], 'option': self.right_option(q['id'])}, format='json')
+        res = self.client.post(f"/api/skill-checks/attempts/{data['attempt']}/finish")
+        self.assertEqual((res.data['score'], res.data['passed']), (100, True))
         self.assertEqual(res.data['progress']['passedModules'], ['m0'])
+        self.assertEqual(res.data['progress']['xpAwarded'], 50)
+        # Finishing again changes nothing and gives no more XP
+        again = self.client.post(f"/api/skill-checks/attempts/{data['attempt']}/finish")
+        self.assertEqual(again.data['progress']['xpAwarded'], 0)
+        self.assertEqual(User.objects.get(pk=self.user.pk).xp, 50)
+
+    def test_an_answer_is_locked_in(self):
+        data = self.start()
+        q = data['questions'][0]
+        wrong = Question.objects.get(key=q['id']).options.get(correct=False).id
+        url = f"/api/skill-checks/attempts/{data['attempt']}/answer"
+        self.assertFalse(self.client.post(url, {'question': q['id'], 'option': wrong}, format='json').data['correct'])
+        retry = self.client.post(url, {'question': q['id'], 'option': self.right_option(q['id'])}, format='json')
+        self.assertEqual(retry.status_code, 409)
+        res = self.client.post(f"/api/skill-checks/attempts/{data['attempt']}/finish")
+        self.assertEqual((res.data['score'], res.data['passed']), (0, False), 'unanswered counts as wrong')
+        self.assertFalse(PassedModule.objects.exists())
+        self.assertEqual(self.client.post(url, {'question': data['questions'][1]['id'], 'option': 1}, format='json').status_code, 409)
+
+    def test_answers_must_belong_to_the_attempt(self):
+        data = self.start()
+        url = f"/api/skill-checks/attempts/{data['attempt']}/answer"
+        q = data['questions'][0]
+        other = Question.objects.exclude(key=q['id']).first().options.first().id
+        self.assertEqual(self.client.post(url, {'question': q['id'], 'option': other}, format='json').status_code, 400)
+        self.assertEqual(self.client.post(url, {'question': 'nope', 'option': 1}, format='json').status_code, 400)
+
+    def test_someone_elses_attempt_is_not_found(self):
+        data = self.start()
+        self.client.force_authenticate(User.objects.create_user('b@x.com', 'secret123', display_name='B'))
+        res = self.client.post(f"/api/skill-checks/attempts/{data['attempt']}/finish")
+        self.assertEqual(res.status_code, 404)
+
+    def test_right_answers_are_dealt_across_positions(self):
+        from .views import deal
+        check = SkillCheck.objects.get(pk='m0')
+        for i in range(2, 8):
+            q = Question.objects.create(skill_check=check, key=f'm0-x{i}', prompt='?')
+            for j in range(4):
+                Option.objects.create(question=q, text=str(j), correct=j == 0)
+        qs = list(Question.objects.filter(key__startswith='m0-x').prefetch_related('options'))[:4]
+        positions = []
+        for item, q in zip(deal(qs), qs):
+            right = q.options.get(correct=True).id
+            positions.append(item['options'].index(right))
+        self.assertEqual(sorted(positions), [0, 1, 2, 3])

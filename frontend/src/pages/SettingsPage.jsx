@@ -1,7 +1,9 @@
-import React, { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import React, { useEffect, useState } from 'react'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import Icon from '@/components/icons/Icons'
+import { authApi } from '@/lib/api'
 import { useAuth } from '@/lib/auth'
+import { confirmDialog, notify } from '@/lib/dialog'
 import { useStore } from '@/lib/store'
 import { applyFont, getStoredFont, getStoredTheme } from '@/lib/theme'
 import ui from './classroom/Classroom.module.css'
@@ -16,6 +18,7 @@ const THEMES = [
 const FONTS = [
   { id: 'exo', label: 'Exo 2', note: 'The VibeSkool look. Rounded and friendly.', family: "'Exo 2 Variable', 'Exo 2', sans-serif" },
   { id: 'geist', label: 'Geist', note: 'Neutral and crisp, close to a code editor.', family: "'Geist Variable', 'Geist', sans-serif" },
+  { id: 'serif', label: 'Source Serif', note: 'A serif made for long reads, like a good book.', family: "'Source Serif 4 Variable', 'Source Serif 4', Georgia, serif" },
 ]
 
 function ThemePreview({ id }) {
@@ -51,8 +54,91 @@ function Switch({ checked, onChange, label }) {
   )
 }
 
+/* Students ask to teach here; an admin approves them. */
+function TeachingSection({ user, onUser }) {
+  const [note, setNote] = useState('')
+  const [open, setOpen] = useState(false)
+  const [busy, setBusy] = useState(false)
+  const status = user?.tutorStatus || ''
+
+  const ask = async (e) => {
+    e.preventDefault()
+    setBusy(true)
+    try {
+      const { user: next } = await authApi.requestTutorAccess(note.trim())
+      onUser(next)
+      setOpen(false)
+      notify({ title: 'Request sent', body: 'We’ll email you once an admin has looked at it.', tone: 'success' })
+    } catch (err) {
+      notify({ title: "Couldn't send your request", body: err?.message, tone: 'error' })
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  const cancel = async () => {
+    const ok = await confirmDialog({ title: 'Take back your request?', body: 'You can ask again any time.', confirmLabel: 'Take it back' })
+    if (!ok) return
+    try {
+      const { user: next } = await authApi.cancelTutorRequest()
+      onUser(next)
+    } catch (err) {
+      notify({ title: "Couldn't do that", body: err?.message, tone: 'error' })
+    }
+  }
+
+  if (status === 'pending') {
+    return (
+      <Row
+        title="Waiting for approval"
+        description={`You asked to teach${user.tutorRequestedAt ? ` on ${new Date(user.tutorRequestedAt).toLocaleDateString(undefined, { day: 'numeric', month: 'long' })}` : ''}. We approve every tutor by hand and will email you. Keep learning in the meantime.`}
+      >
+        <button type="button" className={`${ui.btnGhost} ${ui.sm}`} onClick={cancel}>Take back</button>
+      </Row>
+    )
+  }
+
+  return (
+    <Row
+      title="Teach on VibeSkool"
+      description={status === 'declined'
+        ? 'Your last request wasn’t approved. You can ask again, and tell us a bit more about what you’d teach.'
+        : 'Run classes, write courses and help students with their code. An admin approves every tutor.'}
+      stack={open}
+    >
+      {open ? (
+        <form onSubmit={ask} className={styles.teachForm}>
+          <label className={ui.field}>
+            <span>What would you like to teach?</span>
+            <textarea className={ui.textarea} rows={3} maxLength={1000} value={note} onChange={(e) => setNote(e.target.value)} placeholder="e.g. I run a coding club and want to teach JavaScript basics" autoFocus />
+            <small>Optional, but it helps us say yes.</small>
+          </label>
+          <div className={styles.teachActions}>
+            <button type="button" className={`${ui.btnGhost} ${ui.sm}`} onClick={() => setOpen(false)} disabled={busy}>Cancel</button>
+            <button type="submit" className={`${ui.btnPrimary} ${ui.sm}`} disabled={busy}>{busy ? 'Sending…' : 'Send request'}</button>
+          </div>
+        </form>
+      ) : (
+        <button type="button" className={`${ui.btnGhost} ${ui.sm}`} onClick={() => setOpen(true)}>Ask to teach</button>
+      )}
+    </Row>
+  )
+}
+
 export default function SettingsPage() {
   const navigate = useNavigate()
+  const [params] = useSearchParams()
+  const applyUser = useAuth((s) => s.applyUser)
+
+  // ?section=teaching (after asking to teach at sign-up) jumps to that card,
+  // once the page has settled (the layout scrolls to the top on arrival)
+  const role = useAuth((s) => s.currentUser?.role)
+  useEffect(() => {
+    const id = params.get('section')
+    if (!id) return undefined
+    const t = setTimeout(() => document.getElementById(id)?.scrollIntoView({ block: 'center', behavior: 'smooth' }), 250)
+    return () => clearTimeout(t)
+  }, [params, role])
   const { settings: local, updateSettings } = useStore()
   const { currentUser, updateUserSettings, signOut } = useAuth()
   const settings = { ...local, ...(currentUser?.settings || {}) }
@@ -100,7 +186,7 @@ export default function SettingsPage() {
         </Row>
 
         <Row title="Font" description="Used for everything except code, which always uses Geist Mono." stack>
-          <div className={styles.options} data-cols="2" role="radiogroup" aria-label="Font">
+          <div className={styles.options} role="radiogroup" aria-label="Font">
             {FONTS.map((f) => (
               <button key={f.id} type="button" role="radio" aria-checked={font === f.id} className={styles.option} onClick={() => chooseFont(f.id)}>
                 <span className={styles.fontSample} style={{ fontFamily: f.family }}>
@@ -144,10 +230,22 @@ export default function SettingsPage() {
         </Row>
       </section>
 
+      {student && (
+        <section className={`${ui.card} ${styles.section}`} aria-labelledby="teaching">
+          <h2 id="teaching" className={styles.sectionTitle}>Teaching</h2>
+          <TeachingSection user={currentUser} onUser={applyUser} />
+        </section>
+      )}
+
       <section className={`${ui.card} ${styles.section}`} aria-labelledby="account">
         <h2 id="account" className={styles.sectionTitle}>Account</h2>
         <Row title="Email" description={currentUser?.email} />
         <Row title="Signed in with" description={currentUser?.authProvider === 'google' ? 'Google' : 'Email and password'} />
+        {currentUser?.authProvider !== 'google' && (
+          <Row title="Password" description="We’ll email you a link to choose a new one. Other devices are signed out when you change it.">
+            <Link to="/forgot-password" className={`${ui.btnGhost} ${ui.sm}`}>Change password</Link>
+          </Row>
+        )}
         <Row title="Sign out" description="Signs you out on this device.">
           <button type="button" className={`${ui.btnGhost} ${ui.sm}`} onClick={() => { signOut(); navigate('/signin') }}>
             <Icon name="logout" size={15} /> Sign out

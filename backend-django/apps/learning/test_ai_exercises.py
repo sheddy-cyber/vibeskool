@@ -60,21 +60,30 @@ class ExerciseTests(APITestCase):
 
     def test_submit_runs_tests_and_gives_xp_once(self):
         self.client.force_authenticate(self.student)
-        with mock.patch('apps.learning.exercises.run_code', return_value=('3', '')):
+        with mock.patch('apps.learning.exercises.run_cases', return_value=[('3', '')]):
             first = self.client.post(f'/api/exercises/{self.ex.id}/submit', {'code': 'const add=(a,b)=>a+b'}, format='json')
             again = self.client.post(f'/api/exercises/{self.ex.id}/submit', {'code': 'const add=(a,b)=>a+b'}, format='json')
         self.assertEqual((first.data['passed'], first.data['xpAwarded']), (True, 20))
         self.assertEqual(again.data['xpAwarded'], 0)
-        with mock.patch('apps.learning.exercises.run_code', return_value=('4', '')):
+        with mock.patch('apps.learning.exercises.run_cases', return_value=[('4', '')]):
             wrong = self.client.post(f'/api/exercises/{self.ex.id}/submit', {'code': 'x'}, format='json')
         self.assertFalse(wrong.data['passed'])
 
+    @override_settings(JUDGE0_KEY='k')
     def test_runner_down_is_a_clear_error(self):
         import requests
         self.client.force_authenticate(self.student)
-        with mock.patch('apps.learning.exercises.run_code', side_effect=requests.ConnectionError()):
+        with mock.patch('apps.learning.runner.requests.post', side_effect=requests.ConnectionError()):
             res = self.client.post(f'/api/exercises/{self.ex.id}/submit', {'code': 'x'}, format='json')
         self.assertEqual(res.status_code, 502)
+        self.assertFalse(self.ex.submissions.exists())
+
+    @override_settings(JUDGE0_KEY='', PISTON_URL='')
+    def test_no_runner_set_up_says_so(self):
+        self.client.force_authenticate(self.student)
+        res = self.client.post(f'/api/exercises/{self.ex.id}/submit', {'code': 'x'}, format='json')
+        self.assertEqual(res.status_code, 503)
+        self.assertIn("isn't set up", res.data['error'])
 
     def test_solutions_after_passing(self):
         self.client.force_authenticate(self.student)

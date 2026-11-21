@@ -2,9 +2,12 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useAuth } from '@/lib/auth';
 import styles from './GoogleAuthButton.module.css';
 
-export default function GoogleAuthButton({ isSignUp = false, role = 'student' }) {
+export default function GoogleAuthButton({ isSignUp = false, role = 'student', teachingNote = '' }) {
   const { signInWithGoogle, authLoading } = useAuth();
   const buttonRef = useRef(null);
+  // Read when Google calls back, so typing the note doesn't redraw Google's button
+  const noteRef = useRef(teachingNote);
+  noteRef.current = teachingNote;
   const [scriptLoaded, setScriptLoaded] = useState(false);
   const isDarkNow = () => document.documentElement.getAttribute('data-theme') === 'dark';
   const [dark, setDark] = useState(isDarkNow);
@@ -49,7 +52,7 @@ export default function GoogleAuthButton({ isSignUp = false, role = 'student' })
         client_id: clientId,
         callback: (response) => {
           if (response?.credential) {
-            signInWithGoogle({ credential: response.credential, role });
+            signInWithGoogle({ credential: response.credential, role, teachingNote: noteRef.current });
           }
         },
         auto_select: false,

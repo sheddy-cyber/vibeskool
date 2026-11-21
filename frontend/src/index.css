@@ -1,5 +1,7 @@
 @import '@fontsource-variable/exo-2';
 @import '@fontsource-variable/geist';
+@import '@fontsource-variable/source-serif-4';
+@import '@fontsource-variable/source-serif-4/wght-italic.css';
 @import '@fontsource/geist-mono/400.css';
 @import '@fontsource/geist-mono/500.css';
 @import '@fontsource/geist-mono/600.css';
@@ -212,12 +214,20 @@
   --glass-border:     rgba(255, 255, 255, 0.08);
 }
 
-/* Font choice (Settings → Appearance). Exo 2 is the default; Geist is the
-   alternative. Set on <html data-font> before first paint (see index.html). */
+/* Font choice (Settings → Appearance). Exo 2 is the default; Geist and
+   Source Serif are the alternatives. Set on <html data-font> before first
+   paint (see index.html). Code always stays in Geist Mono. */
 :root[data-font="geist"] {
   --font-display: 'Geist Variable', 'Geist', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   --font-sans:    'Geist Variable', 'Geist', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
 }
+:root[data-font="serif"] {
+  --font-display: 'Source Serif 4 Variable', 'Source Serif 4', Charter, 'Iowan Old Style', Georgia, serif;
+  --font-sans:    'Source Serif 4 Variable', 'Source Serif 4', Charter, 'Iowan Old Style', Georgia, serif;
+}
+/* Serif headings look best with their natural spacing, not the tight
+   tracking the sans fonts use */
+:root[data-font="serif"] :is(h1, h2, h3) { letter-spacing: -0.005em; }
 
 
 

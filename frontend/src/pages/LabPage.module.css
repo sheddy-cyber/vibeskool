@@ -307,7 +307,10 @@
   .subtitle { display: none; }
 }
 @media (max-width: 520px) {
-  .viewTabs button span { display: none; }
+  /* Icon with a small label under it, like a phone's tab bar */
+  .viewTabs button { flex: 1 1 0; min-width: 0; flex-direction: column; gap: 2px; height: 46px; padding: 0 4px; position: relative; }
+  .viewTabs button span { font-size: 11px; font-weight: 600; line-height: 1.1; }
+  .viewTabs button em { position: absolute; top: 3px; left: calc(50% + 6px); }
   .resetBtn span { display: none; }
   .resetBtn { width: 34px; padding: 0; justify-content: center; }
 }

@@ -7,6 +7,7 @@ import { classroomApi, showcaseApi } from '@/lib/api'
 import { useAuth } from '@/lib/auth'
 import { errorText } from '@/lib/classroom'
 import { notify } from '@/lib/dialog'
+import { isTouch } from '@/lib/device'
 import ui from '../classroom/Classroom.module.css'
 import styles from './Showcase.module.css'
 
@@ -106,7 +107,7 @@ function ImagePicker({ preview, onPick, onRemove, alt, onAlt }) {
         >
           <span className={styles.dropIcon}><Icon name="image" size={22} /></span>
           <strong>Add a preview image</strong>
-          <span>Drop it here, click to choose, or paste a screenshot</span>
+          <span>{isTouch() ? 'Tap to choose a photo or screenshot' : 'Drop it here, click to choose, or paste a screenshot'}</span>
           <small>PNG, JPG, WebP or GIF, up to 8 MB. Wide screenshots (16:10) look best.</small>
         </div>
       )}

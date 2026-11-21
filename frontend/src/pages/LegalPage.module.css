@@ -116,3 +116,8 @@
   align-items: center;
   gap: 16px;
 }
+
+/* Phones: plain text on the page, not a card inside the page */
+@media (max-width: 560px) {
+  .card { padding: 8px 2px 24px; border: 0; background: none; box-shadow: none; }
+}

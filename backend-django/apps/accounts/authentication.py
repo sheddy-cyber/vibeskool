@@ -45,6 +45,10 @@ class JWTAuthentication(authentication.BaseAuthentication):
             user = User.objects.get(pk=payload.get('id'), is_active=True)
         except (User.DoesNotExist, ValueError, TypeError):
             raise exceptions.AuthenticationFailed('User not found')
+        if user.tokens_valid_after:
+            issued = payload.get('iat')
+            if not isinstance(issued, (int, float)) or issued < user.tokens_valid_after.timestamp():
+                raise exceptions.AuthenticationFailed('Your password was changed. Sign in again.')
         return user, payload
 
     def authenticate_header(self, request):
