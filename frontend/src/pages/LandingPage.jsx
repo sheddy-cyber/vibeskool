@@ -174,12 +174,15 @@ export default function LandingPage() {
 
 
   useEffect(() => {
+    if (window.matchMedia("(hover: none) and (pointer: coarse)").matches) return undefined;
     const lenis = new Lenis({
       autoRaf: true,
       duration: 1.1,
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
       smoothWheel: true,
-      anchors: { offset: -72 },
+      // Section links land under the sticky header through the page's
+      // scroll-padding-top (80px), which Lenis already takes into account
+      anchors: true,
     });
     lenisRef.current = lenis;
     return () => {
@@ -195,14 +198,42 @@ export default function LandingPage() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
+  const pendingScroll = useRef(null);
+
   useEffect(() => {
-    if (!menuOpen) return;
-    lenisRef.current?.stop();
+    if (!menuOpen) {
+      // A section picked in the menu: go there now that the page can scroll
+      const hash = pendingScroll.current;
+      pendingScroll.current = null;
+      if (hash) {
+        const el = document.querySelector(hash);
+        const lenis = lenisRef.current;
+        if (el && lenis) lenis.scrollTo(el, { force: true });
+        else el?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+      return undefined;
+    }
+    // Freeze the page under the menu. Lock <body>, never <html>: body clips
+    // sideways overflow, and if <html> is locked that clip lands on the body
+    // instead of the window, so the sticky header (and this menu, which hangs
+    // from it) scrolls off the screen.
+    const lenis = lenisRef.current;
+    lenis?.stop();
+    const html = document.documentElement;
+    const lenisLock = html.classList.contains("lenis-stopped");
+    if (lenisLock) html.classList.remove("lenis-stopped"); // its lock is on <html>
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
     const onKey = (e) => e.key === "Escape" && setMenuOpen(false);
+    const wide = window.matchMedia("(min-width: 961px)");
+    const onWide = (e) => e.matches && setMenuOpen(false);
     window.addEventListener("keydown", onKey);
+    wide.addEventListener("change", onWide);
     return () => {
-      lenisRef.current?.start();
+      document.body.style.overflow = prev;
+      lenis?.start();
       window.removeEventListener("keydown", onKey);
+      wide.removeEventListener("change", onWide);
     };
   }, [menuOpen]);
 
@@ -217,16 +248,10 @@ export default function LandingPage() {
           : "/app/dashboard"
     );
 
+  // From the phone menu: close it, then scroll once the page is unlocked
   const scrollTo = (hash) => {
+    pendingScroll.current = hash;
     setMenuOpen(false);
-    const el = document.querySelector(hash);
-    if (!el) return;
-    const lenis = lenisRef.current;
-    if (lenis) {
-      lenis.start();
-      lenis.scrollTo(el, { offset: -72, force: true });
-    }
-    else el.scrollIntoView({ behavior: "smooth" });
   };
 
   return (
@@ -317,6 +342,20 @@ export default function LandingPage() {
             )}
           </AnimatePresence>
         </header>
+
+        <AnimatePresence>
+          {menuOpen && (
+            <motion.div
+              className={styles.menuScrim}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              onClick={() => setMenuOpen(false)}
+              aria-hidden="true"
+            />
+          )}
+        </AnimatePresence>
 
         <main>
           {/* ── Hero ───────────────────────────────────────── */}

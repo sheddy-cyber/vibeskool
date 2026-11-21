@@ -187,10 +187,23 @@
   top: 100%;
   left: 0;
   right: 0;
+  /* On a short screen (a phone held sideways) the menu scrolls on its own */
+  max-height: calc(100dvh - 60px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
   padding: 8px 20px 20px;
   border-top: 1px solid var(--lp-line);
   background: var(--lp-surface);
   box-shadow: var(--lp-shadow-pop);
+}
+/* Dims the page under the open menu; a tap on it closes the menu */
+.menuScrim {
+  position: fixed;
+  inset: 0;
+  z-index: 49;
+  background: rgba(15, 17, 21, 0.4);
+  touch-action: none;
+  -webkit-tap-highlight-color: transparent;
 }
 .mobileMenu > button {
   width: 100%;
@@ -207,6 +220,7 @@
   color: var(--lp-ink);
 }
 .mobileMenu > button svg { color: var(--lp-faint); }
+.mobileMenu > button:active { color: var(--lp-ink-2); }
 .mobileMenuActions {
   display: none;
   margin-top: 20px;
