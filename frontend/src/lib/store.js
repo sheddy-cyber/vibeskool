@@ -81,13 +81,18 @@ export const useStore = create((set, get) => ({
   sidebarOpen: false, // mobile drawer only; the sidebar is always shown on wide screens
   toggleSidebar: () => set((s) => ({ sidebarOpen: !s.sidebarOpen })),
 
-  // Wide screens: full sidebar or a narrow icon rail. Remembered per browser.
+  // Wide screens: full sidebar or a narrow icon rail. The full sidebar is the
+  // default on every visit; collapsing it is remembered only until the tab is
+  // closed, so it never stays collapsed by accident (Ctrl+B is easy to hit).
   sidebarCollapsed: (() => {
-    try { return localStorage.getItem('vibeskool_sidebar_collapsed') === '1' } catch { return false }
+    try {
+      localStorage.removeItem('vibeskool_sidebar_collapsed') // the old, permanent setting
+      return sessionStorage.getItem('vibeskool_sidebar_collapsed') === '1'
+    } catch { return false }
   })(),
   toggleSidebarCollapsed: () => set((s) => {
     const next = !s.sidebarCollapsed
-    try { localStorage.setItem('vibeskool_sidebar_collapsed', next ? '1' : '0') } catch {}
+    try { sessionStorage.setItem('vibeskool_sidebar_collapsed', next ? '1' : '0') } catch {}
     return { sidebarCollapsed: next }
   }),
 
