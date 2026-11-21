@@ -217,7 +217,8 @@ export const exerciseApi = {
   create: (data) => post('/api/exercises', data),
   update: (id, data) => put(`/api/exercises/${id}`, data),
   delete: (id) => del(`/api/exercises/${id}`),
-  submit: (id, code) => post(`/api/exercises/${id}/submit`, { code }),
+  // results: what the browser's run printed for each test (when the server has no code runner)
+  submit: (id, code, results) => post(`/api/exercises/${id}/submit`, { code, results }),
   getSolutions: (id) => get(`/api/exercises/${id}/solutions`),
   check: (data) => post('/api/exercises/check', data),
 };

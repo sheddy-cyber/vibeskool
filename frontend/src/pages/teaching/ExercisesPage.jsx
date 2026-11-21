@@ -6,7 +6,7 @@ import MiniEditor from '@/components/classroom/MiniEditor'
 import { exerciseApi, studioApi } from '@/lib/api'
 import { errorText } from '@/lib/classroom'
 import { confirmDialog, notify } from '@/lib/dialog'
-import { runJsTests } from '@/lib/runTests'
+import { runTests } from '@/lib/runTests'
 import ui from '../classroom/Classroom.module.css'
 import styles from './Teaching.module.css'
 import { plural } from './shared'
@@ -34,6 +34,7 @@ function ExerciseEditor({ id, lessons, defaultLesson, onClose, onSaved }) {
   const [points, setPoints] = useState(10)
   const [busy, setBusy] = useState(false)
   const [checking, setChecking] = useState(false)
+  const [loadingPython, setLoadingPython] = useState(false)
   const [results, setResults] = useState(null)
   const [errors, setErrors] = useState({})
 
@@ -65,10 +66,8 @@ function ExerciseEditor({ id, lessons, defaultLesson, onClose, onSaved }) {
     setChecking(true)
     setResults(null)
     try {
-      // JavaScript runs right here in a sandboxed worker; Python needs the server's code runner
-      const res = language === 'javascript'
-        ? await runJsTests(solution, usableCases)
-        : await exerciseApi.check({ language, code: solution, test_cases: usableCases })
+      // Runs right here in the browser: JavaScript in a sandboxed worker, Python in Pyodide
+      const res = await runTests(language, solution, usableCases, { onLoading: setLoadingPython })
       setResults(res)
     } catch (err) {
       notify({ title: "Couldn't run the tests", body: errorText(err), tone: 'error' })
@@ -182,7 +181,7 @@ function ExerciseEditor({ id, lessons, defaultLesson, onClose, onSaved }) {
               <div className={styles.runLine}>
                 <button type="button" className={ui.textBtn} data-tone="accent" onClick={() => setCases((cs) => [...cs, { input: '', expected_output: '' }])}><Icon name="plus" size={14} /> Add a test</button>
                 <button type="button" className={`${ui.btnGhost} ${ui.sm}`} onClick={check} disabled={checking || !solution.trim() || !usableCases.length} style={{ marginLeft: 'auto' }}>
-                  <Icon name="play" size={14} /> {checking ? 'Running…' : 'Check my solution'}
+                  <Icon name="play" size={14} /> {loadingPython ? 'Loading Python…' : checking ? 'Running…' : 'Check my solution'}
                 </button>
                 {results && <span>{results.passed ? 'Your solution passes every test.' : `${results.score}% of tests pass.`}</span>}
               </div>

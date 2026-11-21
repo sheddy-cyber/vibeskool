@@ -58,6 +58,7 @@ class ExerciseTests(APITestCase):
         res = self.client.post('/api/exercises', {'title': 'Double', 'lesson_id': 'l1', 'test_cases': [{'input': 'd(2)', 'expected_output': '4'}]}, format='json')
         self.assertEqual(res.status_code, 201)
 
+    @override_settings(JUDGE0_KEY='k')
     def test_submit_runs_tests_and_gives_xp_once(self):
         self.client.force_authenticate(self.student)
         with mock.patch('apps.learning.exercises.run_cases', return_value=[('3', '')]):
@@ -79,11 +80,38 @@ class ExerciseTests(APITestCase):
         self.assertFalse(self.ex.submissions.exists())
 
     @override_settings(JUDGE0_KEY='', PISTON_URL='')
-    def test_no_runner_set_up_says_so(self):
+    @override_settings(JUDGE0_KEY='', PISTON_URL='')
+    def test_without_a_runner_the_browser_checks(self):
         self.client.force_authenticate(self.student)
-        res = self.client.post(f'/api/exercises/{self.ex.id}/submit', {'code': 'x'}, format='json')
-        self.assertEqual(res.status_code, 503)
-        self.assertIn("isn't set up", res.data['error'])
+        self.assertEqual(self.client.get('/api/exercises?lessonId=l1').data['checkedOn'], 'browser')
+        url = f'/api/exercises/{self.ex.id}/submit'
+        # Nothing run yet
+        res = self.client.post(url, {'code': 'x'}, format='json')
+        self.assertEqual(res.status_code, 400)
+        # Right output: passes, XP once
+        res = self.client.post(url, {'code': 'const add=(a,b)=>a+b', 'results': [{'actual': '3'}]}, format='json')
+        self.assertEqual((res.data['passed'], res.data['xpAwarded']), (True, 20))
+
+    @override_settings(JUDGE0_KEY='', PISTON_URL='')
+    def test_the_server_decides_what_passed(self):
+        self.client.force_authenticate(self.student)
+        url = f'/api/exercises/{self.ex.id}/submit'
+        wrong = self.client.post(url, {'code': 'x', 'results': [{'actual': '4', 'passed': True}]}, format='json')
+        self.assertFalse(wrong.data['passed'], 'a claimed pass with the wrong output fails')
+        errored = self.client.post(url, {'code': 'x', 'results': [{'actual': '3', 'stderr': 'TypeError: boom'}]}, format='json')
+        self.assertFalse(errored.data['passed'])
+        short = self.client.post(url, {'code': 'x', 'results': []}, format='json')
+        self.assertEqual(short.status_code, 400)
+        self.assertEqual(self.ex.submissions.filter(passed=True).count(), 0)
+
+    @override_settings(JUDGE0_KEY='k')
+    def test_with_a_runner_browser_results_are_ignored(self):
+        self.client.force_authenticate(self.student)
+        self.assertEqual(self.client.get('/api/exercises?lessonId=l1').data['checkedOn'], 'server')
+        with mock.patch('apps.learning.exercises.run_cases', return_value=[('4', '')]):
+            res = self.client.post(f'/api/exercises/{self.ex.id}/submit',
+                                   {'code': 'x', 'results': [{'actual': '3'}]}, format='json')
+        self.assertFalse(res.data['passed'])
 
     def test_solutions_after_passing(self):
         self.client.force_authenticate(self.student)

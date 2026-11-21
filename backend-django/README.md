@@ -70,7 +70,7 @@ default in `apps/classrooms/management/commands/seed_demo.py`. It only runs with
 
 ## Production
 
-The full walkthrough (Render, Supabase Storage, email, Judge0, Sentry, backups)
+The full walkthrough (Render, Supabase Storage, email, Sentry, backups)
 is in [../DEPLOYING.md](../DEPLOYING.md). In short:
 
 - With `DJANGO_DEBUG` off the server refuses to start unless `DJANGO_SECRET_KEY`
@@ -78,8 +78,10 @@ is in [../DEPLOYING.md](../DEPLOYING.md). In short:
   HSTS and the other security headers. `manage.py check --deploy` is clean.
 - Uploads go to a public Supabase Storage bucket when the `STORAGE_*` variables
   are set (`move_media_to_storage` copies files from local disk).
-- Exercise code runs on Judge0 (`JUDGE0_KEY`) or a self-hosted Piston (`PISTON_URL`),
-  all test cases in one run. Without either, exercises say checking isn't set up.
+- Exercise code never runs on this server. With no code runner set up, the
+  student's browser runs the tests (JavaScript in a worker, Python in Pyodide)
+  and this server marks what they printed. With `JUDGE0_KEY` (or `PISTON_URL`)
+  set, the server runs them on that sandbox instead, all tests in one run.
 - Skill checks are marked here: answers are locked in one at a time, and the
   score comes from those.
 - Email goes through any SMTP provider (`EMAIL_*`): password resets, and tutor

@@ -4,6 +4,7 @@ import { javascript } from '@codemirror/lang-javascript'
 import { python } from '@codemirror/lang-python'
 import { html } from '@codemirror/lang-html'
 import { exerciseApi, aiApi } from '@/lib/api'
+import { runTests } from '@/lib/runTests'
 import { Button } from '@/components/ui'
 import Icon from '@/components/icons/Icons'
 import { useAuth } from '@/lib/auth'
@@ -18,6 +19,10 @@ export default function StudentIDE({ lessonId }) {
   const [code, setCode] = useState('')
   const [status, setStatus] = useState('idle') // idle | submitting | passed | failed
   const [feedback, setFeedback] = useState(null)
+  // 'browser': the tests run here and the server marks what they printed
+  // 'server': the server runs the code on its sandbox (Judge0)
+  const [checkedOn, setCheckedOn] = useState('server')
+  const [loadingPython, setLoadingPython] = useState(false)
   
   const [activeTab, setActiveTab] = useState('tests')
   
@@ -29,6 +34,7 @@ export default function StudentIDE({ lessonId }) {
     if (!lessonId) return
     exerciseApi.list(lessonId).then(res => {
       setExercises(res.exercises || [])
+      if (res.checkedOn) setCheckedOn(res.checkedOn)
       if (res.exercises?.length > 0) {
         setCode(res.exercises[0].starter_code || '')
         setActiveTab((res.exercises[0].language === 'html' || res.exercises[0].language === 'web') ? 'preview' : 'tests')
@@ -64,7 +70,12 @@ export default function StudentIDE({ lessonId }) {
     }
 
     try {
-      const res = await exerciseApi.submit(activeEx.id, code)
+      let results
+      if (checkedOn === 'browser') {
+        const run = await runTests(activeEx.language, code, activeEx.test_cases || [], { onLoading: setLoadingPython })
+        results = run.results.map((r) => ({ actual: r.actual, stderr: r.stderr }))
+      }
+      const res = await exerciseApi.submit(activeEx.id, code, results)
       setStatus(res.passed ? 'passed' : 'failed')
       
       if (res.passed) {
@@ -82,7 +93,7 @@ export default function StudentIDE({ lessonId }) {
     } catch (err) {
       setStatus('failed')
       setConsecutiveFailures(c => c + 1)
-      setFeedback([{ actual: 'Server error or execution failed.' }])
+      setFeedback([{ actual: err?.message || 'Something went wrong while checking. Try again.' }])
     }
   }
 
@@ -167,7 +178,7 @@ export default function StudentIDE({ lessonId }) {
           disabled={status === 'submitting'}
           icon={<Icon name="play" size={15} />}
         >
-          {status === 'submitting' ? 'Running…' : 'Run the checks'}
+          {loadingPython ? 'Loading Python…' : status === 'submitting' ? 'Running…' : 'Run the checks'}
         </Button>
         {consecutiveFailures >= 3 && status !== 'passed' && (
           <Button variant="secondary" onClick={handleGetHint} disabled={hintLoading} icon={<Icon name="idea" size={15} />} style={{ borderColor: 'var(--accent)', color: 'var(--accent)' }}>

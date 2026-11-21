@@ -1,8 +1,15 @@
 """Exercises: practice tasks on a lesson, checked against test cases.
 
-Code runs in a sandbox elsewhere (Judge0 or Piston, see runner.py), never
-on this one. Web (HTML) exercises are checked visually in the browser, so
-they pass on submit.
+Two ways to check code, never by running it on this server:
+
+- On a sandbox server (Judge0 or Piston, see runner.py) when one is set up.
+  The student can't affect the result.
+- Otherwise in the student's browser (JavaScript in a worker, Python in
+  Pyodide). The browser sends what each test printed; this server compares it
+  with the expected output itself. Free, but a determined student could send
+  made-up output, so it is only as trustworthy as the browser.
+
+Web (HTML) exercises are checked visually in the browser, so they pass on submit.
 """
 import json
 import logging
@@ -16,7 +23,7 @@ from rest_framework.views import APIView
 
 from . import access
 from .models import Exercise, ExerciseSubmission, Lesson
-from .runner import RunnerError, RunnerUnavailable, run_cases
+from .runner import RunnerError, RunnerUnavailable, configured, run_cases
 
 log = logging.getLogger(__name__)
 PASS_XP = 20
@@ -58,6 +65,37 @@ class RunThrottle(UserRateThrottle):
     rate = '30/min'
 
 
+def checked_on():
+    """'server' when a code runner is set up, else 'browser'."""
+    return 'server' if configured() else 'browser'
+
+
+def check_browser_results(exercise, results):
+    """Mark what the browser says each test printed. Returns (passed, score, feedback_json).
+
+    The pass/fail of each test is decided here, from the exercise's own test
+    cases, whatever the browser claims.
+    """
+    if exercise.language in ('html', 'web') or exercise.type != Exercise.Type.CODING:
+        return check(exercise, '')
+    cases = [tc for tc in (exercise.test_cases or []) if isinstance(tc, dict)]
+    if not cases:
+        return True, 100, 'No test cases defined. Submission accepted.'
+    if not isinstance(results, list) or len(results) != len(cases):
+        raise ValueError('Run the tests before submitting.')
+    marked, passed = [], 0
+    for tc, r in zip(cases, results):
+        r = r if isinstance(r, dict) else {}
+        actual = str(r.get('actual') if r.get('actual') is not None else '')[:4000].strip()
+        error = str(r.get('stderr') or '')[:2000]
+        ok = not error and actual == str(tc.get('expected_output', '')).strip()
+        passed += ok
+        marked.append({'input': tc.get('input'), 'expected': tc.get('expected_output'), 'actual': actual,
+                       'passed': ok, 'stderr': error})
+    score = round(passed / len(cases) * 100)
+    return score == 100, score, json.dumps(marked)
+
+
 def check(exercise, code):
     """Returns (passed, score, feedback_json)."""
     if exercise.language in ('html', 'web') or exercise.type != Exercise.Type.CODING:
@@ -83,7 +121,8 @@ class ExerciseListView(APIView):
         qs = Exercise.objects.filter(lesson__in=access.visible_lessons(request.user)).select_related('lesson')
         if request.query_params.get('lessonId'):
             qs = qs.filter(lesson_id=request.query_params['lessonId'])
-        return Response({'exercises': ExerciseSerializer(qs, many=True, context={'request': request}).data})
+        return Response({'exercises': ExerciseSerializer(qs, many=True, context={'request': request}).data,
+                         'checkedOn': checked_on()})
 
     def post(self, request):
         s = ExerciseSerializer(data=request.data, context={'request': request})
@@ -134,17 +173,29 @@ class ExerciseDetailView(APIView):
 
 
 class SubmitView(APIView):
-    """POST {code} → {passed, score, feedback, xpAwarded}. XP only the first time you pass."""
+    """POST {code, results?} → {passed, score, feedback, xpAwarded}. XP only the first time you pass.
+
+    With a code runner set up, the code is run there and `results` is ignored.
+    Without one, `results` is what the browser's run printed for each test.
+    """
     throttle_classes = [RunThrottle]
 
     def post(self, request, pk):
         ex = visible_exercise(request.user, pk)
         code = str(request.data.get('code') or '')[:20000]
         try:
-            passed, score, feedback = check(ex, code)
+            if configured():
+                passed, score, feedback = check(ex, code)
+            else:
+                passed, score, feedback = check_browser_results(ex, request.data.get('results'))
         except RunnerUnavailable:
             return Response({'error': NOT_SET_UP}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
-        except (RunnerError, ValueError):
+        except ValueError as exc:
+            if not configured():
+                return Response({'error': str(exc)}, status=status.HTTP_400_BAD_REQUEST)
+            log.exception('Code runner failed')
+            return Response({'error': "Couldn't run your code right now. Try again in a moment."}, status=status.HTTP_502_BAD_GATEWAY)
+        except RunnerError:
             log.exception('Code runner failed')
             return Response({'error': "Couldn't run your code right now. Try again in a moment."}, status=status.HTTP_502_BAD_GATEWAY)
         first_pass = passed and not ExerciseSubmission.objects.filter(exercise=ex, student=request.user, passed=True).exists()

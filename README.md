@@ -97,7 +97,7 @@ For demo data, run `manage.py seed_demo` and `manage.py seed_showcase` in
 
 The app runs on Vercel, the API and Redis on Render (`render.yaml`), and the
 database and uploads on Supabase. [DEPLOYING.md](DEPLOYING.md) walks through
-it step by step: email, the Judge0 code runner, error reports, nightly
+it step by step: email, uploads, error reports, nightly
 encrypted backups, and a checklist for after launch.
 
 ## License

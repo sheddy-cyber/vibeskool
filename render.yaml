@@ -38,8 +38,6 @@ services:
         sync: false
       - key: GEMINI_API_KEY
         sync: false
-      - key: JUDGE0_KEY
-        sync: false
       - key: STORAGE_BUCKET
         sync: false
       - key: STORAGE_ENDPOINT

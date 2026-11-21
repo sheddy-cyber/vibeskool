@@ -9,7 +9,7 @@ step worked.
 **How the pieces fit together**
 
 ```
- Student's browser
+ Student's browser ── also runs the tests on students' exercise code
         │
         ▼
  Vercel  ── the React app (frontend/)       https://<your-app>.vercel.app
@@ -20,7 +20,6 @@ step worked.
         ├──► Supabase Postgres ── accounts, lessons, classes, progress
         ├──► Supabase Storage  ── profile photos and project screenshots
         ├──► Gmail             ── password reset and tutor emails
-        ├──► Judge0 (RapidAPI) ── runs students' exercise code safely
         ├──► Google Gemini     ── the AI tutor
         └──► Sentry            ── tells you when something breaks
  GitHub Actions ── a nightly encrypted backup of the database
@@ -36,7 +35,7 @@ step worked.
 | Render Key Value (Redis) | Free | 25 MB, plenty for live updates |
 | Supabase (database + storage) | Free | 500 MB database, 1 GB files; pauses after 7 quiet days |
 | Gmail (email) | Your Google account | About 500 emails a day |
-| Judge0 on RapidAPI | Basic | About 50 code checks a day |
+| Exercise checks | In the student's browser | No limit |
 | Google Gemini | Free tier | Google's free daily limits |
 | Sentry, Better Stack, GitHub Actions | Free tiers | Plenty |
 
@@ -74,7 +73,6 @@ everywhere so it's easy to keep track.
 - [ ] **A Gmail account for the site**: for sending email. Best as a new one
       just for VibeSkool (e.g. `vibeskool.app@gmail.com`), so students never
       see your personal address. See Part 3.
-- [ ] **RapidAPI**: https://rapidapi.com. For Judge0, the code runner.
 - [ ] **Google AI Studio**: https://aistudio.google.com. For the Gemini key, using your Google account.
 - [ ] **Google Cloud Console**: https://console.cloud.google.com. You already have a Google sign-in client.
 - [ ] **Sentry**: https://sentry.io. Error reports (optional but strongly recommended).
@@ -99,7 +97,6 @@ Storage secret key .............
 Storage public URL ............ https://
 Brevo API key .................
 From address (Brevo sender) ...
-Judge0 RapidAPI key ...........
 Gemini API key ................
 Google client ID ..............
 Sentry DSN (Django) ...........
@@ -338,30 +335,31 @@ will see it, so it shouldn't be your personal address.
 
 ---
 
-## Part 4. Running students' code (Judge0 on RapidAPI)
+## Part 4. Checking students' code (nothing to set up)
 
-When a student submits an exercise, their code runs on Judge0's servers,
-never on yours.
+When a student clicks **Run the checks** on a coding exercise, their own
+browser runs the tests: JavaScript in a sealed-off sandbox, Python through
+Pyodide (Python built for browsers). The browser sends the server what each
+test printed, and the server decides pass or fail by comparing that with the
+tests' expected output itself. Student code never runs on your server.
 
-1. Go to https://rapidapi.com/judge0-official/api/judge0-ce and sign in.
-2. Click **Pricing** (or **Subscribe to Test**) and choose **Basic** (free).
-   Confirm.
-3. Go to the **Endpoints** tab (the API playground). In the request panel,
-   find the header **X-RapidAPI-Key** and copy its value. Save it as
-   **JUDGE0_KEY**.
-4. Check the language numbers while you're there: in the left list open
-   **Languages → Get Languages** and click **Test Endpoint**. In the result,
-   find:
-   - `JavaScript (Node.js 18.15.0)`: its `id` should be **93**
-   - `Python (3.11.2)`: its `id` should be **92**
+**What to know:**
+- **It's free**, with no account, key or daily limit.
+- **The first Python check** downloads Python into the browser, about 11 MB,
+  which takes 5–15 seconds on a normal connection. The button says
+  "Loading Python…" meanwhile. After that it's cached and instant.
+- **Code that never stops** (an endless loop) is stopped after 4 seconds
+  for JavaScript, 8 for Python, with a message saying so.
+- **The trade-off:** a determined student who knows how could send made-up
+  output and get the exercise's 20 XP without solving it. Skill checks
+  aren't affected; those are always marked on the server. For homework
+  that really matters, use a class assignment, which a tutor reviews.
 
-   If they are different numbers, note them. You'll add `JUDGE0_JS_ID` and
-   `JUDGE0_PYTHON_ID` on Render with those numbers.
-
-**About the free limit:** each exercise check is one run, however many
-tests the exercise has, so about 50 checks a day. When it runs out, students
-see "Couldn't run your code right now" until the next day. Move to a paid
-plan when your classes get busy. HTML exercises don't use Judge0 at all.
+**If you later want checks that can't be faked**, the code still supports
+running them on a sandbox server: subscribe to Judge0 CE on RapidAPI (pay per
+use, about $0.0017 a check) and add `JUDGE0_KEY` on Render. With a key set,
+the server runs every check itself and ignores what browsers send. See
+"Later" at the end.
 
 ---
 
@@ -424,7 +422,6 @@ so Render sets them up in one go.
 | `FRONTEND_URL` | your Vercel address from 0.5, e.g. `https://vibeskool.vercel.app`. **No slash at the end** | **Required.** The site can't talk to the API. |
 | `GOOGLE_CLIENT_ID` | from Part 5.2 | Google sign-in shows an error |
 | `GEMINI_API_KEY` | from Part 5.1 | AI tutor offline |
-| `JUDGE0_KEY` | from Part 4 | Exercises say checking isn't set up |
 | `STORAGE_BUCKET` | `media` | Uploads go to Render's disk and vanish at the next deploy |
 | `STORAGE_ENDPOINT` | from Part 2.2 | (as above) |
 | `STORAGE_REGION` | from Part 2.2 | (as above) |
@@ -458,11 +455,10 @@ few. Pushing a handful of times a day is fine.
 
 ### 6.2 Add any extra values
 
-If your Judge0 language numbers were different (Part 4), or you want tutor
-emails to go to one inbox (Part 3):
+If you want tutor emails to go to one inbox (Part 3):
 
 1. **vibeskool-api → Environment → Add Environment Variable**.
-2. Add `JUDGE0_JS_ID` / `JUDGE0_PYTHON_ID` / `TUTOR_REQUEST_EMAILS` as needed.
+2. Add `TUTOR_REQUEST_EMAILS` with the address.
 3. Click **Save, rebuild, and deploy**.
 
 ### 6.3 Copy your API address
@@ -693,8 +689,10 @@ Do these on the **live** site, ideally on your phone and on a computer.
 - [ ] **Lessons:** open a lesson, mark it done, and see your progress on the dashboard.
 - [ ] **Skill check:** take one. Each answer is marked straight away and the
       result is saved. A pass shows on the path page.
-- [ ] **Exercises:** open a lesson that has a coding exercise (tutors add them under **Teaching → Exercises**), and submit an answer. It's
-      checked within a few seconds, so Judge0 works.
+- [ ] **Exercises:** open a lesson that has a coding exercise (tutors add them
+      under **Teaching → Exercises**) and click **Run the checks**. A wrong answer
+      shows what was expected and what your code printed; a right one passes. Try
+      a Python one too: the first check says "Loading Python…" for a few seconds.
 - [ ] **AI tutor:** in a lesson, open **Ask the tutor** and ask something. A reply comes back.
 - [ ] **Uploads:** add a profile photo. Right-click it → open image in new
       tab. The address starts with your STORAGE_PUBLIC_URL.
@@ -756,8 +754,8 @@ backend uses a local SQLite copy instead.
 | Password reset says it sent, but nothing arrives | It went to spam; `BREVO_API_KEY` missing; the From address isn't a verified Brevo sender; or Brevo blocked Render's address | Check spam first. Then Render **Logs**: search for `Brevo answered`. `401` with "unrecognised IP": Part 3.2 step 4. Sender errors: `DEFAULT_FROM_EMAIL` must match the verified sender exactly |
 | `Network is unreachable` or timeouts mentioning `smtp` in the logs | `EMAIL_HOST` is set: SMTP is blocked on Render's free plan | Remove `EMAIL_HOST` on Render and use `BREVO_API_KEY` (Part 3) |
 | The site sits on a spinner for up to a minute, then works | The API was asleep (free plan) | Set up the monitor in Part 9.1; check it's running every 3 minutes |
-| Exercises say "Checking code isn't set up on this server yet" | `JUDGE0_KEY` missing | Part 4, then add it on Render |
-| Exercises say "Couldn't run your code right now" | Daily Judge0 limit reached, or wrong language number | Wait for the reset or upgrade the plan; check the language IDs (Part 4, step 4) |
+| Python checks say "Python couldn't load in this browser" | The student's connection blocked or interrupted the 11 MB download (school networks sometimes block cdn.jsdelivr.net) | Try again on another network; JavaScript exercises aren't affected |
+| Every check fails with "Couldn't run your code right now" | `JUDGE0_KEY` is set on Render, so the server tries Judge0, but the RapidAPI subscription isn't active | Remove `JUDGE0_KEY` on Render to go back to browser checks, or fix the subscription |
 | Photos disappear after a deploy | Storage variables missing, so files went to Render's temporary disk | Part 2, then set the `STORAGE_*` variables |
 | Photos upload but show as broken images | `STORAGE_PUBLIC_URL` wrong, or the bucket isn't public | Check the bucket is Public; the URL must end in `/object/public/media` |
 | "Ask the tutor" says the tutor is offline | `GEMINI_API_KEY` missing or invalid | Part 5.1 |
@@ -767,6 +765,13 @@ backend uses a local SQLite copy instead.
 
 ## Later, when you're ready
 
+- **Checks that can't be faked:** subscribe to Judge0 CE on RapidAPI
+  (https://rapidapi.com/judge0-official/api/judge0-ce, **Basic**: pay per use,
+  about $0.0017 a check; set a spending alert), copy your `X-RapidAPI-Key`, and
+  add it on Render as `JUDGE0_KEY`. The defaults are language 93 (JavaScript,
+  Node.js 18) and 92 (Python 3.11); if Judge0's **Get Languages** lists other
+  numbers for those, add `JUDGE0_JS_ID` / `JUDGE0_PYTHON_ID`. To go back to free
+  browser checks, delete the key.
 - **Moving to Render Starter (about $7/month):** no sleeping, faster, and
   SMTP allowed. In `render.yaml` change `plan: free` to `plan: starter`, and
   move `python manage.py migrate --noinput` out of `startCommand` into a new
