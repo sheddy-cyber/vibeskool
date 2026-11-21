@@ -1,7 +1,9 @@
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
+from django.shortcuts import redirect
 from django.urls import include, path
+from django.views.generic import RedirectView
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 
 from apps.classrooms import urls as classrooms
@@ -15,6 +17,10 @@ admin.site.index_title = 'Content and classes'
 # The React app calls list endpoints without a trailing slash (/api/paths),
 # so each list route is also mounted at the bare prefix.
 urlpatterns = [
+    # This is an API; someone opening its bare address is sent to the website
+    path('', lambda request: redirect(settings.FRONTEND_URL)),
+    # The admin also answers without its trailing slash (/adminkris)
+    path(settings.ADMIN_PATH.rstrip('/'), RedirectView.as_view(url='/' + settings.ADMIN_PATH, permanent=False)),
     path(settings.ADMIN_PATH, admin.site.urls),
     path('api/auth/', include('apps.accounts.urls')),
     path('api/paths/', include(learning.paths_urls)),

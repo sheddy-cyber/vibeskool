@@ -7,7 +7,8 @@ away. This replies first: 200 if the database answers, 503 if not.
 from django.db import connection
 from django.http import JsonResponse
 
-PATH = '/api/health'
+# /api/health is the documented one; the others are what people and monitors try
+PATHS = {'/api/health', '/api/health/', '/health', '/health/'}
 
 
 def database_ok():
@@ -24,7 +25,7 @@ class HealthCheckMiddleware:
         self.get_response = get_response
 
     def __call__(self, request):
-        if request.path == PATH and request.method in ('GET', 'HEAD'):
+        if request.path in PATHS and request.method in ('GET', 'HEAD'):
             if database_ok():
                 return JsonResponse({'status': 'ok'})
             return JsonResponse({'status': 'error', 'database': 'unreachable'}, status=503)
