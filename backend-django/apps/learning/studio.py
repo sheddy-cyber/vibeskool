@@ -18,7 +18,6 @@ courses are read-only here for everyone except admins.
 """
 import re
 import uuid
-from datetime import datetime
 
 from django.db import IntegrityError, transaction
 from django.db.models import Count, Q
@@ -35,7 +34,7 @@ from apps.accounts.permissions import IsTutor
 from apps.classrooms.models import Classroom, Membership
 
 from . import access
-from .models import CourseInvite, CourseMember, Exercise, ExerciseSubmission, Lesson, SkillPath
+from .models import CourseInvite, CourseMember, Exercise, Lesson, SkillPath
 
 MAX_MODULES = 40
 MAX_SECTIONS = 60

@@ -10,15 +10,6 @@ export function ProtectedRoute({ children }) {
   return children
 }
 
-/** Redirects to /app/dashboard if not admin */
-export function AdminRoute({ children }) {
-  const { currentUser, authReady } = useAuth()
-  if (!authReady) return null
-  if (!currentUser) return <Navigate to="/signin" replace />
-  if (currentUser.role !== 'admin') return <Navigate to="/app/dashboard" replace />
-  return children
-}
-
 /** Redirects to /app/dashboard if not teacher or admin */
 export function TeacherRoute({ children }) {
   const { currentUser, authReady } = useAuth()

@@ -31,7 +31,6 @@ ai_urls = [
 
 exercise_urls = [
     path('', exercises.ExerciseListView.as_view(), name='exercise-list'),
-    path('check', exercises.CheckView.as_view(), name='exercise-check'),
     path('<uuid:pk>', exercises.ExerciseDetailView.as_view(), name='exercise-detail'),
     path('<uuid:pk>/submit', exercises.SubmitView.as_view(), name='exercise-submit'),
     path('<uuid:pk>/solutions', exercises.SolutionsView.as_view(), name='exercise-solutions'),

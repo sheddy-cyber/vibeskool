@@ -1,7 +1,6 @@
 """The tutor's overview: everything that needs you, across all your classes."""
 from datetime import timedelta
 
-from django.db.models import Count, Q
 from django.utils import timezone
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -13,7 +12,7 @@ from apps.learning.models import CourseInvite, LessonCompletion
 from apps.learning.studio import course_summary
 
 from . import services
-from .models import Classroom, Membership, Submission
+from .models import Classroom, Submission
 
 
 def person(u):

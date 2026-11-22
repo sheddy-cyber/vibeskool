@@ -17,7 +17,6 @@ export const useStore = create((set, get) => ({
   // Content State
   paths: [],
   pathsLoading: true,
-  lessonCache: {},
 
   fetchPaths: async () => {
     try {
@@ -53,18 +52,6 @@ export const useStore = create((set, get) => ({
     }
   },
 
-  fetchLesson: async (id) => {
-    if (get().lessonCache[id]) return get().lessonCache[id]
-    try {
-      const data = await contentApi.getLesson(id)
-      set(s => ({ lessonCache: { ...s.lessonCache, [id]: data.lesson } }))
-      return data.lesson
-    } catch(err) {
-      console.error('Failed to fetch lesson:', err)
-      return null
-    }
-  },
-
   // Settings
   settings: {
     dailyGoal:      2,        // lessons a day the home page tracks
@@ -72,10 +59,6 @@ export const useStore = create((set, get) => ({
     ...getSavedSettings(),
     theme:          getSavedSettings()?.theme || getStoredTheme() || 'dark',
   },
-
-  // Active lesson
-  activeLesson: null,
-  setActiveLesson: (id) => set({ activeLesson: id }),
 
   // Sidebar
   sidebarOpen: false, // mobile drawer only; the sidebar is always shown on wide screens

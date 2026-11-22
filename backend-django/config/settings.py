@@ -297,6 +297,11 @@ JUDGE0_LANGUAGES = {
 PISTON_URL = os.environ.get('PISTON_URL', '').rstrip('/')
 
 FRONTEND_URL = os.environ.get('FRONTEND_URL', 'http://localhost:5173')
+# This API's own public address, for links in emails (e.g. to the admin).
+# Render provides its hostname, so this only needs setting elsewhere.
+PUBLIC_API_URL = (os.environ.get('PUBLIC_API_URL')
+                  or (f"https://{os.environ['RENDER_EXTERNAL_HOSTNAME']}" if os.environ.get('RENDER_EXTERNAL_HOSTNAME') else '')
+                  or 'http://localhost:8000').rstrip('/')
 CORS_ALLOWED_ORIGINS = env_list('CORS_ALLOWED_ORIGINS', FRONTEND_URL)
 CSRF_TRUSTED_ORIGINS = env_list('CSRF_TRUSTED_ORIGINS', FRONTEND_URL)
 # Pages allowed to open a live-update socket. Any origin in development.

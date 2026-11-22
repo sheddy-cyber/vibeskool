@@ -410,8 +410,6 @@ const GLYPHS = {
   ),
 };
 
-export const ICON_NAMES = Object.keys(GLYPHS);
-
 export function Icon({ name, size = 20, active = false, className, title, ...rest }) {
   const glyph = GLYPHS[name];
   if (!glyph) return null;
@@ -431,15 +429,5 @@ export function Icon({ name, size = 20, active = false, className, title, ...res
     </svg>
   );
 }
-
-/* Glyph for each learning path id. */
-export const PATH_GLYPH = {
-  "full-stack-web": "web",
-  "mobile-app": "mobile",
-  "blockchain-web3": "chain",
-  "game-dev": "game",
-  "os-low-level": "chip",
-  "ai-ml": "nodes",
-};
 
 export default Icon;

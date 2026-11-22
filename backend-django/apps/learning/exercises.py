@@ -219,32 +219,3 @@ class SolutionsView(APIView):
              'display_name': s.student.display_name, 'avatar_url': s.student.avatar_url}
             for s in subs
         ]})
-
-
-class CheckView(APIView):
-    """POST {language, code, test_cases}: tutors try an exercise's tests while writing it.
-
-    Nothing is saved and no XP is given.
-    """
-    throttle_classes = [RunThrottle]
-
-    def post(self, request):
-        if not request.user.is_tutor:
-            raise PermissionDenied('Only tutors can do that.')
-        cases = request.data.get('test_cases') or []
-        if not isinstance(cases, list):
-            return Response({'error': 'Test cases must be a list'}, status=status.HTTP_400_BAD_REQUEST)
-        draft = Exercise(type=Exercise.Type.CODING, language=str(request.data.get('language') or 'javascript'), test_cases=cases)
-        try:
-            passed, score, feedback = check(draft, str(request.data.get('code') or '')[:20000])
-        except RunnerUnavailable:
-            return Response({'error': NOT_SET_UP}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
-        except (RunnerError, ValueError):
-            log.exception('Code runner failed')
-            return Response({'error': "Couldn't run the code right now. Try again in a moment."},
-                            status=status.HTTP_502_BAD_GATEWAY)
-        try:
-            results = json.loads(feedback)
-        except ValueError:
-            results = []
-        return Response({'passed': passed, 'score': score, 'results': results if isinstance(results, list) else []})

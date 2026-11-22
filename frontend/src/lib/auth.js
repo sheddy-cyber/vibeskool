@@ -145,45 +145,6 @@ export const useAuth = create((set, get) => {
       }
     },
 
-    updateProgress: (pathId) => {
-      // Local state update since progress backend isn't fully migrated yet
-      const { currentUser } = get()
-      if (!currentUser) return
-
-      const progress = { ...currentUser.progress }
-      progress[pathId] = (progress[pathId] || 0) + 1
-
-      const updated = {
-        ...currentUser,
-        progress,
-        lessonsCompleted: currentUser.lessonsCompleted + 1,
-        mekScore: Math.min(100, currentUser.mekScore + 3),
-        xp: currentUser.xp + 10,
-      }
-      
-      set({ currentUser: updated })
-    },
-
-    passModule: (moduleId) => {
-      // Local state update since progress backend isn't fully migrated yet
-      const { currentUser } = get()
-      if (!currentUser) return
-
-      const passedModules = [...(currentUser.passedModules || [])]
-      if (!passedModules.includes(moduleId)) {
-        passedModules.push(moduleId)
-      }
-
-      const updated = {
-        ...currentUser,
-        passedModules,
-        mekScore: Math.min(100, currentUser.mekScore + 10),
-        xp: currentUser.xp + 50,
-      }
-      
-      set({ currentUser: updated })
-    },
-
     updateUserSettings: async (patch) => {
       const { currentUser } = get()
       if (!currentUser) return
@@ -215,8 +176,5 @@ export const useAuth = create((set, get) => {
     },
 
     clearError: () => set({ authError: null }),
-
-    isAdmin: () => get().currentUser?.role === 'admin',
-    isTeacher: () => get().currentUser?.role === 'teacher',
   }
 })

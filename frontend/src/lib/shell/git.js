@@ -2,7 +2,7 @@
    log, diff, restore, branch, switch/checkout. It tracks real snapshots of
    the virtual file system, so what the learner sees matches real Git. */
 
-import { get, mkdir, writeFile, remove, snapshot, relative, resolve, segments, display } from './vfs'
+import { get, mkdir, writeFile, remove, snapshot, relative, resolve, display } from './vfs'
 
 const AUTHOR = 'You <you@vibeskool.dev>'
 
@@ -480,5 +480,3 @@ export function branchFor(ctx, cwd) {
   const s = repoStatus(ctx, root)
   return { name: repo.head, dirty: !s.clean, root }
 }
-
-export const repoPathSegments = segments

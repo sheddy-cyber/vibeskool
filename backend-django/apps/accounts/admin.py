@@ -77,9 +77,7 @@ class UserAdmin(BaseUserAdmin):
                               messages.ERROR)
             return
         try:
-            emails.send(request.user.email, 'VibeSkool test email',
-                        ['This is a test from your live VibeSkool server. If you can read it, '
-                         'password resets and tutor emails can be sent.'], raise_errors=True)
+            emails.test_message(request.user)
         except Exception as exc:  # shown to the admin so they can fix it
             hint = ''
             if '401' in str(exc) and 'IP' in str(exc):
