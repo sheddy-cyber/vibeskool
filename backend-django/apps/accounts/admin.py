@@ -66,9 +66,15 @@ class UserAdmin(BaseUserAdmin):
     def send_test_email(self, request, queryset):
         """Sends from this server, so it shows whether Render can reach the email service."""
         from django.conf import settings
+        from .apps import sender_ok
         if settings.EMAIL_BACKEND.endswith('console.EmailBackend'):
             self.message_user(request, 'Email is not set up on this server: add BREVO_API_KEY on Render '
                               '(DEPLOYING.md, Part 3). Nothing was sent.', messages.ERROR)
+            return
+        if not sender_ok(settings.DEFAULT_FROM_EMAIL):
+            self.message_user(request, f'DEFAULT_FROM_EMAIL is "{settings.DEFAULT_FROM_EMAIL}". Set it on Render to the '
+                              'sender you verified in Brevo, e.g. VibeSkool <you@gmail.com>, without quotes. Nothing was sent.',
+                              messages.ERROR)
             return
         try:
             emails.send(request.user.email, 'VibeSkool test email',

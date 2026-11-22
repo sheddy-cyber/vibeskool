@@ -38,3 +38,28 @@ class TestEmailActionTests(TestCase):
             text, level = self.run_action()
         self.assertEqual(level, messages.ERROR)
         self.assertIn('Authorised IPs', text)
+
+
+class SenderTests(TestCase):
+    def test_sender_check(self):
+        from .apps import sender_ok
+        self.assertTrue(sender_ok('VibeSkool <vibeskool.app@gmail.com>'))
+        self.assertFalse(sender_ok('VibeSkool <no-reply@localhost>'))
+        self.assertFalse(sender_ok(''))
+
+    @override_settings(EMAIL_BACKEND='apps.accounts.brevo.BrevoEmailBackend', BREVO_API_KEY='x',
+                       DEFAULT_FROM_EMAIL='VibeSkool <no-reply@localhost>')
+    def test_test_action_explains_a_missing_sender(self):
+        text, level = TestEmailActionTests.run_action(self)
+        self.assertEqual(level, messages.ERROR)
+        self.assertIn('DEFAULT_FROM_EMAIL', text)
+
+    def test_quotes_around_the_value_are_ignored(self):
+        import os
+        import subprocess
+        import sys
+        env = {**os.environ, 'DEFAULT_FROM_EMAIL': '"VibeSkool <vibeskool.app@gmail.com>"',
+               'DJANGO_SETTINGS_MODULE': 'config.settings', 'DJANGO_DEBUG': '1'}
+        out = subprocess.run([sys.executable, '-c', 'import django; django.setup(); from django.conf import settings; print(settings.DEFAULT_FROM_EMAIL)'],
+                             env=env, capture_output=True, text=True, timeout=60)
+        self.assertEqual(out.stdout.strip().splitlines()[-1], 'VibeSkool <vibeskool.app@gmail.com>')

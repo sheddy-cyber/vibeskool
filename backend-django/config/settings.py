@@ -270,7 +270,9 @@ EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
 EMAIL_USE_SSL = env_bool('EMAIL_USE_SSL', EMAIL_PORT == 465)
 EMAIL_USE_TLS = not EMAIL_USE_SSL and env_bool('EMAIL_USE_TLS', True)
 EMAIL_TIMEOUT = 15
-DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL') or 'VibeSkool <no-reply@localhost>'
+# Quotes pasted around the value (common in dashboards) are not part of it
+DEFAULT_FROM_EMAIL = (os.environ.get('DEFAULT_FROM_EMAIL') or '').strip().strip('"\'').strip() \
+    or 'VibeSkool <no-reply@localhost>'
 SERVER_EMAIL = DEFAULT_FROM_EMAIL
 # Who hears about new tutor requests (comma-separated). Defaults to staff accounts.
 TUTOR_REQUEST_EMAILS = env_list('TUTOR_REQUEST_EMAILS')

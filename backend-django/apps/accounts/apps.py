@@ -39,7 +39,19 @@ def warn_if_email_is_off():
     from django.conf import settings
     if settings.DEBUG or getattr(settings, 'TESTING', False):
         return
+    log = logging.getLogger('apps.accounts')
     if settings.EMAIL_BACKEND.endswith('console.EmailBackend'):
-        logging.getLogger('apps.accounts').warning(
+        log.warning(
             'EMAIL IS NOT SET UP: BREVO_API_KEY is missing, so password resets and tutor emails '
             'are only printed in this log, never sent. Add BREVO_API_KEY on Render (DEPLOYING.md, Part 3).')
+    elif not sender_ok(settings.DEFAULT_FROM_EMAIL):
+        log.warning(
+            'EMAIL SENDER IS NOT SET: DEFAULT_FROM_EMAIL is %r, so the email service will refuse every '
+            'email. Set it on Render to the sender you verified, e.g. VibeSkool <you@gmail.com>.',
+            settings.DEFAULT_FROM_EMAIL)
+
+
+def sender_ok(value):
+    from email.utils import parseaddr
+    address = parseaddr(value or '')[1]
+    return '@' in address and not address.endswith('@localhost')
