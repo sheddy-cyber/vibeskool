@@ -30,3 +30,16 @@ class AccountsConfig(AppConfig):
 
     def ready(self):
         post_migrate.connect(lock_down_tables, dispatch_uid='lock_down_tables')
+        warn_if_email_is_off()
+
+
+def warn_if_email_is_off():
+    """On a live server, say so loudly if emails would only be printed here."""
+    import logging
+    from django.conf import settings
+    if settings.DEBUG or getattr(settings, 'TESTING', False):
+        return
+    if settings.EMAIL_BACKEND.endswith('console.EmailBackend'):
+        logging.getLogger('apps.accounts').warning(
+            'EMAIL IS NOT SET UP: BREVO_API_KEY is missing, so password resets and tutor emails '
+            'are only printed in this log, never sent. Add BREVO_API_KEY on Render (DEPLOYING.md, Part 3).')

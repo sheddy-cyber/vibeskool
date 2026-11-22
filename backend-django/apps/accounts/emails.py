@@ -31,7 +31,7 @@ def _button(label, url):
             f'text-decoration:none;font-weight:600;font-size:14px;padding:11px 18px;border-radius:999px">{escape(label)}</a></p>')
 
 
-def send(to, subject, lines, action=None, after=()):
+def send(to, subject, lines, action=None, after=(), raise_errors=False):
     """lines: paragraphs before the button; action: (label, url); after: paragraphs below it."""
     text = '\n\n'.join([*lines, *([f'{action[0]}: {action[1]}'] if action else []), *after])
     html = HTML.format(body=_paragraphs(lines) + (_button(*action) if action else '') + _paragraphs(after))
@@ -42,6 +42,8 @@ def send(to, subject, lines, action=None, after=()):
         return True
     except Exception:
         log.exception('Could not send the email "%s"', subject)
+        if raise_errors:
+            raise
         return False
 
 
