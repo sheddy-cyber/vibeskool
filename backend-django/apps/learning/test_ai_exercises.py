@@ -28,6 +28,24 @@ class AiTests(APITestCase):
         self.assertIn('DNS basics', body)
         self.assertEqual(post.call_args.kwargs['headers']['x-goog-api-key'], 'test-key', 'key in a header, not the URL')
 
+    @override_settings(GEMINI_API_KEY='test-key', GEMINI_MODEL='gemini-old', GEMINI_FALLBACK_MODEL='gemini-flash-lite-latest')
+    def test_falls_back_when_the_model_is_retired_or_busy(self):
+        gone = mock.Mock(status_code=404, ok=False, text='no longer available')
+        good = mock.Mock(status_code=200, ok=True)
+        good.json.return_value = {'candidates': [{'content': {'parts': [{'text': 'Hi!'}]}}]}
+        with mock.patch('apps.learning.ai.requests.post', side_effect=[gone, good]) as post:
+            res = self.client.post('/api/ai/chat', {'message': 'Hello'}, format='json')
+        self.assertEqual(res.data, {'reply': 'Hi!'})
+        self.assertIn('gemini-flash-lite-latest', post.call_args_list[1].args[0])
+
+    @override_settings(GEMINI_API_KEY='bad', GEMINI_MODEL='gemini-flash-lite-latest', GEMINI_FALLBACK_MODEL='gemini-flash-lite-latest')
+    def test_a_bad_key_is_reported(self):
+        refused = mock.Mock(status_code=400, ok=False, text='API key not valid')
+        with mock.patch('apps.learning.ai.requests.post', return_value=refused), self.assertLogs('apps.learning.ai', 'ERROR') as logs:
+            res = self.client.post('/api/ai/chat', {'message': 'Hello'}, format='json')
+        self.assertEqual(res.status_code, 502)
+        self.assertIn('API key not valid', ' '.join(logs.output))
+
     def test_empty_message(self):
         self.assertEqual(self.client.post('/api/ai/chat', {'message': ' '}, format='json').status_code, 400)
 

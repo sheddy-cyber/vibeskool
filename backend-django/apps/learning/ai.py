@@ -17,6 +17,8 @@ log = logging.getLogger(__name__)
 
 GEMINI_URL = 'https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent'
 MAX_MESSAGE = 8000
+# Answers that mean "try the other model": retired (404), over quota (429), busy (5xx)
+TRY_ANOTHER = {404, 429, 500, 502, 503, 504}
 
 PERSONAS = {
     'friendly': 'You are a warm, supportive and encouraging coding teacher. Answer in simple terms, under 130 words. Encourage the student.',
@@ -45,15 +47,22 @@ def ask_gemini(prompt, system=None, temperature=0.7):
     }
     if system:
         body['systemInstruction'] = {'parts': [{'text': system}]}
-    res = requests.post(
-        GEMINI_URL.format(model=settings.GEMINI_MODEL),
-        headers={'x-goog-api-key': key, 'Content-Type': 'application/json'},
-        data=json.dumps(body),
-        timeout=30,
-    )
-    res.raise_for_status()
-    parts = res.json().get('candidates', [{}])[0].get('content', {}).get('parts', [])
-    return ''.join(p.get('text', '') for p in parts).strip()
+    models = list(dict.fromkeys([settings.GEMINI_MODEL, settings.GEMINI_FALLBACK_MODEL]))
+    for i, model in enumerate(models):
+        res = requests.post(
+            GEMINI_URL.format(model=model),
+            headers={'x-goog-api-key': key, 'Content-Type': 'application/json'},
+            data=json.dumps(body),
+            timeout=25,
+        )
+        if res.status_code in TRY_ANOTHER and i < len(models) - 1:
+            log.warning('Gemini model %s answered %s; trying %s', model, res.status_code, models[i + 1])
+            continue
+        if not res.ok:
+            # Google's message says what is wrong (bad key, retired model...); it reaches Sentry
+            raise requests.HTTPError(f'Gemini ({model}) answered {res.status_code}: {res.text[:300]}', response=res)
+        parts = res.json().get('candidates', [{}])[0].get('content', {}).get('parts', [])
+        return ''.join(p.get('text', '') for p in parts).strip()
 
 
 class ChatView(APIView):

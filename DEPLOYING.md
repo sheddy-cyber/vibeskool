@@ -369,10 +369,17 @@ the server runs every check itself and ignores what browsers send. See
 
 1. Open https://aistudio.google.com/apikey.
 2. Click **Create API key**. Choose or create a Google Cloud project when asked.
-3. Copy the key (starts with `AIza`). Save it as **GEMINI_API_KEY**.
+3. Copy the key (it starts with `AQ.` or, for older keys, `AIza`). Save it
+   as **GEMINI_API_KEY**.
 
-Without it, the site still works; the "Ask the tutor" panel says the tutor
-is offline.
+The free tier is enough: no billing account is needed. The tutor uses
+`gemini-flash-lite-latest`, a name Google keeps pointing at its current fast
+model, so it keeps working when Google retires an older version. Leave
+`GEMINI_MODEL` unset unless you want a different model; if that model is
+retired or busy, the tutor falls back to the lite one by itself.
+
+Without a key, the site still works; the "Ask the tutor" panel says the
+tutor is offline.
 
 ### 5.2 Google sign-in client ID
 
@@ -758,7 +765,8 @@ backend uses a local SQLite copy instead.
 | Every check fails with "Couldn't run your code right now" | `JUDGE0_KEY` is set on Render, so the server tries Judge0, but the RapidAPI subscription isn't active | Remove `JUDGE0_KEY` on Render to go back to browser checks, or fix the subscription |
 | Photos disappear after a deploy | Storage variables missing, so files went to Render's temporary disk | Part 2, then set the `STORAGE_*` variables |
 | Photos upload but show as broken images | `STORAGE_PUBLIC_URL` wrong, or the bucket isn't public | Check the bucket is Public; the URL must end in `/object/public/media` |
-| "Ask the tutor" says the tutor is offline | `GEMINI_API_KEY` missing or invalid | Part 5.1 |
+| "Ask the tutor" says the tutor is offline | `GEMINI_API_KEY` missing on Render | Part 5.1 |
+| The tutor answers "Failed to generate response" | Google refused the request: the key is invalid, or `GEMINI_MODEL` names a retired model | Check Sentry for Google's exact message. Make a new key, or delete `GEMINI_MODEL` on Render |
 | Everything was fine, then the database stopped answering | Supabase paused the free project after a quiet week | Supabase dashboard → Restore project |
 
 ---

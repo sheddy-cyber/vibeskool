@@ -281,7 +281,10 @@ GOOGLE_CLIENT_ID = os.environ.get('GOOGLE_CLIENT_ID', '')
 
 # AI tutor (Gemini)
 GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY', '')
-GEMINI_MODEL = os.environ.get('GEMINI_MODEL', 'gemini-2.5-flash')
+# An alias Google keeps pointing at its current fast model, so it never retires
+# (fixed names like gemini-2.5-flash stop working for new keys). Free tier.
+GEMINI_MODEL = os.environ.get('GEMINI_MODEL', '').strip() or 'gemini-flash-lite-latest'
+GEMINI_FALLBACK_MODEL = 'gemini-flash-lite-latest'
 
 # The sandbox that runs students' exercise code. Never this server.
 # Judge0 through RapidAPI: set JUDGE0_KEY (and JUDGE0_URL / JUDGE0_HOST for
