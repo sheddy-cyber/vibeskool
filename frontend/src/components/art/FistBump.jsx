@@ -4,11 +4,10 @@ import styles from "./FistBump.module.css";
 
 /* Closing scene: a learner's arm (blue hoodie) and a tutor's arm (green
    cardigan) come in from either side and meet in a fist bump. The impact
-   lines are the three VibeSkool bars. Each call to action sits under the
-   arm it belongs to.
+   lines are the three VibeSkool bars. The two buttons sit together under
+   the panel and appear once the fists meet.
 
-   viewBox 0 0 800 280. Fists meet at (400, 190). The buttons sit inside
-   the same panel, under each arm. */
+   viewBox 0 0 800 280. Fists meet at (400, 190). */
 
 const EASE = [0.22, 1, 0.36, 1];
 const CONTACT_DELAY = 0.75; // when the fists touch
@@ -136,6 +135,7 @@ export default function FistBump({ onLearn, onTeach }) {
 
           <Bars go={go} />
         </svg>
+      </div>
 
       <div className={styles.actions}>
         <motion.div
@@ -153,13 +153,12 @@ export default function FistBump({ onLearn, onTeach }) {
           className={styles.side}
           initial={{ opacity: 0, y: 12 }}
           animate={go ? { opacity: 1, y: 0 } : undefined}
-          transition={{ duration: 0.6, delay: CONTACT_DELAY + 0.35, ease: EASE }}
+          transition={{ duration: 0.6, delay: CONTACT_DELAY + 0.32, ease: EASE }}
         >
           <button type="button" onClick={onTeach} className={`${styles.cta} ${styles.ctaDark}`}>
             I'm a tutor
           </button>
         </motion.div>
-      </div>
       </div>
     </div>
   );
